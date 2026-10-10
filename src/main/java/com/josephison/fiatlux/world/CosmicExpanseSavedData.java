@@ -43,6 +43,8 @@ public class CosmicExpanseSavedData extends SavedData {
     public boolean rebellionActive;
     public double rebellionProgress;       // days of war elapsed
     public double fallenAngels;
+    /** Embodied rebels still at war in the world (the Angelic Rebellion made visible). */
+    public final java.util.Set<java.util.UUID> rebelIds = new java.util.HashSet<>();
     public double heavenSouls;
     // --- the Underworld
     public UnderworldState underworld = new UnderworldState();
@@ -123,6 +125,9 @@ public class CosmicExpanseSavedData extends SavedData {
         d.rebellionActive = tag.getBoolean("rebellion_active");
         d.rebellionProgress = tag.getDouble("rebellion_progress");
         d.fallenAngels = tag.getDouble("fallen_angels");
+        for (net.minecraft.nbt.Tag t : tag.getList("rebels", net.minecraft.nbt.Tag.TAG_INT_ARRAY)) {
+            d.rebelIds.add(net.minecraft.nbt.NbtUtils.loadUUID(t));
+        }
         d.heavenSouls = tag.getDouble("heaven_souls");
         UnderworldState.CODEC.parse(NbtOps.INSTANCE, tag.get("underworld")).result().ifPresent(u -> d.underworld = u);
         d.planetCursor = tag.getInt("planet_cursor");
@@ -151,6 +156,9 @@ public class CosmicExpanseSavedData extends SavedData {
         tag.putBoolean("rebellion_active", rebellionActive);
         tag.putDouble("rebellion_progress", rebellionProgress);
         tag.putDouble("fallen_angels", fallenAngels);
+        net.minecraft.nbt.ListTag rebels = new net.minecraft.nbt.ListTag();
+        for (java.util.UUID id : rebelIds) rebels.add(net.minecraft.nbt.NbtUtils.createUUID(id));
+        tag.put("rebels", rebels);
         tag.putDouble("heaven_souls", heavenSouls);
         UnderworldState.CODEC.encodeStart(NbtOps.INSTANCE, underworld).result().ifPresent(t -> tag.put("underworld", t));
         tag.putInt("planet_cursor", planetCursor);

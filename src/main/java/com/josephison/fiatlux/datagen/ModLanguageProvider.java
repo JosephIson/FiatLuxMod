@@ -54,6 +54,12 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEntities.SERAPH.get(), "Seraph");
         add(ModEntities.CHERUB.get(), "Cherub");
         add(ModEntities.OPHAN.get(), "Ophan");
+        add(ModEntities.FALLEN.get(), "Fallen Angel");
+        add(ModItems.FALLEN_SPAWN_EGG.get(), "Fallen Angel Spawn Egg");
+        add("entity.fiatlux.lucifer", "Lucifer, Son of the Morning");
+        add("entity.fiatlux.rebel_captain", "Captain of the Rebel Host");
+        add("entity.fiatlux.michael", "Michael");
+        add("chat.fiatlux.war_in_heaven", "There was war in heaven (Rev 12:7): %s rebel angels gather in %s near %s %s %s. Michael and his angels muster against them. Defeat the rebels, or speak Cast Out.");
         add(ModEntities.STATIONED_SWORD.get(), "Flaming Sword (Guardian)");
 
         // --- effects
@@ -67,6 +73,9 @@ public class ModLanguageProvider extends LanguageProvider {
         power("cosmic_spark", "Cosmic Spark", "\"In the beginning God created the heaven and the earth.\" The Big Bang: galaxies are born. (Gen 1:1)");
         power("planetary_genesis", "Planetary Genesis", "Forms a new world and sets it in its orbit around the throne. (Gen 1:14-16)");
         power("breath_of_life", "Breath of Life", "\"...breathed into his nostrils the breath of life; and man became a living soul.\" (Gen 2:7)");
+        power("cast_out", "Cast Out", "Revelation 12:9: strikes down the rebel angels in your gaze and around it. Lightning breaks their radiance; they fall through a fracture in the sky into the Underworld.");
+        add("power.fiatlux.cast_out.none_near", "No rebel angels are near your gaze. The rebels gather in Heaven: /fiatlux heaven");
+        add("power.fiatlux.cast_out.no_war", "There is no war in heaven. (Begin one with /fiatlux event rebellion.)");
         power("visit_world", "Walk upon a World", "Carries you to the next created world, to stand upon its ground under its own sky and gravity.");
         power("fiat_lux", "Fiat Lux", "\"Let there be light: and there was light.\" Floods the darkness with unseen light. (Gen 1:3)");
         power("evening_and_morning", "Evening and Morning", "Brings the next dusk or dawn. \"And the evening and the morning were the first day.\" (Gen 1:5)");

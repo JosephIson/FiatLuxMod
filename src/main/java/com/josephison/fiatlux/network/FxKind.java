@@ -21,7 +21,13 @@ public enum FxKind {
     /** The Big Bang: blinding white-out, radiating beams, the sky filling with newborn galaxies. */
     BIG_BANG,
     /** A new world forms in orbit: a ring of creation and rising sparks. */
-    PLANET_GENESIS;
+    PLANET_GENESIS,
+    /** Lightning strikes a rebel: its radiance shatters into gold shards and torn feathers. */
+    HALO_SHATTER,
+    /** The sky splits open in a jagged crimson fracture down which the cast-out plunge. */
+    SKY_FRACTURE,
+    /** A fallen one strikes the ground of the Underworld: a crimson crater-wave of fire and ash. */
+    FALLEN_IMPACT;
 
     public static FxKind byId(int id) {
         FxKind[] v = values();

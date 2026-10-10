@@ -12,6 +12,7 @@
     "minecraft:enderman",
     "minecraft:endermite",
     "minecraft:silverfish",
-    "minecraft:magma_cube"
+    "minecraft:magma_cube",
+    "fiatlux:fallen"
   ]
 }

@@ -157,6 +157,17 @@ def texel(mat: Material, face: str, i, j, w, h, rng: random.Random, vertical: bo
         else:
             c = _shade(c, 0.82 + min(0.25, math.sqrt(ds[0]) * 0.05) + n * 0.05)
 
+    elif p == "membrane":
+        # leathery bat-wing membrane: dark skin stretched thin, branching ember-red veins,
+        # thinner (more translucent) away from the edges
+        vein = abs(math.sin(u * 3.0 + math.sin(v * 2.5) * 1.2)) < 0.06 or abs(math.sin(v * 4.0 + u * 1.5)) < 0.04
+        c = _shade(c, 0.94 + n * 0.02 + (0.06 if edge > 1 else -0.1))
+        if vein:
+            c = _mix(c, accent, 0.75)
+        if edge > 1 and mat.alpha < 255:
+            a = mat.alpha
+        else:
+            a = 255
     if side and p not in ("eye", "fire", "rune", "coal"):
         c = _shade(c, 1.06 - 0.16 * v)          # ambient occlusion toward the bottom
         if j == 0:

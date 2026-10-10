@@ -51,6 +51,7 @@ public class FiatLux {
 
         modBus.addListener(ModNetwork::register);
         modBus.addListener(FiatLux::attributes);
+        modBus.addListener(FiatLux::spawnPlacements);
 
         container.registerConfig(ModConfig.Type.COMMON, FiatLuxConfig.COMMON_SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, FiatLuxConfig.CLIENT_SPEC);
@@ -58,11 +59,20 @@ public class FiatLux {
         LOGGER.info("Fiat lux - let there be light.");
     }
 
+    /** The Fallen haunt the dark places of the Underworld (spawners in worldgen/biome/underworld.json). */
+    private static void spawnPlacements(net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event) {
+        event.register(ModEntities.FALLEN.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                net.minecraft.world.entity.monster.Monster::checkMonsterSpawnRules,
+                net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    }
+
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.ANGEL.get(), AngelEntity.createAttributes().build());
         event.put(ModEntities.SERAPH.get(), SeraphEntity.createAttributes().build());
         event.put(ModEntities.CHERUB.get(), CherubEntity.createAttributes().build());
         event.put(ModEntities.OPHAN.get(), OphanEntity.createAttributes().build());
+        event.put(ModEntities.FALLEN.get(), com.josephison.fiatlux.entity.FallenEntity.createAttributes().build());
     }
 
     public static ResourceLocation id(String path) {

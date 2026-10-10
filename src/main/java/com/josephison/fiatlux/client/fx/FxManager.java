@@ -43,6 +43,16 @@ public final class FxManager {
         }
     }
 
+    /** A jagged fracture in the sky (the Fall): a polyline drawn as a camera-facing ribbon. */
+    private static final class Rift {
+        final Vec3[] pts; final float width; final int color; final int life;
+        int age;
+        Rift(Vec3[] pts, float width, int color, int life) {
+            this.pts = pts; this.width = width; this.color = color; this.life = life;
+        }
+    }
+
+    private static final List<Rift> RIFTS = new ArrayList<>();
     private static final List<Ring> RINGS = new ArrayList<>();
     private static final List<Beam> BEAMS = new ArrayList<>();
     private static float flash;
@@ -147,6 +157,60 @@ public final class FxManager {
                 burstSphere(level, ModParticles.HOLY_SPARK.get(), at, dens(60), 0.1, 0.4);
                 flashIfNear(at, 20f, 0.35f, col);
             }
+            case HALO_SHATTER -> {
+                boolean mutation = ((col >> 8) & 255) < 80;   // the second burst: wings tearing as it becomes a fallen one
+                if (!mutation) {
+                    RINGS.add(new Ring(at, r * 1.6f, 0xFFFFE08A, 16, 0.35f, false));
+                    for (int i = 0; i < dens(70); i++) {
+                        Vec3 d = new Vec3(rand.nextGaussian(), rand.nextGaussian() * 0.5 + 0.4, rand.nextGaussian()).normalize();
+                        double sp = 0.15 + rand.nextDouble() * 0.35;
+                        level.addParticle(ModParticles.HALO_SHARD.get(), at.x, at.y, at.z, d.x * sp, d.y * sp, d.z * sp);
+                    }
+                    burstSphere(level, ModParticles.HOLY_SPARK.get(), at, dens(60), 0.2, 0.6);
+                    burstSphere(level, ParticleTypes.ELECTRIC_SPARK, at, dens(40), 0.2, 0.7);
+                    flashIfNear(at, 48f, 0.55f, 0xFFFFFFFF);
+                } else {
+                    burstSphere(level, ParticleTypes.LARGE_SMOKE, at, dens(40), 0.05, 0.25);
+                    burstSphere(level, ModParticles.EMBER.get(), at, dens(60), 0.1, 0.5);
+                    flashIfNear(at, 32f, 0.35f, 0xFFB01A10);
+                }
+                for (int i = 0; i < dens(mutation ? 70 : 40); i++) {
+                    level.addParticle(ModParticles.TORN_FEATHER.get(), at.x + rand.nextGaussian() * 0.5, at.y + rand.nextGaussian() * 0.5,
+                            at.z + rand.nextGaussian() * 0.5, rand.nextGaussian() * 0.12, rand.nextDouble() * 0.15, rand.nextGaussian() * 0.12);
+                }
+            }
+            case SKY_FRACTURE -> {
+                Vec3[] trunk = jagged(rand, at.add(0, 80, 0), at.subtract(0, 60, 0), 34, 1.6);
+                RIFTS.add(new Rift(trunk, 1.2f, col, p.duration()));
+                for (int b = 0; b < 5; b++) {   // splinters branching off the main fracture
+                    Vec3 from = trunk[4 + rand.nextInt(trunk.length - 10)];
+                    Vec3 to = from.add(rand.nextGaussian() * 12, -6 - rand.nextDouble() * 14, rand.nextGaussian() * 12);
+                    RIFTS.add(new Rift(jagged(rand, from, to, 8, 0.9), 0.45f, col, p.duration() - 10));
+                }
+                for (int i = 0; i < dens(120); i++) {
+                    Vec3 q = trunk[rand.nextInt(trunk.length)];
+                    level.addParticle(ModParticles.EMBER.get(), q.x + rand.nextGaussian() * 0.6, q.y, q.z + rand.nextGaussian() * 0.6,
+                            rand.nextGaussian() * 0.04, -0.05 - rand.nextDouble() * 0.2, rand.nextGaussian() * 0.04);
+                }
+                burstSphere(level, ParticleTypes.LARGE_SMOKE, at, dens(30), 0.05, 0.2);
+                flashIfNear(at, 80f, 0.45f, 0xFFC0201A);
+            }
+            case FALLEN_IMPACT -> {
+                RINGS.add(new Ring(at.add(0, 0.1, 0), r * 1.8f, col, 34, 1.6f, true));
+                RINGS.add(new Ring(at.add(0, 0.1, 0), r, 0xFFFFA040, 24, 0.8f, true));
+                BEAMS.add(new Beam(at, 26f, 1.4f, col, 22));
+                for (int i = 0; i < dens(50); i++) {
+                    double a = rand.nextDouble() * Mth.TWO_PI;
+                    level.addParticle(ParticleTypes.LAVA, at.x + Math.cos(a), at.y + 0.3, at.z + Math.sin(a), 0, 0, 0);
+                    level.addParticle(ParticleTypes.LARGE_SMOKE, at.x + Math.cos(a) * 2, at.y + 0.4, at.z + Math.sin(a) * 2,
+                            Math.cos(a) * 0.25, 0.1 + rand.nextDouble() * 0.2, Math.sin(a) * 0.25);
+                }
+                for (int i = 0; i < 4; i++) {
+                    level.addParticle(ParticleTypes.EXPLOSION, at.x + rand.nextGaussian() * 2, at.y + 0.5, at.z + rand.nextGaussian() * 2, 0, 0, 0);
+                }
+                burstSphere(level, ModParticles.EMBER.get(), at.add(0, 0.5, 0), dens(90), 0.2, 0.8);
+                flashIfNear(at, 40f, 0.5f, 0xFFD0301A);
+            }
             case HOST_ARRIVAL -> {
                 BEAMS.add(new Beam(at.subtract(0, 1, 0), 40f, 1.1f, col, 26));
                 RINGS.add(new Ring(at.subtract(0, 0.9, 0), r * 2f + 2f, col, 26, 0.8f, true));
@@ -159,6 +223,20 @@ public final class FxManager {
                 flashIfNear(at, 24f, 0.4f, col);
             }
         }
+    }
+
+    /** A jagged lightning-like polyline from a to b: a bounded random walk around the straight line. */
+    private static Vec3[] jagged(RandomSource rand, Vec3 a, Vec3 b, int n, double amp) {
+        Vec3[] pts = new Vec3[n + 1];
+        double ox = 0, oz = 0;
+        for (int i = 0; i <= n; i++) {
+            double t = i / (double) n;
+            ox = Mth.clamp(ox + rand.nextGaussian() * amp, -amp * 3, amp * 3);
+            oz = Mth.clamp(oz + rand.nextGaussian() * amp, -amp * 3, amp * 3);
+            double taper = Math.sin(t * Math.PI);
+            pts[i] = a.lerp(b, t).add(ox * taper, 0, oz * taper);
+        }
+        return pts;
     }
 
     private static int dens(int n) {
@@ -207,18 +285,23 @@ public final class FxManager {
             Beam b = it.next();
             if (++b.age > b.life) it.remove();
         }
+        for (Iterator<Rift> it = RIFTS.iterator(); it.hasNext(); ) {
+            Rift r = it.next();
+            if (++r.age > r.life) it.remove();
+        }
     }
 
     public static void clear() {
         RINGS.clear();
         BEAMS.clear();
+        RIFTS.clear();
         flash = 0;
     }
 
     // ------------------------------------------------------------------ rendering (additive light geometry)
 
     public static void render(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || (RINGS.isEmpty() && BEAMS.isEmpty())) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || (RINGS.isEmpty() && BEAMS.isEmpty() && RIFTS.isEmpty())) return;
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Vec3 cam = event.getCamera().getPosition();
         PoseStack ps = event.getPoseStack();
@@ -229,11 +312,13 @@ public final class FxManager {
         // pass 1 (alpha-blended): a deep-gold rim so light still reads against Heaven's bright sky
         VertexConsumer rim = buffers.getBuffer(RenderType.debugQuads());
         for (Ring r : RINGS) drawRingRim(rim, m, r, partial);
+        for (Rift r : RIFTS) drawRift(rim, m, r, cam, partial, true);   // the dark wound in the sky
         buffers.endBatch(RenderType.debugQuads());
         // pass 2 (additive): the light itself
         VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
         for (Beam b : BEAMS) drawBeam(vc, m, b, partial);
         for (Ring r : RINGS) drawRing(vc, m, r, partial);
+        for (Rift r : RIFTS) drawRift(vc, m, r, cam, partial, false);  // its burning edges
         buffers.endBatch(RenderType.lightning());
         ps.popPose();
     }
@@ -268,6 +353,48 @@ public final class FxManager {
             vc.addVertex(m, x1, y, z1).setColor(r, g, bl, a0);
             vc.addVertex(m, x0, y, z0).setColor(r, g, bl, a0);
         }
+    }
+
+    /**
+     * A rift opens fast, holds, and seals. Dark pass: a near-black crimson core (alpha-blended so it
+     * shows even against a bright sky). Light pass: a wide crimson glow and a thin white-hot seam.
+     */
+    private static void drawRift(VertexConsumer vc, Matrix4f m, Rift rift, Vec3 cam, float partial, boolean dark) {
+        float t = (rift.age + partial) / rift.life;
+        float open = Math.min(1f, t / 0.12f) * (t > 0.75f ? Math.max(0f, (1f - t) / 0.25f) : 1f);
+        if (open <= 0) return;
+        if (dark) {
+            ribbon(vc, m, rift.pts, cam, rift.width * open, 0x1A0406, 0.92f * open);
+        } else {
+            ribbon(vc, m, rift.pts, cam, rift.width * 3.2f * open, rift.color, 0.35f * open);
+            ribbon(vc, m, rift.pts, cam, rift.width * 1.4f * open, rift.color, 0.7f * open);
+            ribbon(vc, m, rift.pts, cam, rift.width * 0.25f * open, 0xFFF0C8, 0.95f * open);
+        }
+    }
+
+    private static void ribbon(VertexConsumer vc, Matrix4f m, Vec3[] pts, Vec3 cam, float width, int color, float alpha) {
+        int r = (color >> 16) & 255, g = (color >> 8) & 255, b = color & 255, a = (int) (alpha * 255);
+        for (int i = 0; i < pts.length - 1; i++) {
+            Vec3 p0 = pts[i], p1 = pts[i + 1];
+            Vec3 dir = p1.subtract(p0);
+            Vec3 side = dir.cross(p0.subtract(cam)).normalize();
+            float w0 = width * (0.35f + 0.65f * Mth.sin((float) Math.PI * i / (pts.length - 1)));
+            float w1 = width * (0.35f + 0.65f * Mth.sin((float) Math.PI * (i + 1) / (pts.length - 1)));
+            Vec3 a0 = p0.add(side.scale(w0)), b0 = p0.subtract(side.scale(w0));
+            Vec3 a1 = p1.add(side.scale(w1)), b1 = p1.subtract(side.scale(w1));
+            quad2(vc, m, a0, a1, b1, b0, r, g, b, a);
+        }
+    }
+
+    private static void quad2(VertexConsumer vc, Matrix4f m, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, int r, int g, int b, int a) {
+        vc.addVertex(m, (float) p0.x, (float) p0.y, (float) p0.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p1.x, (float) p1.y, (float) p1.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p2.x, (float) p2.y, (float) p2.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p3.x, (float) p3.y, (float) p3.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p3.x, (float) p3.y, (float) p3.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p2.x, (float) p2.y, (float) p2.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p1.x, (float) p1.y, (float) p1.z).setColor(r, g, b, a);
+        vc.addVertex(m, (float) p0.x, (float) p0.y, (float) p0.z).setColor(r, g, b, a);
     }
 
     private static void drawRingRim(VertexConsumer vc, Matrix4f m, Ring ring, float partial) {

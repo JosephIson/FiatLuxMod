@@ -249,7 +249,30 @@ def feather_sprite(variant, size=16):
     return img
 
 
+def shard_sprite(variant, size=8):
+    """A jagged fragment of a broken halo: bright gold edge, darker core, one hot glint."""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    polys = (((1, 1), (6, 2), (4, 7)), ((2, 0), (7, 4), (3, 6), (0, 3)), ((0, 2), (7, 1), (5, 4), (1, 6)))[variant]
+    def inside(px, py):
+        n, c = len(polys), False
+        for k in range(n):
+            (x0, y0), (x1, y1) = polys[k], polys[(k + 1) % n]
+            if (y0 > py) != (y1 > py) and px < (x1 - x0) * (py - y0) / (y1 - y0) + x0:
+                c = not c
+        return c
+    for x in range(size):
+        for y in range(size):
+            if inside(x + 0.5, y + 0.5):
+                edge = not all(inside(x + 0.5 + dx, y + 0.5 + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+                img.putpixel((x, y), (255, 236, 150, 255) if edge else (214, 160, 50, 255))
+    gx, gy = polys[0]
+    img.putpixel((min(size - 1, gx + 1), min(size - 1, gy + 1)), (255, 255, 240, 255))
+    return img
+
+
 def particles():
+    for i in range(3):
+        save(shard_sprite(i), f"particle/halo_shard_{i}.png")
     for i, (pts, sharp) in enumerate(((4, 6), (6, 5), (8, 8), (4, 2))):
         save(star(8, pts, sharp), f"particle/holy_spark_{i}.png")
     for f in range(8):

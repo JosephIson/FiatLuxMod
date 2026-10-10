@@ -65,3 +65,21 @@ EYE_PAINTED = Material("eye_painted", (255, 186, 60), "eye", emissive=True)   # 
 BEARD = Material("beard", (70, 46, 34), "hair")
 LION_NOSE = Material("lion_nose", (70, 44, 40), "skin")
 OX_NOSE = Material("ox_nose", (60, 46, 46), "skin")
+
+# --- the Fallen (Isaiah 14:12, Luke 10:18, Revelation 12:9) --------------------------
+# scorched where the lightning struck: ash-grey flesh cracked with smouldering crimson veins
+ASH_SKIN = Material("ash_skin", (104, 96, 102), "skin")
+ASH_SKIN_SHADE = Material("ash_skin_shade", (78, 70, 78), "skin")
+SCORCHED = Material("scorched", (70, 60, 66), "coal", emissive=True, glow_veins=True, accent=(230, 40, 24))
+RED_EYE = Material("red_eye", (255, 40, 24), "plain", emissive=True)
+TATTER = Material("tatter", (44, 38, 46), "cloth", accent=(120, 26, 30))        # the linen, blackened
+TATTER_SHADE = Material("tatter_shade", (32, 28, 34), "cloth", accent=(100, 20, 24))
+TATTER_TRIM = Material("tatter_trim", (110, 30, 34), "cloth", accent=(60, 14, 16))  # the gold girdle, rusted crimson
+BONE_STRUT = Material("bone_strut", (196, 182, 160), "plain")
+BONE_DARK = Material("bone_dark", (140, 126, 110), "plain")
+MEMBRANE = Material("membrane", (58, 34, 40), "membrane", alpha=236, accent=(170, 30, 30))
+MEMBRANE_DARK = Material("membrane_dark", (40, 24, 30), "membrane", alpha=236, accent=(140, 24, 24))
+BURNT_FEATHER = Material("burnt_feather", (70, 64, 66), "feather", accent=(40, 34, 36))
+HALO_BROKEN = Material("halo_broken", (156, 122, 58), "gold", accent=(90, 64, 30))   # tarnished, no longer lit
+HALO_CRACK = Material("halo_crack", (255, 80, 40), "fire", emissive=True, alpha=220, accent=(160, 20, 10))
+HAIR_ASH = Material("hair_ash", (40, 36, 40), "hair")

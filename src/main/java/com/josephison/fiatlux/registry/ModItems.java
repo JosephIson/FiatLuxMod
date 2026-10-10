@@ -38,6 +38,8 @@ public final class ModItems {
             () -> new DeferredSpawnEggItem(ModEntities.SERAPH, 0xFFC45C, 0xFF6E1E, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> CHERUB_SPAWN_EGG = ITEMS.register("cherub_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.CHERUB, 0x5C3428, 0xFF7820, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> FALLEN_SPAWN_EGG = ITEMS.register("fallen_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.FALLEN, 0x2C262E, 0xC0281C, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> OPHAN_SPAWN_EGG = ITEMS.register("ophan_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.OPHAN, 0xD6E296, 0xF6C43C, new Item.Properties()));
 

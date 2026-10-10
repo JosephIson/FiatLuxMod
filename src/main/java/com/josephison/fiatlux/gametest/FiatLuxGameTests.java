@@ -273,11 +273,55 @@ public final class FiatLuxGameTests {
         cosmos.underworld.lastCleanseDay = server.overworld().getDayTime() / 24000L;
         WorldTicker.startRebellion(server, CosmosData.get(server), cosmos);
         helper.assertTrue(cosmos.rebellionActive, "war in heaven did not begin");
+        helper.assertTrue(!cosmos.rebelIds.isEmpty(), "no rebel host gathered when war broke out");
         WorldTicker.step(server, 1300.0);   // more than one simulated day of war
         helper.assertTrue(!cosmos.rebellionActive, "the rebellion never resolved");
         helper.assertTrue(cosmos.fallenAngels >= fallen0 + 100, "no angels fell: " + (cosmos.fallenAngels - fallen0));
         helper.assertTrue(cosmos.underworld.demons >= demons0 + 100, "the fallen did not reach the Underworld: demons " + demons0 + " -> " + cosmos.underworld.demons + ", cap " + com.josephison.fiatlux.config.FiatLuxConfig.COMMON.maxInfernalPopulation.get());
+        helper.assertTrue(cosmos.rebelIds.isEmpty(), "rebels remain after the Fall");
+        var rebels = com.josephison.fiatlux.world.RebellionWar.loadedRebels(server);
+        helper.assertTrue(rebels.isEmpty(), rebels.size() + " embodied rebels were never cast out");
+        // the war was mustered at world spawn, far from the test plots: clear the field for the next run
+        BlockPos here = helper.absolutePos(BlockPos.ZERO);
+        helper.getLevel().getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(net.minecraft.world.entity.LivingEntity.class),
+                        e -> (e instanceof HeavenlyBeing || e instanceof com.josephison.fiatlux.entity.FallenEntity) && e.distanceToSqr(here.getCenter()) > 200 * 200)
+                .forEach(net.minecraft.world.entity.Entity::discard);
         helper.succeed();
+    }
+
+    /**
+     * A rebel angel cannot die, only fall (Luke 10:18): a killing blow leaves it alive and being cast
+     * out; lightning strikes, it is lifted up, and it is replaced by a fallen one - scorched, bat-winged,
+     * hostile - which plunges and lands (here, with no Underworld loaded, in the same world).
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void rebelAngelsAreCastOut(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
+        double fallen0 = cosmos.fallenAngels;
+        HeavenlyBeing loyal = helper.spawn(ModEntities.ANGEL.get(), new BlockPos(1, 2, 1));
+        HeavenlyBeing rebel = helper.spawn(ModEntities.ANGEL.get(), new BlockPos(3, 2, 3));
+        loyal.setAngelState(new com.josephison.fiatlux.divinity.AngelState(0f, 1f));
+        rebel.setRebel(true);
+        helper.assertTrue(ModTags.isCorrupt(rebel), "a rebel should be counted among the corrupt");
+        helper.assertTrue(!loyal.isAlliedTo(rebel) && !rebel.isAlliedTo(loyal), "the loyal and the rebel should be at war");
+        helper.assertTrue(!ModTags.isCorrupt(loyal), "a loyal angel is not corrupt");
+        rebel.hurt(helper.getLevel().damageSources().magic(), 10_000f);
+        helper.assertTrue(rebel.isAlive() && rebel.isBeingCastOut(), "a defeated rebel should be cast out, not killed");
+        helper.assertTrue(cosmos.fallenAngels >= fallen0 + 1, "the cast-out rebel was not counted among the fallen");
+        loyal.discard();
+        helper.runAfterDelay(HeavenlyBeing.STRIKE_TICKS + 10, () -> {
+            helper.assertTrue(rebel.isRemoved(), "the rebel angel was never transformed");
+            var fallen = helper.getLevel().getEntitiesOfClass(com.josephison.fiatlux.entity.FallenEntity.class,
+                    new net.minecraft.world.phys.AABB(helper.absolutePos(new BlockPos(3, 2, 3))).inflate(16));
+            helper.assertTrue(!fallen.isEmpty(), "no fallen one appeared where the rebel was cast out");
+            com.josephison.fiatlux.entity.FallenEntity one = fallen.getFirst();
+            helper.assertTrue(ModTags.isCorrupt(one), "the fallen should be in #fiatlux:corrupt");
+            helper.succeedWhen(() -> {
+                helper.assertTrue(!one.isPlunging(), "the fallen one is still plunging");
+                fallen.forEach(net.minecraft.world.entity.Entity::discard);
+            });
+        });
     }
 
     /** The Flaming Sword slays the corrupt in a single stroke. */

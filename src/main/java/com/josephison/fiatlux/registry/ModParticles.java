@@ -23,5 +23,10 @@ public final class ModParticles {
     /** A large soft glow used for radiance bursts and auras. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RADIANCE = PARTICLES.register("radiance", () -> new SimpleParticleType(true));
 
+    /** A tumbling shard of a shattered halo (the Fall). */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> HALO_SHARD = PARTICLES.register("halo_shard", () -> new SimpleParticleType(false));
+    /** A feather torn from a falling angel's wing, singed dark. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> TORN_FEATHER = PARTICLES.register("torn_feather", () -> new SimpleParticleType(false));
+
     private ModParticles() {}
 }

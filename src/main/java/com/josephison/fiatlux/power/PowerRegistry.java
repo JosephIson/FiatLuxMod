@@ -4,6 +4,7 @@ import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.power.powers.AscendPower;
 import com.josephison.fiatlux.power.powers.BlessPower;
 import com.josephison.fiatlux.power.powers.BreathOfLifePower;
+import com.josephison.fiatlux.power.powers.CastOutPower;
 import com.josephison.fiatlux.power.powers.CosmicSparkPower;
 import com.josephison.fiatlux.power.powers.PlanetaryGenesisPower;
 import com.josephison.fiatlux.power.powers.VisitWorldPower;
@@ -49,6 +50,8 @@ public final class PowerRegistry {
     public static final DeferredHolder<AbstractDivinePower, BreathOfLifePower> BREATH_OF_LIFE = POWERS.register("breath_of_life", BreathOfLifePower::new);
     // Walk upon a created world
     public static final DeferredHolder<AbstractDivinePower, VisitWorldPower> VISIT_WORLD = POWERS.register("visit_world", VisitWorldPower::new);
+    // Revelation 12:9 - "he was cast out into the earth, and his angels were cast out with him"
+    public static final DeferredHolder<AbstractDivinePower, CastOutPower> CAST_OUT = POWERS.register("cast_out", CastOutPower::new);
     // Hebrews 1:14 - "ministering spirits, sent forth to minister"
     public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SEND_ANGEL = POWERS.register("send_angel",
             () -> new SummonHostPower(40f, 0, 0xFFF4EBC8, ModEntities.ANGEL::get));

@@ -183,6 +183,7 @@ public final class WorldTicker {
         cosmos.rebellionProgress = 0;
         gov.record(server, "Heaven", "rebellion", "There was war in heaven: the proud among the Host rose against the throne.");
         globalFx(server, FxKind.GLORY_FLASH, 0xFFFF4A2A);
+        RebellionWar.begin(server, cosmos);
         cosmos.setDirty();
     }
 
@@ -198,6 +199,7 @@ public final class WorldTicker {
         gov.record(server, "Heaven", "the_fall", "The rebels were cast out: " + (long) fallen
                 + " fallen ones plunged through the sky-fracture into the Underworld.");
         globalFx(server, FxKind.CELESTIAL_PILLAR, 0xFFFF6A2A);
+        RebellionWar.castOutAll(server, 6);   // any rebels still standing are struck down with them
         cosmos.setDirty();
     }
 

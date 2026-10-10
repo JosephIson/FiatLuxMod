@@ -46,6 +46,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.DoubleValue rebellionChancePerCheck;
         public final ModConfigSpec.DoubleValue prideGrowthRate;
         public final ModConfigSpec.DoubleValue corruptionDecay;
+        public final ModConfigSpec.IntValue maxEmbodiedRebels;
         // underworld
         public final ModConfigSpec.DoubleValue underworldTechRate;
         public final ModConfigSpec.DoubleValue soulPowerPerSoul;
@@ -125,6 +126,8 @@ public final class FiatLuxConfig {
             rebellionChancePerCheck = b.defineInRange("rebellionChancePerCheck", 0.01, 0.0, 1.0);
             prideGrowthRate = b.defineInRange("prideGrowthRate", 0.001, 0.0, 1.0);
             corruptionDecay = b.comment("Fraction of world corruption that fades each step.").defineInRange("corruptionDecay", 0.0005, 0.0, 1.0);
+            maxEmbodiedRebels = b.comment("Most rebel angels that gather in the world when war breaks out in heaven (0 = the war stays abstract).")
+                    .defineInRange("maxEmbodiedRebels", 9, 0, 64);
             b.pop();
 
             b.comment("The Underworld: infernal population, soul power and technological eras").push("underworld");

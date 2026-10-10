@@ -45,7 +45,8 @@ public final class ModTagProviders {
             tag(ModTags.HEAVENLY_HOST).add(ModEntities.ANGEL.get(), ModEntities.SERAPH.get(), ModEntities.CHERUB.get(), ModEntities.OPHAN.get());
             tag(ModTags.CORRUPT).addTag(EntityTypeTags.UNDEAD).add(EntityType.BLAZE, EntityType.GHAST, EntityType.VEX,
                     EntityType.EVOKER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH, EntityType.PIGLIN_BRUTE,
-                    EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.SILVERFISH, EntityType.MAGMA_CUBE);
+                    EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.SILVERFISH, EntityType.MAGMA_CUBE)
+                    .add(ModEntities.FALLEN.get());
         }
     }
 }

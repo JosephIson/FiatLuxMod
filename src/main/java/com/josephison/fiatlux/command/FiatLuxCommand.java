@@ -149,6 +149,11 @@ public final class FiatLuxCommand {
                             WorldTicker.theFall(c.getSource().getServer(), CosmosData.get(c.getSource().getServer()), CosmicExpanseSavedData.get(c.getSource().getServer()));
                             return 1;
                         }))
+                        .then(Commands.literal("castout").executes(c -> {
+                            int n = com.josephison.fiatlux.world.RebellionWar.castOutAll(c.getSource().getServer(), 6);
+                            c.getSource().sendSuccess(() -> Component.literal(n + " rebel angels are cast out of heaven."), true);
+                            return n;
+                        }))
                         .then(Commands.literal("cleanse").executes(c -> {
                             WorldTicker.divineCleanse(c.getSource().getServer(), CosmosData.get(c.getSource().getServer()), CosmicExpanseSavedData.get(c.getSource().getServer()),
                                     c.getSource().getServer().overworld().getDayTime() / 24000L);

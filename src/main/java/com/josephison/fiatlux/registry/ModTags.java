@@ -16,6 +16,7 @@ public final class ModTags {
     private ModTags() {}
 
     public static boolean isCorrupt(LivingEntity e) {
-        return e.getType().is(CORRUPT) || Divinity.alignment(e).isCorrupt();
+        return e.getType().is(CORRUPT) || Divinity.alignment(e).isCorrupt()
+                || e instanceof com.josephison.fiatlux.entity.HeavenlyBeing being && being.isRebel();
     }
 }

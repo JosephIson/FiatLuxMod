@@ -3,6 +3,7 @@ package com.josephison.fiatlux.registry;
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.entity.AngelEntity;
 import com.josephison.fiatlux.entity.CherubEntity;
+import com.josephison.fiatlux.entity.FallenEntity;
 import com.josephison.fiatlux.entity.OphanEntity;
 import com.josephison.fiatlux.entity.SeraphEntity;
 import com.josephison.fiatlux.entity.StationedSwordEntity;
@@ -27,6 +28,9 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<OphanEntity>> OPHAN = ENTITIES.register("ophan",
             () -> EntityType.Builder.of(OphanEntity::new, MobCategory.CREATURE).sized(2.4f, 3.4f).fireImmune()
                     .clientTrackingRange(12).build(FiatLux.id("ophan").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<FallenEntity>> FALLEN = ENTITIES.register("fallen",
+            () -> EntityType.Builder.of(FallenEntity::new, MobCategory.MONSTER).sized(0.8f, 2.4f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("fallen").toString()));
     public static final DeferredHolder<EntityType<?>, EntityType<StationedSwordEntity>> STATIONED_SWORD = ENTITIES.register("stationed_flaming_sword",
             () -> EntityType.Builder.<StationedSwordEntity>of(StationedSwordEntity::new, MobCategory.MISC).sized(0.8f, 2.6f).fireImmune()
                     .clientTrackingRange(10).updateInterval(20).build(FiatLux.id("stationed_flaming_sword").toString()));

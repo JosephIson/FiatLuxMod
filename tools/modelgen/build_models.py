@@ -25,6 +25,7 @@ MODELS = {
     "seraph": ("entity", "seraph", 250, 70),    # Tier 3 - Isaiah 6:2
     "cherub": ("entity", "cherub", 250, 70),    # Tier 3 - Ezekiel 1:5-13, 10:12-14
     "ophan": ("entity", "ophan", 250, 70),      # Tier 3 - Ezekiel 1:15-21, 10:9-13
+    "fallen": ("entity", "fallen", 120, 40),    # Tier 2 - Isaiah 14:12, Luke 10:18, Rev 12:9
 }
 
 

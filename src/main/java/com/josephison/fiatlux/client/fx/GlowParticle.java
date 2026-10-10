@@ -15,7 +15,7 @@ import net.minecraft.util.Mth;
  * curve, colour and blend. All styles except feathers are full-bright and additively blended.
  */
 public class GlowParticle extends TextureSheetParticle {
-    public enum Style { SPARK, FLAME, MOTE, FEATHER, EMBER, RADIANCE }
+    public enum Style { SPARK, FLAME, MOTE, FEATHER, EMBER, RADIANCE, SHARD, TORN_FEATHER }
 
     private final SpriteSet sprites;
     private final Style style;
@@ -77,6 +77,27 @@ public class GlowParticle extends TextureSheetParticle {
                 setColor(1f, 0.45f + random.nextFloat() * 0.35f, 0.12f);
                 spin = 0f;
             }
+            case SHARD -> {   // a tumbling fragment of a shattered halo, falling and glinting
+                lifetime = 40 + random.nextInt(30);
+                baseSize = 0.08f + random.nextFloat() * 0.08f;
+                gravity = 0.05f;
+                friction = 0.96f;
+                hasPhysics = true;
+                float g = 0.75f + random.nextFloat() * 0.25f;
+                setColor(1f, g, 0.35f + random.nextFloat() * 0.25f);
+                spin = (random.nextFloat() - 0.5f) * 0.5f;
+                roll = random.nextFloat() * Mth.TWO_PI;
+            }
+            case TORN_FEATHER -> {   // torn from the wing and singed: grey to charred black
+                lifetime = 70 + random.nextInt(60);
+                baseSize = 0.11f + random.nextFloat() * 0.07f;
+                gravity = 0.008f;
+                friction = 0.95f;
+                float c = 0.2f + random.nextFloat() * 0.55f;
+                setColor(c, c * 0.92f, c * 0.9f);
+                spin = (random.nextFloat() - 0.5f) * 0.16f;
+                roll = random.nextFloat() * Mth.TWO_PI;
+            }
             default -> { // RADIANCE
                 lifetime = 20 + random.nextInt(16);
                 baseSize = 0.5f + random.nextFloat() * 0.5f;
@@ -100,7 +121,7 @@ public class GlowParticle extends TextureSheetParticle {
         float t = age / (float) lifetime;
         switch (style) {
             case FLAME -> setSpriteFromAge(sprites);
-            case FEATHER -> {
+            case FEATHER, TORN_FEATHER -> {
                 // swaying fall
                 xd += Mth.sin(age * 0.18f + phase) * 0.004f;
                 zd += Mth.cos(age * 0.15f + phase) * 0.004f;
@@ -116,7 +137,7 @@ public class GlowParticle extends TextureSheetParticle {
         alpha = switch (style) {
             case SPARK -> (1f - t) * (0.6f + 0.4f * Mth.sin(age * 1.3f + phase)); // twinkle
             case MOTE -> Mth.sin(t * Mth.PI) * (0.55f + 0.45f * Mth.sin(age * 0.2f + phase));
-            case FEATHER -> t < 0.8f ? 1f : (1f - t) * 5f;
+            case FEATHER, TORN_FEATHER, SHARD -> t < 0.8f ? 1f : (1f - t) * 5f;
             case EMBER -> (1f - t) * (0.7f + 0.3f * random.nextFloat());
             case RADIANCE -> Mth.sin(t * Mth.PI) * 0.45f;
             default -> 1f - t * t;
@@ -136,7 +157,9 @@ public class GlowParticle extends TextureSheetParticle {
 
     @Override
     public ParticleRenderType getRenderType() {
-        return style == Style.FEATHER ? ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT : FxRenderTypes.ADDITIVE_GLOW;
+        // feathers and shards are solid things: alpha-blended so they read against Heaven's bright sky
+        return style == Style.FEATHER || style == Style.TORN_FEATHER || style == Style.SHARD
+                ? ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT : FxRenderTypes.ADDITIVE_GLOW;
     }
 
     @Override

@@ -1,7 +1,9 @@
-// 1.21.1	2026-10-10T21:00:41.291623277	Particle Descriptions
+// 1.21.1	2026-10-10T22:38:30.486208495	Particle Descriptions
 4c186514ad2a0c62803dc4f65795f1319d4fa0e4 assets/fiatlux/particles/divine_flame.json
 36f395e7213920c73ee9922fcfb6fa0deaa7b140 assets/fiatlux/particles/ember.json
 2c29c7f3f3ec07f7f036a4f2346958de8fc662e8 assets/fiatlux/particles/feather.json
+bf3eaf3bfe361b67ecb66edd784ac8eefd83b7f8 assets/fiatlux/particles/halo_shard.json
 c5f9b712536ce3d3b9155e0607c01c46b48ee020 assets/fiatlux/particles/holy_spark.json
 62cbf6f1f457d5648820d34de9ce398bd138c39a assets/fiatlux/particles/light_mote.json
 c02e577b0514980d52bfa9cdedd848e4b6ce2946 assets/fiatlux/particles/radiance.json
+2c29c7f3f3ec07f7f036a4f2346958de8fc662e8 assets/fiatlux/particles/torn_feather.json

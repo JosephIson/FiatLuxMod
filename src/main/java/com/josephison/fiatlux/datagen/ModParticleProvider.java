@@ -19,5 +19,7 @@ public class ModParticleProvider extends ParticleDescriptionProvider {
         spriteSet(ModParticles.FEATHER.get(), FiatLux.id("feather"), 3, false);
         spriteSet(ModParticles.EMBER.get(), FiatLux.id("ember"), 3, false);
         spriteSet(ModParticles.RADIANCE.get(), FiatLux.id("radiance"), 2, false);
+        spriteSet(ModParticles.HALO_SHARD.get(), FiatLux.id("halo_shard"), 3, false);
+        spriteSet(ModParticles.TORN_FEATHER.get(), FiatLux.id("feather"), 3, false);
     }
 }

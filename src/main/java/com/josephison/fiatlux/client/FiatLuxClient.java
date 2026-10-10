@@ -55,6 +55,7 @@ public class FiatLuxClient {
         e.registerEntityRenderer(ModEntities.CHERUB.get(), ctx -> new HostRenderer<>(ctx, "cherub", 1.45f, 1.0f, true));
         e.registerEntityRenderer(ModEntities.OPHAN.get(), ctx -> new HostRenderer<>(ctx, "ophan", 1.5f, 1.2f, false));
         e.registerEntityRenderer(ModEntities.STATIONED_SWORD.get(), StationedSwordRenderer::new);
+        e.registerEntityRenderer(ModEntities.FALLEN.get(), com.josephison.fiatlux.client.render.FallenRenderer::new);
     }
 
     private static void particles(RegisterParticleProvidersEvent e) {
@@ -64,6 +65,8 @@ public class FiatLuxClient {
         e.registerSpriteSet(ModParticles.FEATHER.get(), s -> new GlowParticle.Provider(s, GlowParticle.Style.FEATHER));
         e.registerSpriteSet(ModParticles.EMBER.get(), s -> new GlowParticle.Provider(s, GlowParticle.Style.EMBER));
         e.registerSpriteSet(ModParticles.RADIANCE.get(), s -> new GlowParticle.Provider(s, GlowParticle.Style.RADIANCE));
+        e.registerSpriteSet(ModParticles.HALO_SHARD.get(), s -> new GlowParticle.Provider(s, GlowParticle.Style.SHARD));
+        e.registerSpriteSet(ModParticles.TORN_FEATHER.get(), s -> new GlowParticle.Provider(s, GlowParticle.Style.TORN_FEATHER));
     }
 
     private static void keys(RegisterKeyMappingsEvent e) {
