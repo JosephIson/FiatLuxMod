@@ -1,0 +1,17 @@
+{
+  "values": [
+    "#minecraft:undead",
+    "minecraft:blaze",
+    "minecraft:ghast",
+    "minecraft:vex",
+    "minecraft:evoker",
+    "minecraft:vindicator",
+    "minecraft:illusioner",
+    "minecraft:witch",
+    "minecraft:piglin_brute",
+    "minecraft:enderman",
+    "minecraft:endermite",
+    "minecraft:silverfish",
+    "minecraft:magma_cube"
+  ]
+}

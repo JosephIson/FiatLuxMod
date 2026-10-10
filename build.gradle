@@ -38,6 +38,10 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Optional: ./gradlew runClient -PquickPlayWorld=<save name> boots straight into a world
+            if (project.hasProperty('quickPlayWorld')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlayWorld').toString()
+            }
         }
 
         server {

@@ -1,0 +1,85 @@
+{
+  "entity.cherub.wings": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "entity.ender_dragon.flap"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.entity.cherub.wings"
+  },
+  "entity.host.arrive": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.beacon.activate"
+      },
+      {
+        "type": "event",
+        "name": "item.trident.riptide_3"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.entity.host.arrive"
+  },
+  "entity.ophan.wheel": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.conduit.ambient"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.entity.ophan.wheel"
+  },
+  "entity.seraph.holy": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.bell.resonate"
+      },
+      {
+        "type": "event",
+        "name": "block.beacon.power_select"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.entity.seraph.holy"
+  },
+  "item.flaming_sword.wave": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "item.firecharge.use"
+      },
+      {
+        "type": "event",
+        "name": "entity.blaze.shoot"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.item.flaming_sword.wave"
+  },
+  "power.fiat_lux": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "block.beacon.activate"
+      },
+      {
+        "type": "event",
+        "name": "block.amethyst_block.resonate"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.power.fiat_lux"
+  },
+  "power.smite": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "entity.lightning_bolt.thunder"
+      },
+      {
+        "type": "event",
+        "name": "block.beacon.power_select"
+      }
+    ],
+    "subtitle": "subtitles.fiatlux.power.smite"
+  }
+}

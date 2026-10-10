@@ -1,0 +1,50 @@
+package com.josephison.fiatlux.registry;
+
+import com.josephison.fiatlux.FiatLux;
+import com.josephison.fiatlux.weapon.DivineScepterItem;
+import com.josephison.fiatlux.weapon.FlamingSwordItem;
+import com.josephison.fiatlux.weapon.WeaponTraits;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.common.SimpleTier;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+public final class ModItems {
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FiatLux.MODID);
+
+    /** Tier of the divine arsenal: unrivalled sharpness, mended with gold. */
+    public static final SimpleTier DIVINE = new SimpleTier(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 5000, 12f, 6f, 30,
+            () -> Ingredient.of(Items.GOLD_BLOCK));
+
+    public static final DeferredItem<FlamingSwordItem> FLAMING_SWORD = ITEMS.register("flaming_sword_of_cherubim",
+            () -> new FlamingSwordItem(DIVINE, new Item.Properties().fireResistant().rarity(Rarity.EPIC)
+                    .attributes(SwordItem.createAttributes(DIVINE, 8, -2.2f))
+                    .component(ModDataComponents.WEAPON_TRAITS.get(), WeaponTraits.FRESH)));
+    public static final DeferredItem<DivineScepterItem> DIVINE_SCEPTER = ITEMS.register("divine_scepter",
+            () -> new DivineScepterItem(new Item.Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC)));
+
+    public static final DeferredItem<BlockItem> LUX_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.LUX_BLOCK);
+    public static final DeferredItem<BlockItem> GOLDEN_STREET = ITEMS.registerSimpleBlockItem(ModBlocks.GOLDEN_STREET);
+    public static final DeferredItem<BlockItem> JASPER = ITEMS.registerSimpleBlockItem(ModBlocks.JASPER);
+    public static final DeferredItem<BlockItem> CLOUDSTONE = ITEMS.registerSimpleBlockItem(ModBlocks.CLOUDSTONE);
+    public static final DeferredItem<BlockItem> CELESTIAL_CRYSTAL = ITEMS.registerSimpleBlockItem(ModBlocks.CELESTIAL_CRYSTAL);
+    public static final DeferredItem<BlockItem> PEARL = ITEMS.registerSimpleBlockItem(ModBlocks.PEARL);
+
+    public static final DeferredItem<DeferredSpawnEggItem> ANGEL_SPAWN_EGG = ITEMS.register("angel_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.ANGEL, 0xF4F2E8, 0xF6C43C, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> SERAPH_SPAWN_EGG = ITEMS.register("seraph_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.SERAPH, 0xFFC45C, 0xFF6E1E, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> CHERUB_SPAWN_EGG = ITEMS.register("cherub_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.CHERUB, 0x5C3428, 0xFF7820, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> OPHAN_SPAWN_EGG = ITEMS.register("ophan_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.OPHAN, 0xD6E296, 0xF6C43C, new Item.Properties()));
+
+    private ModItems() {}
+}

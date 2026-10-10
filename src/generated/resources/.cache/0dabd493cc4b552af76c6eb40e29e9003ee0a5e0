@@ -1,0 +1,4 @@
+// 1.21.1	2026-10-10T21:00:41.28913118	Tags for minecraft:block mod id fiatlux
+bd6a3c787ba79c6ac6910ee2d4ec2fb0e8101c7b data/minecraft/tags/block/mineable/pickaxe.json
+08ee4c78d29000e6da662de461f2bea28e9df0c0 data/minecraft/tags/block/mineable/shovel.json
+279dfc791e5a545c2fbf73a00ad76adeafcc0c9b data/minecraft/tags/block/needs_iron_tool.json

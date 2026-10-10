@@ -27,3 +27,5 @@ repo
 # python
 __pycache__/
 *.pyc
+# local dev worlds/screens
+run/

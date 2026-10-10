@@ -1,0 +1,12 @@
+{
+  "type": "fiatlux:heaven",
+  "generator": {
+    "type": "fiatlux:heaven",
+    "street_level": 120,
+    "street_spacing": 48,
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "fiatlux:heaven"
+    }
+  }
+}

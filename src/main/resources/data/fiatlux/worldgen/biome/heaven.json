@@ -1,0 +1,33 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.75,
+  "downfall": 0.0,
+  "effects": {
+    "sky_color": 16775900,
+    "fog_color": 16771286,
+    "water_color": 9425151,
+    "water_fog_color": 13424639,
+    "grass_color": 12776332,
+    "foliage_color": 13824648,
+    "particle": {
+      "options": { "type": "fiatlux:light_mote" },
+      "probability": 0.0045
+    },
+    "mood_sound": {
+      "sound": "minecraft:block.amethyst_block.chime",
+      "tick_delay": 3000,
+      "block_search_extent": 8,
+      "offset": 2.0
+    },
+    "music": {
+      "sound": "minecraft:music.overworld.cherry_grove",
+      "min_delay": 1200,
+      "max_delay": 6000,
+      "replace_current_music": false
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}
