@@ -4,8 +4,8 @@ import com.josephison.fiatlux.client.ClientDivinity;
 import com.josephison.fiatlux.config.PlayMode;
 import com.josephison.fiatlux.network.SelectPowerPayload;
 import com.josephison.fiatlux.network.SyncDivinityPayload;
-import com.josephison.fiatlux.power.DivinePower;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.AbstractDivinePower;
+import com.josephison.fiatlux.power.PowerRegistry;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -24,7 +24,7 @@ public class PowerWheelScreen extends Screen {
 
     public PowerWheelScreen() {
         super(Component.translatable("screen.fiatlux.power_wheel"));
-        powers.addAll(ModPowers.REGISTRY.keySet());
+        powers.addAll(PowerRegistry.REGISTRY.keySet());
         powers.sort(null);
     }
 
@@ -48,7 +48,7 @@ public class PowerWheelScreen extends Screen {
         }
         SyncDivinityPayload s = ClientDivinity.get();
         for (int i = 0; i < powers.size(); i++) {
-            DivinePower p = ModPowers.REGISTRY.get(powers.get(i));
+            AbstractDivinePower p = PowerRegistry.REGISTRY.get(powers.get(i));
             if (p == null) continue;
             double a = Math.PI * 2 * i / powers.size() - Math.PI / 2;
             int px = cx + (int) (Math.cos(a) * radius), py = cy + (int) (Math.sin(a) * radius);
@@ -66,7 +66,7 @@ public class PowerWheelScreen extends Screen {
         }
         // centre: the hovered (or selected) power's name, verse-like description and cost
         ResourceLocation focus = hovered >= 0 ? powers.get(hovered) : s.state().selectedPower();
-        DivinePower fp = ModPowers.REGISTRY.get(focus);
+        AbstractDivinePower fp = PowerRegistry.REGISTRY.get(focus);
         if (fp != null) {
             g.drawCenteredString(font, fp.name().copy().withColor(fp.color()), cx, cy - 14, 0xFFFFFFFF);
             List<net.minecraft.util.FormattedCharSequence> lines = font.split(fp.description(), 150);

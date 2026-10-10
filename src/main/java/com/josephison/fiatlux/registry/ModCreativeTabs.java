@@ -14,7 +14,10 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> FIAT_LUX = TABS.register("fiat_lux", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.fiatlux"))
             .icon(() -> new ItemStack(ModItems.DIVINE_SCEPTER.get()))
-            .displayItems((params, out) -> ModItems.ITEMS.getEntries().forEach(e -> out.accept(e.get())))
+            .displayItems((params, out) -> {
+                com.josephison.fiatlux.weapon.DivineWeaponRegistry.WEAPONS.getEntries().forEach(e -> out.accept(e.get()));
+                ModItems.ITEMS.getEntries().forEach(e -> out.accept(e.get()));
+            })
             .build());
 
     private ModCreativeTabs() {}

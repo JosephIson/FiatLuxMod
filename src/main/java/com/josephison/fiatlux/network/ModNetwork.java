@@ -1,7 +1,7 @@
 package com.josephison.fiatlux.network;
 
 import com.josephison.fiatlux.divinity.Divinity;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.PowerRegistry;
 import com.josephison.fiatlux.power.PowerCasting;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -17,13 +17,15 @@ public final class ModNetwork {
             if (ctx.player() instanceof ServerPlayer sp) PowerCasting.cast(sp, p.power());
         });
         r.playToServer(SelectPowerPayload.TYPE, SelectPowerPayload.STREAM_CODEC, (p, ctx) -> {
-            if (ctx.player() instanceof ServerPlayer sp && ModPowers.REGISTRY.containsKey(p.power())) {
+            if (ctx.player() instanceof ServerPlayer sp && PowerRegistry.REGISTRY.containsKey(p.power())) {
                 Divinity.set(sp, Divinity.get(sp).withSelectedPower(p.power()));
                 Divinity.sync(sp);
             }
         });
         r.playToClient(SyncDivinityPayload.TYPE, SyncDivinityPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onSync(p));
+        r.playToClient(SyncCosmosPayload.TYPE, SyncCosmosPayload.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onCosmos(p));
         r.playToClient(FxPayload.TYPE, FxPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onFx(p));
     }

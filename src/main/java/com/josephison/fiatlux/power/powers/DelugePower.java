@@ -3,7 +3,7 @@ package com.josephison.fiatlux.power.powers;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.world.CosmosData;
 import net.minecraft.core.BlockPos;
@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
  * opened." (Genesis 7:11) Floods the land around the gaze up to a rising waterline, column by
  * column through the creation queue, under a sky of storm.
  */
-public class DelugePower extends DivinePower {
+public class DelugePower extends AbstractDivinePower {
     private static final int RADIUS = 28;
     private static final int RISE = 6;
 

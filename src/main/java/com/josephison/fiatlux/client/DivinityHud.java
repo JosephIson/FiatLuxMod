@@ -3,8 +3,8 @@ package com.josephison.fiatlux.client;
 import com.josephison.fiatlux.config.FiatLuxConfig;
 import com.josephison.fiatlux.config.PlayMode;
 import com.josephison.fiatlux.network.SyncDivinityPayload;
-import com.josephison.fiatlux.power.DivinePower;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.AbstractDivinePower;
+import com.josephison.fiatlux.power.PowerRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -36,7 +36,7 @@ public final class DivinityHud {
         String mode = "hud.fiatlux.mode." + s.mode().getSerializedName();
         g.drawString(font, Component.translatable("hud.fiatlux.glory", s.glory(), s.tier()).append(" · ").append(Component.translatable(mode)),
                 x, y + 19, 0xFFE8D7B0, true);
-        DivinePower p = ModPowers.REGISTRY.get(s.state().selectedPower());
+        AbstractDivinePower p = PowerRegistry.REGISTRY.get(s.state().selectedPower());
         if (p != null) {
             boolean locked = s.mode() == PlayMode.ASCENSION && p.tier() > s.tier();
             Component name = p.name().copy().withColor(locked ? 0xFF8A8478 : p.color());

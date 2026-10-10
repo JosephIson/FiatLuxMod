@@ -1,5 +1,6 @@
 package com.josephison.fiatlux.datagen;
 
+import com.josephison.fiatlux.weapon.DivineWeaponRegistry;
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.registry.ModBlocks;
 import com.josephison.fiatlux.registry.ModEffects;
@@ -18,7 +19,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("itemGroup.fiatlux", "Fiat Lux");
 
         // --- items & blocks
-        add(ModItems.FLAMING_SWORD.get(), "Flaming Sword of the Cherubim");
+        add(DivineWeaponRegistry.FLAMING_SWORD.get(), "Flaming Sword of the Cherubim");
         add("item.fiatlux.flaming_sword_of_cherubim.verse", "\"...a flaming sword which turned every way\" - Genesis 3:24");
         add(ModItems.DIVINE_SCEPTER.get(), "Scepter of the Creator");
         add("item.fiatlux.divine_scepter.verse", "\"And God said, Let there be light\" - Genesis 1:3");
@@ -36,7 +37,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("tooltip.fiatlux.kindled", "Holy fire: %s / 5");
         add("tooltip.fiatlux.smitten", "Corrupt beings smitten: %s");
         add("tooltip.fiatlux.flaming_sword.use", "Use: wave of holy fire. Sneak-use on ground: station it as a guardian.");
-        add("tooltip.fiatlux.scepter.use", "Use: speak the selected power. Sneak-use: next power. [V] power wheel, [R] cast.");
+        add("tooltip.fiatlux.scepter.use", "Use: speak the selected power. Sneak-use: next power. [R] power wheel, [G] cast.");
 
         // --- the Heavenly Host
         add(ModEntities.ANGEL.get(), "Angel");
@@ -53,6 +54,9 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModEffects.SPIRIT_FILLED.get(), "Spirit-Filled");
 
         // --- powers
+        power("cosmic_spark", "Cosmic Spark", "\"In the beginning God created the heaven and the earth.\" The Big Bang: galaxies are born. (Gen 1:1)");
+        power("planetary_genesis", "Planetary Genesis", "Forms a new world and sets it in its orbit around the throne. (Gen 1:14-16)");
+        power("breath_of_life", "Breath of Life", "\"...breathed into his nostrils the breath of life; and man became a living soul.\" (Gen 2:7)");
         power("fiat_lux", "Fiat Lux", "\"Let there be light: and there was light.\" Floods the darkness with unseen light. (Gen 1:3)");
         power("evening_and_morning", "Evening and Morning", "Brings the next dusk or dawn. \"And the evening and the morning were the first day.\" (Gen 1:5)");
         power("bless", "Bless", "\"The LORD bless thee, and keep thee.\" Blesses the creature you behold, or yourself. (Num 6:24)");
@@ -72,6 +76,19 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.exhausted", "Your Divine Essence must be renewed.");
         add("message.fiatlux.heaven_closed", "The gates of Heaven are closed to pilgrims in this world.");
         add("chat.fiatlux.chronicle", "The Chronicle: %s %s");
+        add("message.fiatlux.no_universe", "The void is without form: speak the Cosmic Spark first.");
+        add("message.fiatlux.planet_formed", "%s is formed: a %s world, set in its orbit.");
+        add("message.fiatlux.no_lifeless_world", "There is no habitable world still waiting for life.");
+        add("planet_type.fiatlux.earthlike", "Earth-like");
+        add("planet_type.fiatlux.volcanic", "volcanic");
+        add("planet_type.fiatlux.barren_moon", "barren moon");
+        add("planet_type.fiatlux.gas_giant", "gas giant");
+        add("planet_type.fiatlux.crystalline", "crystalline");
+        add("command.fiatlux.cosmos.header", "--- The Cosmic Expanse ---");
+        add("command.fiatlux.life", "Life is breathed upon that world.");
+        add("command.fiatlux.life.fail", "That world cannot receive life (unknown, uninhabitable, or already alive).");
+        add("command.fiatlux.planet.bad_type", "Unknown world type: %s");
+        add("command.fiatlux.planet.full", "The cosmos holds as many worlds as this server allows (maxPlanets).");
         add("command.fiatlux.cast", "Cast %s: %s");
         add("command.fiatlux.undo", "Your last act is being undone.");
         add("command.fiatlux.undo.none", "There is nothing to undo.");
@@ -109,7 +126,8 @@ public class ModLanguageProvider extends LanguageProvider {
         // --- configuration screen
         add("fiatlux.configuration.title", "Fiat Lux Configuration");
         String[][] sections = {{"divinity", "Divinity"}, {"creation", "Creation Engine"}, {"heaven", "Heaven"}, {"host", "Heavenly Host & Weapons"},
-                {"fx", "Visual Effects"}, {"sky", "Heaven Sky"}, {"hud", "HUD"}, {"multiplayer", "Multiplayer"}};
+                {"fx", "Visual Effects"}, {"simulation", "Simulation Engine"}, {"cosmos", "The Cosmic Expanse"},
+                {"civilization", "Mortal Civilisation & Faith"}, {"rebellion", "Angelic Rebellion"}, {"underworld", "The Underworld"}, {"sky", "Heaven Sky"}, {"hud", "HUD"}, {"multiplayer", "Multiplayer"}};
         for (String[] s : sections) add("fiatlux.configuration." + s[0], s[1]);
         String[][] values = {
                 {"defaultPlayMode", "Default Play Mode"}, {"maxEssence", "Maximum Divine Essence"}, {"essenceRegenPerSecond", "Essence Regeneration / s"},
@@ -121,7 +139,17 @@ public class ModLanguageProvider extends LanguageProvider {
                 {"screenFlashes", "Screen Flashes"}, {"screenFlashStrength", "Screen Flash Strength"}, {"hostAuras", "Host Radiance Auras"},
                 {"heavenSkybox", "Custom Heaven Sky"}, {"godRayCount", "God Rays"}, {"heavenVignette", "Heaven Vignette"},
                 {"showHud", "Show HUD"}, {"hudX", "HUD X"}, {"hudY", "HUD Y"}, {"godPermissionLevel", "God Permission Level"},
-                {"pilgrimsCanEnterHeaven", "Pilgrims May Enter Heaven"}, {"announceChronicle", "Announce the Chronicle"}};
+                {"pilgrimsCanEnterHeaven", "Pilgrims May Enter Heaven"}, {"announceChronicle", "Announce the Chronicle"},
+                {"simulationEnabled", "Simulation Enabled"}, {"simulationSpeed", "Simulation Speed"}, {"cosmicStepInterval", "Ticks per Simulation Step"},
+                {"planetsPerStep", "Planets per Step"}, {"cosmosSyncInterval", "Sky Sync Interval"}, {"maxPlanets", "Maximum Worlds"},
+                {"orbitSpeedMultiplier", "Orbit Speed"}, {"bigBangGalaxies", "Galaxies Born of the Big Bang"},
+                {"populationGrowthRate", "Population Growth"}, {"faithPerBeliever", "Faith per Believer"}, {"gloryPerFaith", "Glory per Faith"},
+                {"sinRate", "Sin Rate"}, {"mortalEraProgressRate", "Mortal Era Progress"}, {"rebellionEnabled", "Rebellion Enabled"},
+                {"rebellionCorruptionThreshold", "Rebellion Corruption Threshold"}, {"rebellionChancePerCheck", "Rebellion Chance"},
+                {"prideGrowthRate", "Angelic Pride Growth"}, {"corruptionDecay", "Corruption Decay"}, {"underworldTechRate", "Underworld Tech Rate"},
+                {"soulPowerPerSoul", "Soul Power per Soul"}, {"feudalThreshold", "Feudal Era Threshold"}, {"industrialThreshold", "Industrial Era Threshold"},
+                {"modernThreshold", "Modern/Cybernetic Era Threshold"}, {"maxInfernalPopulation", "Max Infernal Population"},
+                {"divineCleansesEnabled", "Divine Cleanses"}, {"cleanseIntervalDays", "Cleanse Interval (days)"}, {"cleanseStrength", "Cleanse Strength"}};
         for (String[] v : values) add("fiatlux.configuration." + v[0], v[1]);
     }
 

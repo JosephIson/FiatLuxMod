@@ -2,31 +2,16 @@ package com.josephison.fiatlux.registry;
 
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.weapon.DivineScepterItem;
-import com.josephison.fiatlux.weapon.FlamingSwordItem;
-import com.josephison.fiatlux.weapon.WeaponTraits;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
-import net.neoforged.neoforge.common.SimpleTier;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FiatLux.MODID);
 
-    /** Tier of the divine arsenal: unrivalled sharpness, mended with gold. */
-    public static final SimpleTier DIVINE = new SimpleTier(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 5000, 12f, 6f, 30,
-            () -> Ingredient.of(Items.GOLD_BLOCK));
-
-    public static final DeferredItem<FlamingSwordItem> FLAMING_SWORD = ITEMS.register("flaming_sword_of_cherubim",
-            () -> new FlamingSwordItem(DIVINE, new Item.Properties().fireResistant().rarity(Rarity.EPIC)
-                    .attributes(SwordItem.createAttributes(DIVINE, 8, -2.2f))
-                    .component(ModDataComponents.WEAPON_TRAITS.get(), WeaponTraits.FRESH)));
     public static final DeferredItem<DivineScepterItem> DIVINE_SCEPTER = ITEMS.register("divine_scepter",
             () -> new DivineScepterItem(new Item.Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC)));
 

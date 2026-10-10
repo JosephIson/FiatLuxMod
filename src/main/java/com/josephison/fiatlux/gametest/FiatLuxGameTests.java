@@ -1,5 +1,6 @@
 package com.josephison.fiatlux.gametest;
 
+import com.josephison.fiatlux.weapon.DivineWeaponRegistry;
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.entity.HeavenlyBeing;
@@ -7,7 +8,15 @@ import com.josephison.fiatlux.registry.ModBlocks;
 import com.josephison.fiatlux.registry.ModEntities;
 import com.josephison.fiatlux.registry.ModItems;
 import com.josephison.fiatlux.registry.ModTags;
+import com.josephison.fiatlux.power.powers.CosmicSparkPower;
+import com.josephison.fiatlux.power.powers.PlanetaryGenesisPower;
+import com.josephison.fiatlux.world.CosmicExpanseSavedData;
+import com.josephison.fiatlux.world.CosmosData;
 import com.josephison.fiatlux.world.FiatLuxDimensions;
+import com.josephison.fiatlux.world.WorldTicker;
+import com.josephison.fiatlux.world.cosmos.Planet;
+import com.josephison.fiatlux.world.cosmos.PlanetType;
+import com.josephison.fiatlux.world.cosmos.UnderworldState;
 import com.josephison.fiatlux.world.HeavenChunkGenerator;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -109,14 +118,60 @@ public final class FiatLuxGameTests {
         helper.succeed();
     }
 
+    /**
+     * The self-sustaining simulation: after the Big Bang a world is formed, receives life, and - with no
+     * further intervention - its mortals multiply, pray (raising world Glory), advance an age, and the
+     * planet moves along its orbit. The Underworld, fed sinner souls, crosses a technological revolution.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void creationSustainsItself(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
+        CosmicSparkPower.ignite(server, "GameTest");
+        helper.assertTrue(cosmos.hasBigBang() && !cosmos.galaxies.isEmpty(), "the Big Bang formed no galaxies");
+        Planet eden = PlanetaryGenesisPower.create(server, "GameTest", PlanetType.EARTHLIKE, "GameTestEden");
+        helper.assertTrue(eden != null && cosmos.breatheLife(eden), "could not breathe life on an Earth-like world");
+        double phase0 = eden.phase;
+        long glory0 = CosmosData.get(server).glory();
+        cosmos.underworld = new UnderworldState();   // the GameTest world persists between runs
+        cosmos.underworld.souls = 50_000;
+        for (int i = 0; i < 400; i++) WorldTicker.step(server, 60.0);   // 400 simulated minutes
+        helper.assertTrue(eden.population > 1000, "population did not grow: " + eden.population);
+        helper.assertTrue(eden.era.ordinal() > 0, "the mortals of Eden never left the hunter-gatherer age");
+        helper.assertTrue(CosmosData.get(server).glory() > glory0, "prayer added no Glory");
+        helper.assertTrue(eden.phase != phase0, "the planet did not move along its orbit");
+        helper.assertTrue(cosmos.underworld.era.ordinal() > 0, "the Underworld never left the Tribal/Pits era: knowledge " + cosmos.underworld.knowledge);
+        cosmos.planets.remove(eden);
+        helper.succeed();
+    }
+
+    /** The Angelic Rebellion resolves into the Fall: the cast-out swell the Underworld. */
+    @GameTest(template = "empty")
+    public static void rebellionEndsInTheFall(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
+        cosmos.underworld = new UnderworldState();   // the GameTest world persists between runs
+        double demons0 = cosmos.underworld.demons;
+        double fallen0 = cosmos.fallenAngels;
+        // isolate the Fall from a scheduled divine cleanse landing on the same step
+        cosmos.underworld.lastCleanseDay = server.overworld().getDayTime() / 24000L;
+        WorldTicker.startRebellion(server, CosmosData.get(server), cosmos);
+        helper.assertTrue(cosmos.rebellionActive, "war in heaven did not begin");
+        WorldTicker.step(server, 1300.0);   // more than one simulated day of war
+        helper.assertTrue(!cosmos.rebellionActive, "the rebellion never resolved");
+        helper.assertTrue(cosmos.fallenAngels >= fallen0 + 100, "no angels fell: " + (cosmos.fallenAngels - fallen0));
+        helper.assertTrue(cosmos.underworld.demons >= demons0 + 100, "the fallen did not reach the Underworld: demons " + demons0 + " -> " + cosmos.underworld.demons + ", cap " + com.josephison.fiatlux.config.FiatLuxConfig.COMMON.maxInfernalPopulation.get());
+        helper.succeed();
+    }
+
     /** The Flaming Sword slays the corrupt in a single stroke. */
     @GameTest(template = "empty")
     public static void flamingSwordSlaysTheCorrupt(GameTestHelper helper) {
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 2));
         HeavenlyBeing wielder = helper.spawn(ModEntities.ANGEL.get(), new BlockPos(1, 1, 1));
         helper.assertTrue(ModTags.isCorrupt(zombie), "zombies should be in #fiatlux:corrupt");
-        ItemStack sword = new ItemStack(ModItems.FLAMING_SWORD.get());
-        ModItems.FLAMING_SWORD.get().hurtEnemy(sword, zombie, wielder);
+        ItemStack sword = new ItemStack(DivineWeaponRegistry.FLAMING_SWORD.get());
+        DivineWeaponRegistry.FLAMING_SWORD.get().hurtEnemy(sword, zombie, wielder);
         helper.assertTrue(zombie.isDeadOrDying(), "the zombie survived the Flaming Sword");
         wielder.discard();
         helper.succeed();

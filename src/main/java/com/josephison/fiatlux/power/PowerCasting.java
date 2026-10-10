@@ -24,7 +24,7 @@ public final class PowerCasting {
     public enum Result { CAST, UNKNOWN, PILGRIM, LOCKED, EXHAUSTED, FAILED }
 
     public static Result cast(ServerPlayer player, ResourceLocation id) {
-        DivinePower power = ModPowers.REGISTRY.get(id);
+        AbstractDivinePower power = PowerRegistry.REGISTRY.get(id);
         if (power == null) {
             return Result.UNKNOWN;
         }

@@ -127,6 +127,26 @@ public final class FxManager {
                 burstSphere(level, ModParticles.HOLY_SPARK.get(), at, dens(60), 0.15, 0.45);
                 flashIfNear(at, r * 4f, 0.75f, col);
             }
+            case BIG_BANG -> {
+                flash = 1f;
+                flashColor = 0xFFFFFFFF;
+                BEAMS.add(new Beam(at.subtract(0, 2, 0), 220f, 3.5f, 0xFFFFFFFF, 60));
+                RINGS.add(new Ring(at.subtract(0, 1, 0), 48f, 0xFFFFE6A0, 80, 3f, true));
+                RINGS.add(new Ring(at.subtract(0, 1, 0), 30f, 0xFFB48CFF, 70, 2f, true));
+                RINGS.add(new Ring(at.subtract(0, 1, 0), 18f, 0xFF7FD0FF, 60, 1.5f, false));
+                burstSphere(level, ModParticles.RADIANCE.get(), at, dens(60), 0.3, 1.2);
+                burstSphere(level, ModParticles.HOLY_SPARK.get(), at, dens(300), 0.4, 1.6);
+            }
+            case PLANET_GENESIS -> {
+                RINGS.add(new Ring(at.subtract(0, 1, 0), 10f, col, 40, 1.2f, true));
+                for (int i = 0; i < dens(90); i++) {
+                    double a = rand.nextDouble() * Mth.TWO_PI, rr = 3 + rand.nextDouble() * 4;
+                    level.addParticle(ModParticles.LIGHT_MOTE.get(), at.x + Math.cos(a) * rr, at.y - 0.5, at.z + Math.sin(a) * rr,
+                            -Math.cos(a) * 0.05, 0.08 + rand.nextDouble() * 0.06, -Math.sin(a) * 0.05);
+                }
+                burstSphere(level, ModParticles.HOLY_SPARK.get(), at, dens(60), 0.1, 0.4);
+                flashIfNear(at, 20f, 0.35f, col);
+            }
             case HOST_ARRIVAL -> {
                 BEAMS.add(new Beam(at.subtract(0, 1, 0), 40f, 1.1f, col, 26));
                 RINGS.add(new Ring(at.subtract(0, 0.9, 0), r * 2f + 2f, col, 26, 0.8f, true));

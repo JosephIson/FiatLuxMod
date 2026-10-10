@@ -2,12 +2,12 @@ package com.josephison.fiatlux.power.powers;
 
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.world.HeavenTravel;
 
 /** Jacob's ladder (Genesis 28:12): ascend to Heaven, or descend back to the earth. */
-public class AscendPower extends DivinePower {
+public class AscendPower extends AbstractDivinePower {
     public AscendPower() {
         super(0f, 0, 0xFFFFFFFF);
     }

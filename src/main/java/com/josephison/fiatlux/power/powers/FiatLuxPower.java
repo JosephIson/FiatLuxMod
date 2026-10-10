@@ -3,7 +3,7 @@ package com.josephison.fiatlux.power.powers;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.world.CosmosData;
 import net.minecraft.core.BlockPos;
@@ -19,7 +19,7 @@ import java.util.List;
  * "And God said, Let there be light: and there was light." (Genesis 1:3)
  * Fills every dark pocket within the radius with unseen light, with a burst of radiance.
  */
-public class FiatLuxPower extends DivinePower {
+public class FiatLuxPower extends AbstractDivinePower {
     private static final int RADIUS = 14;
     private static final int SPACING = 4;
 

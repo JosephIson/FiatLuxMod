@@ -1,5 +1,6 @@
 package com.josephison.fiatlux.client;
 
+import com.josephison.fiatlux.weapon.DivineWeaponRegistry;
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.client.fx.FxManager;
 import com.josephison.fiatlux.client.fx.FxOverlay;
@@ -95,7 +96,7 @@ public class FiatLuxClient {
             boolean firstPerson = mc.options.getCameraType().isFirstPerson();
             for (Player p : mc.level.players()) {
                 if (p.distanceToSqr(mc.player) > 48 * 48 || (p == mc.player && firstPerson)) continue;
-                if (!p.getMainHandItem().is(ModItems.FLAMING_SWORD.get())) continue;
+                if (!p.getMainHandItem().is(DivineWeaponRegistry.FLAMING_SWORD.get())) continue;
                 float yaw = p.yBodyRot * Mth.DEG_TO_RAD;
                 Vec3 forward = new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw));
                 Vec3 right = new Vec3(-Mth.cos(yaw), 0, -Mth.sin(yaw));

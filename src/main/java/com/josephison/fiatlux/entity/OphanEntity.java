@@ -21,8 +21,57 @@ public class OphanEntity extends HeavenlyBeing {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ophan.idle");
     private static final RawAnimation WHIRL = RawAnimation.begin().thenLoop("animation.ophan.whirl");
 
+    /** The four quarters of the high rim ("their rings were so high that they were dreadful", Ezek 1:18). */
+    private final OphanPart[] rims;
+
     public OphanEntity(EntityType<? extends OphanEntity> type, Level level) {
         super(type, level);
+        this.rims = new OphanPart[]{
+                new OphanPart(this, "rim_top", 1.6f, 0.9f), new OphanPart(this, "rim_bottom", 1.6f, 0.9f),
+                new OphanPart(this, "rim_fore", 0.9f, 1.6f), new OphanPart(this, "rim_aft", 0.9f, 1.6f)};
+        // parts take the ids immediately after the parent, as NeoForge expects (cf. MC-158205)
+        this.setId(ENTITY_COUNTER.getAndAdd(rims.length + 1) + 1);
+    }
+
+    @Override
+    public void setId(int id) {
+        super.setId(id);
+        if (rims != null) {
+            for (int i = 0; i < rims.length; i++) rims[i].setId(id + i + 1);
+        }
+    }
+
+    @Override
+    public boolean isMultipartEntity() {
+        return true;
+    }
+
+    @Override
+    public net.neoforged.neoforge.entity.PartEntity<?>[] getParts() {
+        return rims;
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        // keep the rim quarters on the rolling wheel's circumference (radius ~1.4 blocks at render scale 1.5)
+        double cy = getY() + 1.7;
+        float yaw = getYRot() * net.minecraft.util.Mth.DEG_TO_RAD;
+        double fx = -net.minecraft.util.Mth.sin(yaw), fz = net.minecraft.util.Mth.cos(yaw);
+        place(rims[0], getX(), cy + 1.25, getZ());
+        place(rims[1], getX(), cy - 1.7, getZ());
+        place(rims[2], getX() + fx * 1.35, cy - 0.8, getZ() + fz * 1.35);
+        place(rims[3], getX() - fx * 1.35, cy - 0.8, getZ() - fz * 1.35);
+    }
+
+    private static void place(OphanPart part, double x, double y, double z) {
+        part.xo = part.getX();
+        part.yo = part.getY();
+        part.zo = part.getZ();
+        part.xOld = part.xo;
+        part.yOld = part.yo;
+        part.zOld = part.zo;
+        part.setPos(x, y, z);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

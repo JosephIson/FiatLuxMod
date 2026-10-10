@@ -1,8 +1,8 @@
 package com.josephison.fiatlux.weapon;
 
 import com.josephison.fiatlux.divinity.Divinity;
-import com.josephison.fiatlux.power.DivinePower;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.AbstractDivinePower;
+import com.josephison.fiatlux.power.PowerRegistry;
 import com.josephison.fiatlux.power.PowerCasting;
 import com.josephison.fiatlux.registry.ModDataComponents;
 import net.minecraft.ChatFormatting;
@@ -34,13 +34,13 @@ public class DivineScepterItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (player instanceof ServerPlayer sp) {
             if (sp.isShiftKeyDown()) {
-                List<ResourceLocation> ids = new ArrayList<>(ModPowers.REGISTRY.keySet());
+                List<ResourceLocation> ids = new ArrayList<>(PowerRegistry.REGISTRY.keySet());
                 ids.sort(null);
                 ResourceLocation cur = Divinity.get(sp).selectedPower();
                 ResourceLocation next = ids.get((ids.indexOf(cur) + 1) % ids.size());
                 Divinity.set(sp, Divinity.get(sp).withSelectedPower(next));
                 Divinity.sync(sp);
-                DivinePower p = ModPowers.REGISTRY.get(next);
+                AbstractDivinePower p = PowerRegistry.REGISTRY.get(next);
                 if (p != null) sp.displayClientMessage(p.name().copy().withColor(p.color()), true);
             } else {
                 ResourceLocation id = stack.has(ModDataComponents.BOUND_POWER.get())

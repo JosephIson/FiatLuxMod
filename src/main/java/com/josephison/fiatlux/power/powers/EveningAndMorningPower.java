@@ -2,13 +2,13 @@ package com.josephison.fiatlux.power.powers;
 
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.world.CosmosData;
 import net.minecraft.server.level.ServerLevel;
 
 /** "And the evening and the morning were the first day." (Genesis 1:5) Advances to the next dusk or dawn. */
-public class EveningAndMorningPower extends DivinePower {
+public class EveningAndMorningPower extends AbstractDivinePower {
     public EveningAndMorningPower() {
         super(10f, 0, 0xFFFFC27A);
     }

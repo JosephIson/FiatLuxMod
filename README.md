@@ -34,21 +34,27 @@ Model work needs only Python 3 with Pillow.
 
 * New Creators open their eyes in **Heaven** (config `startInHeaven`).
 * **Scepter of the Creator**: use it to speak the selected power. Sneak-use cycles powers.
-* **V** opens the radial power wheel. **R** speaks the selected power.
+* **R** opens the radial power wheel (§9). **G** speaks the selected power.
 * **Flaming Sword of the Cherubim**: strikes ignite, and corrupt beings fall in one stroke. Use it
   to release a wave of holy fire. Sneak-use on the ground stations it as a guardian "which
   turned every way" (Gen 3:24); right-click the guardian to take it back.
 * `/fiatlux heaven | cast <power> | undo | chronicle [n] | mode <unbound|ascension|mortal_pilgrim>
   | glory add <n> | essence <player> <n> | pilgrim <player> <true|false>`
+* `/fiatlux cosmos` shows the universe, every world, the moral climate and the Underworld.
+  `/fiatlux planet create <type> [name] | planet life <name>`,
+  `/fiatlux sim step <seconds>`, `/fiatlux event bigbang|rebellion|fall|cleanse`
 
 ### Play modes
 * **Unbound** (default): every power is available. The essence cost multiplier defaults to 0.
 * **Ascension**: powers unlock as world Glory reaches each tier (`gloryPerTier`).
 * **Mortal Pilgrim**: players marked as pilgrims cannot wield power. Only operators act as God.
 
-### Powers (registry `fiatlux:divine_power`)
+### Powers (`PowerRegistry`, registry `fiatlux:divine_power`, base class `AbstractDivinePower`)
 | Power | Scripture | Act |
 |---|---|---|
+| Cosmic Spark | Gen 1:1 | **The Big Bang**: white-out, prismatic shells and beams fill the sky, galaxies unfurl |
+| Planetary Genesis | Gen 1:14-16 | Forms a world (Earth-like, volcanic, barren moon, gas giant, crystalline) on a Kepler orbit |
+| Breath of Life | Gen 2:7 | Seeds mortal life on a habitable world; it then lives on its own |
 | Fiat Lux | Gen 1:3 | Fills dark pockets with light; radiance burst |
 | Evening and Morning | Gen 1:5 | Advances to the next dusk or dawn; records the day in the Chronicle |
 | Bless | Num 6:24 | Blessed and Regeneration; adds virtue |
@@ -59,6 +65,36 @@ Model work needs only Python 3 with Pillow.
 | Send an Angel / Seraph / Cherub / Ophan | Heb 1:14 and below | Summons one of the Host |
 | Jacob's Ladder | Gen 28:12 | Travel between Heaven and the earth |
 
+## The self-sustaining creation (§0, §5-§7, §10.2)
+`world/WorldTicker` advances `world/CosmicExpanseSavedData` on the server thread every
+`cosmicStepInterval` ticks, scaled by `simulationSpeed`. Per-planet work is round-robin and
+capped by `planetsPerStep`, so the cost per tick stays bounded however large the universe grows.
+* **Orbits**: every planet moves along its orbit (period ∝ a^1.5). Clients extrapolate between syncs,
+  so the orrery in Heaven's sky moves smoothly.
+* **Mortals**: logistic population growth up to the world's habitability. The pious share prays,
+  and their faith becomes world Glory, which feeds Ascension tiers. Sin and death follow: the
+  righteous ascend to Heaven and the unrepentant descend to the Underworld. Peoples advance
+  Hunter-Gatherer → Agrarian → Classical → Medieval → Industrial → Spacefaring.
+* **Moral climate**: sin, faith and infernal pressure set world corruption, and corruption breeds
+  angelic pride. Above `rebellionCorruptionThreshold`, war in Heaven may break out on its own
+  (Rev 12:7). It resolves into **the Fall**: the cast-out swell the Underworld (Rev 12:9).
+* **The Underworld**: sinner souls yield soul power, the fallen beget an infernal hierarchy of
+  overlords and territories, soul contracts are signed, and knowledge accumulates.
+  **Technological revolutions** carry it from Tribal/Pits to Feudal/Castle, then Industrial, then
+  Modern/Cybernetic, with every threshold configurable. Periodic **divine cleanses** by Exorcist
+  Angels hold infernal empires in check.
+* Every milestone is written to the Chronicle and shown as an effect to all players. Nothing
+  is scripted: events happen when the simulated conditions are met, or when a Creator forces them.
+
+### Spec §10 file map
+| §10 deliverable | Implementation |
+|---|---|
+| `FiatLux.java` | `FiatLux` (+ `client/FiatLuxClient`) |
+| `WorldTicker.java`, `CosmicExpanseSavedData.java` | `world/WorldTicker`, `world/CosmicExpanseSavedData`, `world/cosmos/*` |
+| `FlamingSwordItem.java`, `DivineWeaponRegistry.java` | `weapon/FlamingSwordItem` (fire wave on swing and use; GeckoLib renderer `client/render/FlamingSwordRenderer` with `AutoGlowingGeoLayer`), `weapon/DivineWeaponRegistry` |
+| `FiatLuxConfig.java` | `config/FiatLuxConfig` (simulation speed, essence rates, rebellion probabilities, Underworld progression rates, and more) |
+| `AbstractDivinePower.java`, `PowerRegistry.java` | `power/AbstractDivinePower`, `power/PowerRegistry`, `power/PowerCasting`; packets `network/CastPowerPayload` / `SelectPowerPayload` |
+
 ## The Heavenly Host — as Scripture describes it
 
 | Being | Source | What the model shows | Detail (min. tier) |
@@ -66,7 +102,7 @@ Model work needs only Python 3 with Pillow.
 | **Angel** | Dan 10:5-6; Mt 28:3 | A man clothed in linen, girded with gold of Uphaz; body like beryl, face like lightning, eyes as lamps of fire, arms and feet of burnished bronze. **No wings, no halo** (the halo comes from later art). | 187 cubes / 70 bones (T2: 120/40) |
 | **Seraph** | Isa 6:2-6 | Six burning wings: one pair **veils the face** and one **veils the feet** (verified 0% / 0.5% visible from the front by ray casting), one pair flies. Tongs hold a live coal from the altar. | 354 / 130 (T3: 250/70) |
 | **Cherub** | Ezek 1:5-13; 10:12-14 | Four faces (man in front, lion on the right, ox on the left, eagle behind); two wings stretched upward and two covering the body; human hands under the wings on four sides; straight legs and calf's hooves of burnished brass; body like burning coals; eyes throughout. | 467 / 163 (T3) |
-| **Ophan** | Ezek 1:15-21; 10:9-13 | A wheel within a wheel, the colour of beryl, rims full of eyes that blink independently, around a burning spirit core. | 480 / 134 (T3) |
+| **Ophan** | Ezek 1:15-21; 10:9-13 | A wheel within a wheel, the colour of beryl, rims full of eyes that blink independently, around a burning spirit core. Multipart: four rim `PartEntity` hit-boxes. | 480 / 134 (T3) |
 | **Flaming Sword** | Gen 3:24 | Gold cherub-wing guard, ivory and gold grip, sapphire pommel, translucent crystal blade wreathed in animated holy fire. | 98 / 10 |
 
 Heaven follows Revelation 21: floating cloud islands, streets of "pure gold, as it were
@@ -79,7 +115,11 @@ of the throne and "a rainbow round about the throne, in sight like unto an emera
 * **FxManager**: server events (`FxPayload`) become expanding light rings with a gold contrast
   rim, celestial pillars (core, glow and halo prisms), fire waves, blessing spirals, the
   deluge and screen flashes.
-* **Heaven sky**: procedural gradient dome, throne-light, emerald rainbow and rotating god-rays.
+* **Heaven sky**: procedural azure-to-gold dome, the throne-light in a golden corona, the emerald
+  rainbow (Rev 4:3) and rotating rays of glory. After the Big Bang, pastel nebula galaxies
+  unfurl and every created world circles the throne as a live orrery (lit discs, atmospheres,
+  the lights of inhabited worlds). Elements over the bright sky use alpha blending, because
+  additive light washes out against it.
 * **GeckoLib**: `AutoGlowingGeoLayer` lights every `_glowmask` texel (holy fire, coal veins,
   lightning faces, eyes); translucent passes for crystal and beryl.
 * All of it is configurable in the CLIENT config: density, flashes, god rays, vignette, auras.
@@ -117,16 +157,21 @@ match the game, and every model is checked against its tier minimum at generatio
 Outputs open directly in Blockbench for hand polishing.
 
 ## Roadmap
-Phase 1 covers spec §0-§2 foundations, the Heaven hub (§5, first part), the scriptural Host
-and the Flaming Sword (§3-§4, first weapon). Planned next:
-1. **Realm Forge and the Underworld**: runtime-created dimensions (this also removes vanilla's
-   one-time "experimental settings" notice that datapack dimensions trigger), an Underworld
-   whose demonic civilisations advance through technological eras.
-2. **Autonomous simulation**: mortals and tribes, prayer and faith feeding Glory,
-   settlements, eras, covenants and prophets, soul records and judgment.
+Done so far: the §10 starting task, the foundations of §0-§2, Heaven (§5), the scriptural Host and the
+Flaming Sword (§3-§4), and the abstract simulation layer of §6-§7 (cosmos, mortals, rebellion,
+Underworld eras). Planned next:
+1. **Realm Forge, planets as places, and the Underworld dimension**: runtime-created dimensions
+   (this also removes vanilla's one-time "experimental settings" notice), with planets you can
+   visit (gravity, haze, day length) and the Underworld's sulfur plains and abyssal rivers. Era
+   progression already simulated there will drive structures: bone camps, fortresses,
+   foundries, neon megacities.
+2. **Embodied civilisation**: mortals and demons as Tier 1 GeckoLib NPCs living out the simulated
+   settlements; covenants, commandments and prophets; soul records, the Judgment Seat and redemption havens.
 3. **The rest of the arsenal**: Michael's Lance, the Staff of Wonders, Trumpets of Judgment,
    infernal tech blades and soul firearms.
 4. **Cosmic expansion**: the Big Bang, planetary systems and the Chronicle's milestone events.
 5. **Colossal beings** (Leviathan, Behemoth) as multipart entities; Blockbench hot-reload and
    a `.geo.json` exporter for species designed in-game.
-6. Bespoke audio to replace the vanilla placeholder layers in `sounds.json`.
+6. **The Son** (§8), the **Achievement Forge** and management GUIs (§9): Creation Codex,
+   Species Designer, Realm Forge, Judgment Seat, Commandment Editor.
+7. Bespoke audio to replace the vanilla placeholder layers in `sounds.json`.

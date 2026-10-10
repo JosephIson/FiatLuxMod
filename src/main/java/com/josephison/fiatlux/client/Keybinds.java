@@ -8,9 +8,9 @@ import org.lwjgl.glfw.GLFW;
 public final class Keybinds {
     public static final String CATEGORY = "key.categories.fiatlux";
     public static final KeyMapping POWER_WHEEL = new KeyMapping("key.fiatlux.power_wheel", KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY);
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);   // design doc section 9: default key R
     public static final KeyMapping CAST = new KeyMapping("key.fiatlux.cast", KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY);
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY);
 
     private Keybinds() {}
 }

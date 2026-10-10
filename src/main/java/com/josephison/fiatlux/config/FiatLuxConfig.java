@@ -24,6 +24,38 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.BooleanValue startInHeaven;
         public final ModConfigSpec.IntValue heavenStreetSpacing;
         public final ModConfigSpec.IntValue heavenIslandLevel;
+        // simulation engine
+        public final ModConfigSpec.BooleanValue simulationEnabled;
+        public final ModConfigSpec.DoubleValue simulationSpeed;
+        public final ModConfigSpec.IntValue cosmicStepInterval;
+        public final ModConfigSpec.IntValue planetsPerStep;
+        public final ModConfigSpec.IntValue cosmosSyncInterval;
+        // cosmos
+        public final ModConfigSpec.IntValue maxPlanets;
+        public final ModConfigSpec.DoubleValue orbitSpeedMultiplier;
+        public final ModConfigSpec.IntValue bigBangGalaxies;
+        // civilisation & faith
+        public final ModConfigSpec.DoubleValue populationGrowthRate;
+        public final ModConfigSpec.DoubleValue faithPerBeliever;
+        public final ModConfigSpec.DoubleValue gloryPerFaith;
+        public final ModConfigSpec.DoubleValue sinRate;
+        public final ModConfigSpec.DoubleValue mortalEraProgressRate;
+        // angelic rebellion
+        public final ModConfigSpec.BooleanValue rebellionEnabled;
+        public final ModConfigSpec.DoubleValue rebellionCorruptionThreshold;
+        public final ModConfigSpec.DoubleValue rebellionChancePerCheck;
+        public final ModConfigSpec.DoubleValue prideGrowthRate;
+        public final ModConfigSpec.DoubleValue corruptionDecay;
+        // underworld
+        public final ModConfigSpec.DoubleValue underworldTechRate;
+        public final ModConfigSpec.DoubleValue soulPowerPerSoul;
+        public final ModConfigSpec.DoubleValue feudalThreshold;
+        public final ModConfigSpec.DoubleValue industrialThreshold;
+        public final ModConfigSpec.DoubleValue modernThreshold;
+        public final ModConfigSpec.IntValue maxInfernalPopulation;
+        public final ModConfigSpec.BooleanValue divineCleansesEnabled;
+        public final ModConfigSpec.IntValue cleanseIntervalDays;
+        public final ModConfigSpec.DoubleValue cleanseStrength;
         public final ModConfigSpec.DoubleValue hostAggroRange;
         public final ModConfigSpec.DoubleValue swordFireWaveRange;
         public final ModConfigSpec.BooleanValue swordSlaysCorruptInstantly;
@@ -57,6 +89,54 @@ public final class FiatLuxConfig {
             heavenStreetSpacing = b.comment("Distance between the golden streets (Rev 21:21).")
                     .defineInRange("heavenStreetSpacing", 48, 16, 512);
             heavenIslandLevel = b.defineInRange("heavenIslandLevel", 120, 32, 300);
+            b.pop();
+
+            b.comment("Self-sustaining simulation engine (WorldTicker). Work is spread over ticks under budgets.").push("simulation");
+            simulationEnabled = b.define("simulationEnabled", true);
+            simulationSpeed = b.comment("Multiplier on every simulated rate: 0 pauses creation, 10 is ten times faster.")
+                    .defineInRange("simulationSpeed", 1.0, 0.0, 1000.0);
+            cosmicStepInterval = b.comment("Server ticks between simulation steps (20 = once per second).")
+                    .defineInRange("cosmicStepInterval", 20, 1, 12000);
+            planetsPerStep = b.comment("Planets simulated per step (round-robin) - bounds the per-tick cost.")
+                    .defineInRange("planetsPerStep", 8, 1, 4096);
+            cosmosSyncInterval = b.comment("Ticks between cosmos sky syncs to clients.")
+                    .defineInRange("cosmosSyncInterval", 100, 20, 12000);
+            b.pop();
+
+            b.comment("The Cosmic Expanse: the Big Bang, galaxies and orbiting worlds").push("cosmos");
+            maxPlanets = b.defineInRange("maxPlanets", 64, 1, 4096);
+            orbitSpeedMultiplier = b.defineInRange("orbitSpeedMultiplier", 1.0, 0.0, 1000.0);
+            bigBangGalaxies = b.comment("Galaxies formed by the Big Bang.").defineInRange("bigBangGalaxies", 7, 1, 64);
+            b.pop();
+
+            b.comment("Mortal civilisation and faith (abstract per-planet simulation)").push("civilization");
+            populationGrowthRate = b.comment("Logistic growth rate of mortal populations per step.")
+                    .defineInRange("populationGrowthRate", 0.02, 0.0, 10.0);
+            faithPerBeliever = b.defineInRange("faithPerBeliever", 0.001, 0.0, 10.0);
+            gloryPerFaith = b.comment("World Glory gained per unit of faith offered.").defineInRange("gloryPerFaith", 0.05, 0.0, 100.0);
+            sinRate = b.comment("Corruption generated per mortal per step.").defineInRange("sinRate", 0.00002, 0.0, 1.0);
+            mortalEraProgressRate = b.defineInRange("mortalEraProgressRate", 1.0, 0.0, 1000.0);
+            b.pop();
+
+            b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");
+            rebellionEnabled = b.define("rebellionEnabled", true);
+            rebellionCorruptionThreshold = b.comment("World corruption (0..1) above which rebellion may break out.")
+                    .defineInRange("rebellionCorruptionThreshold", 0.6, 0.0, 1.0);
+            rebellionChancePerCheck = b.defineInRange("rebellionChancePerCheck", 0.01, 0.0, 1.0);
+            prideGrowthRate = b.defineInRange("prideGrowthRate", 0.001, 0.0, 1.0);
+            corruptionDecay = b.comment("Fraction of world corruption that fades each step.").defineInRange("corruptionDecay", 0.0005, 0.0, 1.0);
+            b.pop();
+
+            b.comment("The Underworld: infernal population, soul power and technological eras").push("underworld");
+            underworldTechRate = b.comment("Knowledge gained per unit of soul power per step.").defineInRange("underworldTechRate", 0.0005, 0.0, 100.0);
+            soulPowerPerSoul = b.defineInRange("soulPowerPerSoul", 0.01, 0.0, 100.0);
+            feudalThreshold = b.comment("Knowledge to leave the Tribal/Pits era.").defineInRange("feudalThreshold", 100.0, 1.0, 1e12);
+            industrialThreshold = b.defineInRange("industrialThreshold", 1000.0, 1.0, 1e12);
+            modernThreshold = b.defineInRange("modernThreshold", 10000.0, 1.0, 1e12);
+            maxInfernalPopulation = b.defineInRange("maxInfernalPopulation", 100000, 0, Integer.MAX_VALUE);
+            divineCleansesEnabled = b.comment("Exorcist Angels periodically descend to keep infernal empires in check.").define("divineCleansesEnabled", true);
+            cleanseIntervalDays = b.defineInRange("cleanseIntervalDays", 7, 1, 100000);
+            cleanseStrength = b.comment("Fraction of infernal population and soul power purged by a cleanse.").defineInRange("cleanseStrength", 0.25, 0.0, 1.0);
             b.pop();
 
             b.comment("The Heavenly Host and divine weaponry").push("host");

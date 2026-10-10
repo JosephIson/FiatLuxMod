@@ -3,7 +3,7 @@ package com.josephison.fiatlux.power.powers;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.registry.ModBlocks;
 import com.josephison.fiatlux.world.CosmosData;
@@ -23,7 +23,7 @@ import java.util.List;
  * and on their left." (Exodus 14:21-22)
  * Opens a dry corridor through water along the caster's gaze, walled by stilled water.
  */
-public class PartWatersPower extends DivinePower {
+public class PartWatersPower extends AbstractDivinePower {
     private static final int LENGTH = 64;
     private static final int HALF_WIDTH = 3;
     private static final int DEPTH = 48;

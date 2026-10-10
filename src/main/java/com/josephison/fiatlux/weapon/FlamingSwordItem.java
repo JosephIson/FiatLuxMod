@@ -94,6 +94,36 @@ public class FlamingSwordItem extends SwordItem implements GeoItem {
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
+    /** Server-side time of each wielder's last swing wave (prevents spamming waves by flailing). */
+    private static final java.util.Map<java.util.UUID, Long> LAST_SWING_WAVE = new java.util.WeakHashMap<>();
+
+    /**
+     * "emits waves of divine fire on swing" (design doc section 4): every swing sweeps a short arc of holy fire in
+     * front of the wielder; the full wave is reserved for use (right-click).
+     */
+    @Override
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
+        if (entity.level() instanceof ServerLevel sl && hand == InteractionHand.MAIN_HAND) {
+            long now = sl.getGameTime();
+            Long last = LAST_SWING_WAVE.get(entity.getUUID());
+            if (last == null || now - last >= 10) {
+                LAST_SWING_WAVE.put(entity.getUUID(), now);
+                WeaponTraits t = traits(stack);
+                double range = (FiatLuxConfig.COMMON.swordFireWaveRange.get() + t.kindled()) * 0.5;
+                Vec3 eye = entity.getEyePosition();
+                Vec3 look = entity.getLookAngle();
+                for (LivingEntity e : sl.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(range), e -> e != entity)) {
+                    Vec3 to = e.position().add(0, e.getBbHeight() / 2, 0).subtract(eye);
+                    if (to.length() > range || to.normalize().dot(look) < 0.4 || e.isAlliedTo(entity)) continue;
+                    e.hurt(entity.damageSources().indirectMagic(entity, entity), 4f + 2f * t.kindled());
+                    e.igniteForSeconds(4);
+                }
+                Fx.send(sl, FxKind.FIRE_WAVE, eye.add(look.scale(1.4)), (float) range * 0.6f, 0xFFFFB040, 10);
+            }
+        }
+        return false;
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext ctx) {
         Player player = ctx.getPlayer();

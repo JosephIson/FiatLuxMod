@@ -10,6 +10,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
+import com.josephison.fiatlux.client.ClientCosmos;
+import com.josephison.fiatlux.network.SyncCosmosPayload;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -67,15 +69,23 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
         RenderSystem.disableCull();
 
         drawDome(ps.last().pose());
+        float bang = ClientCosmos.secondsSinceBigBang(partialTick);
+        if (bang >= 0) drawGalaxies(ps, bang, time);
 
         ps.pushPose();
         ps.mulPose(Axis.YP.rotationDegrees(THRONE_YAW));
-        ps.mulPose(Axis.XP.rotationDegrees(-THRONE_PITCH));
-        // additive layers: rays, emerald rainbow, throne glory
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        ps.mulPose(Axis.XP.rotationDegrees(THRONE_PITCH));   // +x rotation lifts the -z axis above the horizon
+        // Heaven's sky is already bright, so additive light would vanish into it: these layers use normal
+        // alpha blending with saturated colours to stand out against the azure and cream.
         drawRays(ps, time);
         drawRainbow(ps.last().pose(), time);
         drawThroneGlory(ps.last().pose(), time);
+        // the orrery of creation: every created world circles the throne-light
+        drawPlanets(ps.last().pose(), partialTick, time);
+        if (bang >= 0 && bang < 14f) {
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+            drawBigBang(ps.last().pose(), bang);
+        }
         ps.popPose();
 
         RenderSystem.enableCull();
@@ -83,6 +93,148 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         return true;
+    }
+
+    /** Galaxies born of the Big Bang: spiral arms of tinted star-dust that unfurl as the universe ages. */
+    private static void drawGalaxies(PoseStack ps, float secondsSinceBang, float time) {
+        float formation = Mth.clamp((secondsSinceBang - 2f) / 20f, 0f, 1f);
+        if (formation <= 0) return;
+        for (SyncCosmosPayload.GalaxyView g : ClientCosmos.get().galaxies()) {
+            ps.pushPose();
+            ps.mulPose(Axis.YP.rotationDegrees(g.yaw()));
+            ps.mulPose(Axis.XP.rotationDegrees(g.pitch()));   // +x lifts -z above the horizon (see THRONE_PITCH)
+            ps.mulPose(Axis.ZP.rotationDegrees(time * 0.01f + g.yaw()));
+            Matrix4f m = ps.last().pose();
+            // soften toward luminous pastel: reverent rather than neon
+            int r = ((g.hue() >> 16) & 255) * 6 / 10 + 255 * 4 / 10;
+            int gr = ((g.hue() >> 8) & 255) * 6 / 10 + 245 * 4 / 10;
+            int bl = (g.hue() & 255) * 6 / 10 + 235 * 4 / 10;
+            // the nebula: a soft coloured cloud the arms unfurl within
+            BufferBuilder neb = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+            float nr = g.size() * 1.5f * formation + 1f;
+            neb.addVertex(m, 0, 0, -86.2f).setColor(r, gr, bl, (int) (120 * formation));
+            for (int i = 0; i <= 40; i++) {
+                float a = Mth.TWO_PI * i / 40;
+                float wob = 1f + 0.18f * Mth.sin(a * 3 + g.yaw());
+                neb.addVertex(m, Mth.cos(a) * nr * wob, Mth.sin(a) * nr * 0.7f * wob, -86.2f).setColor(r, gr, bl, 0);
+            }
+            BufferUploader.drawWithShader(neb.buildOrThrow());
+            BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            int arms = Math.max(1, g.arms());
+            int points = 90 * arms;
+            for (int i = 0; i < points; i++) {
+                float t = (i / (float) points);
+                int arm = i % arms;
+                float rad = t * g.size() * formation;
+                float ang = t * g.twist() * Mth.TWO_PI + arm * Mth.TWO_PI / arms;
+                if (g.arms() == 0) { ang = i * 2.399f; rad = Mth.sqrt(t) * g.size() * 0.7f * formation; }
+                float x = Mth.cos(ang) * rad, y = Mth.sin(ang) * rad;
+                float s = (0.3f + (1f - t) * 0.6f) * Math.max(1f, g.size() / 6f);
+                int a = (int) ((1f - t * 0.7f) * 210 * formation);
+                b.addVertex(m, x - s, y - s, -86f).setColor(r, gr, bl, a);
+                b.addVertex(m, x + s, y - s, -86f).setColor(r, gr, bl, a);
+                b.addVertex(m, x + s, y + s, -86f).setColor(r, gr, bl, a);
+                b.addVertex(m, x - s, y + s, -86f).setColor(r, gr, bl, a);
+            }
+            // bright core
+            float cs = g.size() * 0.12f * formation + 0.3f;
+            b.addVertex(m, -cs, -cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
+            b.addVertex(m, cs, -cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
+            b.addVertex(m, cs, cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
+            b.addVertex(m, -cs, cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
+            BufferUploader.drawWithShader(b.buildOrThrow());
+            ps.popPose();
+        }
+    }
+
+    /** Created worlds orbiting the throne-light, with orbit paths, lit discs, atmospheres and city lights. */
+    private static void drawPlanets(Matrix4f m, float partialTick, float time) {
+        var planets = ClientCosmos.get().planets();
+        if (planets.isEmpty()) return;
+        for (SyncCosmosPayload.PlanetView p : planets) {
+            float R = Math.min(78f, 20f + p.orbitRadius() * 8f);
+            float tilt = Mth.cos(p.inclination() * Mth.DEG_TO_RAD * 2.2f) * 0.55f + 0.2f;
+            // orbit path
+            BufferBuilder path = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            for (int i = 0; i < 96; i++) {
+                float a0 = Mth.TWO_PI * i / 96, a1 = Mth.TWO_PI * (i + 1) / 96;
+                float w = 0.12f;
+                path.addVertex(m, Mth.cos(a0) * (R - w), Mth.sin(a0) * (R - w) * tilt, -87.5f).setColor(150, 110, 40, 70);
+                path.addVertex(m, Mth.cos(a1) * (R - w), Mth.sin(a1) * (R - w) * tilt, -87.5f).setColor(150, 110, 40, 70);
+                path.addVertex(m, Mth.cos(a1) * (R + w), Mth.sin(a1) * (R + w) * tilt, -87.5f).setColor(150, 110, 40, 70);
+                path.addVertex(m, Mth.cos(a0) * (R + w), Mth.sin(a0) * (R + w) * tilt, -87.5f).setColor(150, 110, 40, 70);
+            }
+            BufferUploader.drawWithShader(path.buildOrThrow());
+            float ang = ClientCosmos.phase(p, partialTick) * Mth.TWO_PI;
+            float cx = Mth.cos(ang) * R, cy = Mth.sin(ang) * R * tilt;
+            float size = 1.7f + p.size() * 2.2f;
+            // atmosphere halo
+            int at = p.atmosphere();
+            BufferBuilder halo = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+            halo.addVertex(m, cx, cy, -87.2f).setColor((at >> 16) & 255, (at >> 8) & 255, at & 255, 120);
+            for (int i = 0; i <= 32; i++) {
+                float a = Mth.TWO_PI * i / 32;
+                halo.addVertex(m, cx + Mth.cos(a) * size * 1.6f, cy + Mth.sin(a) * size * 1.6f, -87.2f).setColor((at >> 16) & 255, (at >> 8) & 255, at & 255, 0);
+            }
+            BufferUploader.drawWithShader(halo.buildOrThrow());
+            // the world itself: lit toward the throne-light at the centre
+            int c = p.color();
+            int r = (c >> 16) & 255, g = (c >> 8) & 255, bl = c & 255;
+            float lx = -Mth.cos(ang) * 0.35f * size, ly = -Mth.sin(ang) * 0.35f * size * tilt;
+            BufferBuilder disc = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+            disc.addVertex(m, cx + lx, cy + ly, -87f).setColor(Math.min(255, r + 70), Math.min(255, g + 70), Math.min(255, bl + 70), 255);
+            for (int i = 0; i <= 32; i++) {
+                float a = Mth.TWO_PI * i / 32;
+                disc.addVertex(m, cx + Mth.cos(a) * size, cy + Mth.sin(a) * size, -87f).setColor(r / 2, g / 2, bl / 2, 255);
+            }
+            BufferUploader.drawWithShader(disc.buildOrThrow());
+            if (p.inhabited()) {
+                // lights of civilisation on the night side
+                BufferBuilder lights = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                for (int i = 0; i < 6; i++) {
+                    float a = ang + 2.4f + i * 0.45f;
+                    float rr = size * (0.35f + 0.1f * (i % 3));
+                    float x = cx + Mth.cos(a) * rr, y = cy + Mth.sin(a) * rr;
+                    float s = 0.12f;
+                    int al = (int) (180 + 60 * Mth.sin(time * 0.2f + i));
+                    lights.addVertex(m, x - s, y - s, -86.9f).setColor(255, 220, 140, al);
+                    lights.addVertex(m, x + s, y - s, -86.9f).setColor(255, 220, 140, al);
+                    lights.addVertex(m, x + s, y + s, -86.9f).setColor(255, 220, 140, al);
+                    lights.addVertex(m, x - s, y + s, -86.9f).setColor(255, 220, 140, al);
+                }
+                BufferUploader.drawWithShader(lights.buildOrThrow());
+            }
+        }
+    }
+
+    /** The first seconds after the Big Bang: an expanding shell of many-coloured light and radiating beams. */
+    private static void drawBigBang(Matrix4f m, float t) {
+        float fade = t < 1f ? t : Mth.clamp(1f - (t - 4f) / 10f, 0f, 1f);
+        float radius = 4f + t * 14f;
+        int[][] shells = {{255, 255, 255}, {255, 210, 120}, {180, 120, 255}, {110, 200, 255}};
+        for (int k = 0; k < shells.length; k++) {
+            float r0 = Math.max(0, radius - 6f - k * 5f), r1 = radius - k * 5f;
+            if (r1 <= 0) continue;
+            BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            for (int i = 0; i < 64; i++) {
+                float a0 = Mth.TWO_PI * i / 64, a1 = Mth.TWO_PI * (i + 1) / 64;
+                int a = (int) (200 * fade / (k + 1));
+                b.addVertex(m, Mth.cos(a0) * r0, Mth.sin(a0) * r0, -85f).setColor(shells[k][0], shells[k][1], shells[k][2], 0);
+                b.addVertex(m, Mth.cos(a1) * r0, Mth.sin(a1) * r0, -85f).setColor(shells[k][0], shells[k][1], shells[k][2], 0);
+                b.addVertex(m, Mth.cos(a1) * r1, Mth.sin(a1) * r1, -85f).setColor(shells[k][0], shells[k][1], shells[k][2], a);
+                b.addVertex(m, Mth.cos(a0) * r1, Mth.sin(a0) * r1, -85f).setColor(shells[k][0], shells[k][1], shells[k][2], a);
+            }
+            BufferUploader.drawWithShader(b.buildOrThrow());
+        }
+        BufferBuilder beams = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        for (int i = 0; i < 40; i++) {
+            float a = Mth.TWO_PI * i / 40 + t * 0.05f;
+            float len = radius * (1.4f + 0.6f * Mth.sin(i * 7.1f));
+            beams.addVertex(m, 0, 0, -84.5f).setColor(255, 255, 255, (int) (230 * fade));
+            beams.addVertex(m, Mth.cos(a - 0.02f) * len, Mth.sin(a - 0.02f) * len, -84.5f).setColor(255, 240, 200, 0);
+            beams.addVertex(m, Mth.cos(a + 0.02f) * len, Mth.sin(a + 0.02f) * len, -84.5f).setColor(255, 240, 200, 0);
+        }
+        BufferUploader.drawWithShader(beams.buildOrThrow());
     }
 
     /** Latitude bands from the golden abyss below to the pale zenith. */
@@ -107,7 +259,7 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
     private static int domeColor(float pitchDeg) {
         // nadir: deep gold light rising from below; horizon: warm cream; zenith: luminous pale sky
         float t = (pitchDeg + 90f) / 180f;
-        float[] nadir = {0.98f, 0.78f, 0.42f}, horizon = {1.0f, 0.95f, 0.82f}, zenith = {0.86f, 0.93f, 1.0f};
+        float[] nadir = {0.98f, 0.78f, 0.42f}, horizon = {1.0f, 0.95f, 0.82f}, zenith = {0.47f, 0.66f, 0.98f};
         float[] a, c;
         float k;
         if (t < 0.5f) { a = nadir; c = horizon; k = t / 0.5f; } else { a = horizon; c = zenith; k = (t - 0.5f) / 0.5f; }
@@ -135,10 +287,10 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
             float len = 60f + 50f * (0.5f + 0.5f * Mth.sin(i * 78.233f));
             float half = 0.035f + 0.02f * Mth.sin(time * 0.01f + i);
             float pulse = 0.55f + 0.45f * Mth.sin(time * 0.03f + i * 1.7f);
-            int alpha = (int) (70 * pulse);
-            b.addVertex(m, 0, 0, -dist).setColor(255, 246, 214, alpha);
-            b.addVertex(m, Mth.cos(a - half) * len, Mth.sin(a - half) * len, -dist).setColor(255, 236, 190, 0);
-            b.addVertex(m, Mth.cos(a + half) * len, Mth.sin(a + half) * len, -dist).setColor(255, 236, 190, 0);
+            int alpha = (int) (95 * pulse);
+            b.addVertex(m, 0, 0, -dist).setColor(255, 226, 140, alpha);
+            b.addVertex(m, Mth.cos(a - half) * len, Mth.sin(a - half) * len, -dist).setColor(255, 214, 120, 0);
+            b.addVertex(m, Mth.cos(a + half) * len, Mth.sin(a + half) * len, -dist).setColor(255, 214, 120, 0);
         }
         BufferUploader.drawWithShader(b.buildOrThrow());
         ps.popPose();
@@ -149,10 +301,10 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
         BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         float dist = 89f;
         float[][] bands = {
-                {16.0f, 17.6f, 120, 255, 170},   // emerald heart
-                {17.6f, 18.6f, 80, 230, 210},
-                {15.0f, 16.0f, 190, 255, 140},
-                {18.6f, 19.4f, 120, 170, 255},
+                {16.0f, 17.6f, 40, 200, 110},    // emerald heart
+                {17.6f, 18.6f, 30, 170, 160},
+                {15.0f, 16.0f, 150, 220, 90},
+                {18.6f, 19.4f, 70, 120, 230},
         };
         int seg = 96;
         float shimmer = 0.85f + 0.15f * Mth.sin(time * 0.05f);
@@ -160,7 +312,7 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
             int r = (int) band[2], g = (int) band[3], bl = (int) band[4];
             for (int i = 0; i < seg; i++) {
                 float a0 = Mth.TWO_PI * i / seg, a1 = Mth.TWO_PI * (i + 1) / seg;
-                int alpha = (int) (110 * shimmer);
+                int alpha = (int) (175 * shimmer);
                 b.addVertex(m, Mth.cos(a0) * band[0], Mth.sin(a0) * band[0], -dist).setColor(r, g, bl, alpha / 3);
                 b.addVertex(m, Mth.cos(a1) * band[0], Mth.sin(a1) * band[0], -dist).setColor(r, g, bl, alpha / 3);
                 b.addVertex(m, Mth.cos(a1) * band[1], Mth.sin(a1) * band[1], -dist).setColor(r, g, bl, alpha);
@@ -172,14 +324,15 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
 
     /** The blazing light of the throne: a white core in layered soft halos. */
     private static void drawThroneGlory(Matrix4f m, float time) {
-        float[][] layers = {{4f, 255}, {9f, 150}, {16f, 70}, {30f, 30}};
+        // {radius, centre alpha, edge r, g, b}: golden corona first, white-hot core last
+        float[][] layers = {{30f, 110, 255, 200, 90}, {16f, 170, 255, 214, 120}, {9f, 230, 255, 236, 180}, {4.5f, 255, 255, 255, 250}};
         for (float[] layer : layers) {
             BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
             float r = layer[0] * (1f + 0.04f * Mth.sin(time * 0.07f + layer[0]));
-            b.addVertex(m, 0, 0, -88f).setColor(255, 255, 250, (int) layer[1]);
-            for (int i = 0; i <= 40; i++) {
-                float a = Mth.TWO_PI * i / 40;
-                b.addVertex(m, Mth.cos(a) * r, Mth.sin(a) * r, -88f).setColor(255, 240, 200, 0);
+            b.addVertex(m, 0, 0, -88f).setColor(255, 255, 248, (int) layer[1]);
+            for (int i = 0; i <= 48; i++) {
+                float a = Mth.TWO_PI * i / 48;
+                b.addVertex(m, Mth.cos(a) * r, Mth.sin(a) * r, -88f).setColor((int) layer[2], (int) layer[3], (int) layer[4], 0);
             }
             BufferUploader.drawWithShader(b.buildOrThrow());
         }

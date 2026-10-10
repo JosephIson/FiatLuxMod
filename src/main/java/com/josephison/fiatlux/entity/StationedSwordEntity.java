@@ -1,5 +1,6 @@
 package com.josephison.fiatlux.entity;
 
+import com.josephison.fiatlux.weapon.DivineWeaponRegistry;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
 import com.josephison.fiatlux.registry.ModDataComponents;
@@ -102,7 +103,7 @@ public class StationedSwordEntity extends Entity implements GeoEntity {
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (level().isClientSide) return InteractionResult.SUCCESS;
         if (owner != null && !owner.equals(player.getUUID()) && !player.isCreative()) return InteractionResult.FAIL;
-        ItemStack sword = new ItemStack(ModItems.FLAMING_SWORD.get());
+        ItemStack sword = new ItemStack(DivineWeaponRegistry.FLAMING_SWORD.get());
         sword.set(ModDataComponents.WEAPON_TRAITS.get(), traits);
         if (!player.addItem(sword)) player.drop(sword, false);
         discard();

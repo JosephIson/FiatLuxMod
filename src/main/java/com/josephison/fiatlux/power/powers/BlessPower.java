@@ -3,7 +3,7 @@ package com.josephison.fiatlux.power.powers;
 import com.josephison.fiatlux.divinity.Divinity;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.registry.ModEffects;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -11,7 +11,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
 /** "The LORD bless thee, and keep thee: The LORD make his face shine upon thee" (Numbers 6:24-25). */
-public class BlessPower extends DivinePower {
+public class BlessPower extends AbstractDivinePower {
     public BlessPower() {
         super(15f, 0, 0xFFFFE27A);
     }

@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
  * A power the Creator can speak into the world. Powers are registry entries (fiatlux:divine_power)
  * so other mods and datapacks can reference them by id; the cast itself is always server-side.
  */
-public abstract class DivinePower {
+public abstract class AbstractDivinePower {
     private final float cost;
     private final int tier;
     private final int color;
@@ -17,7 +17,7 @@ public abstract class DivinePower {
      * @param tier  Ascension tier required (0 = always available)
      * @param color ARGB accent used by the power wheel and its visual effects
      */
-    protected DivinePower(float cost, int tier, int color) {
+    protected AbstractDivinePower(float cost, int tier, int color) {
         this.cost = cost;
         this.tier = tier;
         this.color = color;
@@ -49,7 +49,7 @@ public abstract class DivinePower {
     }
 
     public ResourceLocation id() {
-        return ModPowers.REGISTRY.getKey(this);
+        return PowerRegistry.REGISTRY.getKey(this);
     }
 
     public Component name() {

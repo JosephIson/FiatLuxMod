@@ -2,7 +2,7 @@ package com.josephison.fiatlux.power.powers;
 
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import com.josephison.fiatlux.registry.ModTags;
 import net.minecraft.world.entity.EntityType;
@@ -11,7 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
 /** "Then the fire of the LORD fell, and consumed the burnt sacrifice" (1 Kings 18:38). A pillar of fire from heaven. */
-public class SmitePower extends DivinePower {
+public class SmitePower extends AbstractDivinePower {
     public SmitePower() {
         super(50f, 1, 0xFFFFD27A);
     }

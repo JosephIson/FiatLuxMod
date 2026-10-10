@@ -3,7 +3,7 @@ package com.josephison.fiatlux.power.powers;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.network.Fx;
 import com.josephison.fiatlux.network.FxKind;
-import com.josephison.fiatlux.power.DivinePower;
+import com.josephison.fiatlux.power.AbstractDivinePower;
 import com.josephison.fiatlux.power.PowerContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** "Let the waters under the heaven be gathered together unto one place, and let the dry land appear" (Genesis 1:9). */
-public class RaiseLandPower extends DivinePower {
+public class RaiseLandPower extends AbstractDivinePower {
     private static final int RADIUS = 9;
     private static final int HEIGHT = 7;
 

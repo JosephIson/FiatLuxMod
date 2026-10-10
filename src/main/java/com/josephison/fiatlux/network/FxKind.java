@@ -17,7 +17,11 @@ public enum FxKind {
     /** A screen-filling glory flash for the caster (theophany). */
     GLORY_FLASH,
     /** Feathers and radiance as one of the Host appears. */
-    HOST_ARRIVAL;
+    HOST_ARRIVAL,
+    /** The Big Bang: blinding white-out, radiating beams, the sky filling with newborn galaxies. */
+    BIG_BANG,
+    /** A new world forms in orbit: a ring of creation and rising sparks. */
+    PLANET_GENESIS;
 
     public static FxKind byId(int id) {
         FxKind[] v = values();

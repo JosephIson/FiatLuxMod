@@ -6,7 +6,7 @@ import com.josephison.fiatlux.entity.CherubEntity;
 import com.josephison.fiatlux.entity.OphanEntity;
 import com.josephison.fiatlux.entity.SeraphEntity;
 import com.josephison.fiatlux.network.ModNetwork;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.PowerRegistry;
 import com.josephison.fiatlux.registry.ModAttachments;
 import com.josephison.fiatlux.registry.ModBlocks;
 import com.josephison.fiatlux.registry.ModCreativeTabs;
@@ -17,6 +17,7 @@ import com.josephison.fiatlux.registry.ModItems;
 import com.josephison.fiatlux.registry.ModParticles;
 import com.josephison.fiatlux.registry.ModSounds;
 import com.josephison.fiatlux.registry.ModWorldgen;
+import com.josephison.fiatlux.weapon.DivineWeaponRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -37,6 +38,7 @@ public class FiatLux {
     public FiatLux(IEventBus modBus, ModContainer container) {
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        DivineWeaponRegistry.WEAPONS.register(modBus);
         ModDataComponents.COMPONENTS.register(modBus);
         ModAttachments.ATTACHMENTS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
@@ -45,7 +47,7 @@ public class FiatLux {
         ModSounds.SOUNDS.register(modBus);
         ModCreativeTabs.TABS.register(modBus);
         ModWorldgen.CHUNK_GENERATORS.register(modBus);
-        ModPowers.POWERS.register(modBus);
+        PowerRegistry.POWERS.register(modBus);
 
         modBus.addListener(ModNetwork::register);
         modBus.addListener(FiatLux::attributes);

@@ -6,9 +6,14 @@ import com.josephison.fiatlux.config.PlayMode;
 import com.josephison.fiatlux.creation.ChronicleEntry;
 import com.josephison.fiatlux.creation.EditQueue;
 import com.josephison.fiatlux.divinity.Divinity;
-import com.josephison.fiatlux.power.ModPowers;
+import com.josephison.fiatlux.power.PowerRegistry;
 import com.josephison.fiatlux.power.PowerCasting;
+import com.josephison.fiatlux.power.powers.CosmicSparkPower;
+import com.josephison.fiatlux.power.powers.PlanetaryGenesisPower;
+import com.josephison.fiatlux.world.CosmicExpanseSavedData;
 import com.josephison.fiatlux.world.CosmosData;
+import com.josephison.fiatlux.world.WorldTicker;
+import com.josephison.fiatlux.world.cosmos.PlanetType;
 import com.josephison.fiatlux.world.HeavenTravel;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -45,7 +50,7 @@ public final class FiatLuxCommand {
                     return 1;
                 }))
                 .then(Commands.literal("cast").then(Commands.argument("power", ResourceLocationArgument.id())
-                        .suggests((c, b) -> SharedSuggestionProvider.suggestResource(ModPowers.REGISTRY.keySet(), b))
+                        .suggests((c, b) -> SharedSuggestionProvider.suggestResource(PowerRegistry.REGISTRY.keySet(), b))
                         .executes(c -> {
                             ResourceLocation id = ResourceLocationArgument.getId(c, "power");
                             PowerCasting.Result r = PowerCasting.cast(c.getSource().getPlayerOrException(), id);
@@ -93,6 +98,42 @@ public final class FiatLuxCommand {
                                     Divinity.sync(p);
                                     return 1;
                                 }))))
+                .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
+                .then(Commands.literal("planet").requires(FiatLuxCommand::isGod)
+                        .then(Commands.literal("create").then(Commands.argument("type", StringArgumentType.word())
+                                .suggests((c, b) -> SharedSuggestionProvider.suggest(Arrays.stream(PlanetType.values()).map(PlanetType::getSerializedName), b))
+                                .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), null))
+                                .then(Commands.argument("name", StringArgumentType.word())
+                                        .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), StringArgumentType.getString(c, "name"))))))
+                        .then(Commands.literal("life").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                            var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            var p = cosmos.planet(StringArgumentType.getString(c, "name")).orElse(null);
+                            boolean ok = p != null && cosmos.breatheLife(p);
+                            c.getSource().sendSuccess(() -> Component.translatable(ok ? "command.fiatlux.life" : "command.fiatlux.life.fail"), true);
+                            WorldTicker.syncAll(c.getSource().getServer());
+                            return ok ? 1 : 0;
+                        }))))
+                .then(Commands.literal("sim").requires(FiatLuxCommand::isGod)
+                        .then(Commands.literal("step").then(Commands.argument("seconds", FloatArgumentType.floatArg(0.05f, 1_000_000f)).executes(c -> {
+                            WorldTicker.step(c.getSource().getServer(), FloatArgumentType.getFloat(c, "seconds"));
+                            WorldTicker.syncAll(c.getSource().getServer());
+                            return cosmos(c.getSource());
+                        }))))
+                .then(Commands.literal("event").requires(FiatLuxCommand::isGod)
+                        .then(Commands.literal("bigbang").executes(c -> CosmicSparkPower.ignite(c.getSource().getServer(), c.getSource().getTextName()) ? 1 : 0))
+                        .then(Commands.literal("rebellion").executes(c -> {
+                            WorldTicker.startRebellion(c.getSource().getServer(), CosmosData.get(c.getSource().getServer()), CosmicExpanseSavedData.get(c.getSource().getServer()));
+                            return 1;
+                        }))
+                        .then(Commands.literal("fall").executes(c -> {
+                            WorldTicker.theFall(c.getSource().getServer(), CosmosData.get(c.getSource().getServer()), CosmicExpanseSavedData.get(c.getSource().getServer()));
+                            return 1;
+                        }))
+                        .then(Commands.literal("cleanse").executes(c -> {
+                            WorldTicker.divineCleanse(c.getSource().getServer(), CosmosData.get(c.getSource().getServer()), CosmicExpanseSavedData.get(c.getSource().getServer()),
+                                    c.getSource().getServer().overworld().getDayTime() / 24000L);
+                            return 1;
+                        })))
                 .then(Commands.literal("pilgrim").requires(FiatLuxCommand::isGod)
                         .then(Commands.argument("target", EntityArgument.player()).then(Commands.argument("mortal", BoolArgumentType.bool())
                                 .executes(c -> {
@@ -104,6 +145,44 @@ public final class FiatLuxCommand {
                                             p.getDisplayName()), true);
                                     return 1;
                                 })))));
+    }
+
+    private static int createPlanet(CommandSourceStack src, String typeName, String name) {
+        PlanetType type = PlanetType.byName(typeName);
+        if (type == null) {
+            src.sendFailure(Component.translatable("command.fiatlux.planet.bad_type", typeName));
+            return 0;
+        }
+        if (!CosmicExpanseSavedData.get(src.getServer()).hasBigBang()) {
+            src.sendFailure(Component.translatable("message.fiatlux.no_universe"));
+            return 0;
+        }
+        var p = PlanetaryGenesisPower.create(src.getServer(), src.getTextName(), type, name);
+        if (p == null) {
+            src.sendFailure(Component.translatable("command.fiatlux.planet.full"));
+            return 0;
+        }
+        src.sendSuccess(() -> Component.translatable("message.fiatlux.planet_formed", p.name,
+                Component.translatable("planet_type.fiatlux." + p.type.getSerializedName())), true);
+        return 1;
+    }
+
+    private static int cosmos(CommandSourceStack src) {
+        var c = CosmicExpanseSavedData.get(src.getServer());
+        var u = c.underworld;
+        src.sendSuccess(() -> Component.translatable("command.fiatlux.cosmos.header"), false);
+        src.sendSuccess(() -> Component.literal(String.format("Big Bang: %s · galaxies %d · cosmic age %.1f days",
+                c.hasBigBang() ? "yes" : "not yet", c.galaxies.size(), c.cosmicAge)).withStyle(s -> s.withColor(0xF5D77A)), false);
+        for (var p : c.planets) {
+            src.sendSuccess(() -> Component.literal(String.format("  %s (%s) orbit %.2f AU / %.1f d · pop %,.0f · %s · faith %.1f · sin %.1f",
+                    p.name, p.type.getSerializedName(), p.orbitRadius, p.orbitPeriodDays, p.population,
+                    p.hasLife() ? p.era.getSerializedName() : "lifeless", p.faith, p.sin)).withStyle(s -> s.withColor(0xCFE8FF)), false);
+        }
+        src.sendSuccess(() -> Component.literal(String.format("Corruption %.0f%% · angelic pride %.0f%% · rebellion %s · fallen %,.0f · souls in Heaven %,.0f",
+                c.corruption * 100, c.angelicPride * 100, c.rebellionActive ? "RAGING" : "none", c.fallenAngels, c.heavenSouls)).withStyle(s -> s.withColor(0xFFD0A0)), false);
+        src.sendSuccess(() -> Component.literal(String.format("Underworld: %s · knowledge %,.0f · soul power %,.0f · demons %,.0f · sinner souls %,.0f · overlords %d · contracts %,.0f",
+                u.era.getSerializedName(), u.knowledge, u.soulPower, u.demons, u.souls, u.overlords, u.contracts)).withStyle(s -> s.withColor(0xFF7A5A)), false);
+        return 1;
     }
 
     private static boolean isGod(CommandSourceStack s) {

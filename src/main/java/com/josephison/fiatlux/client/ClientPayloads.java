@@ -12,6 +12,10 @@ public final class ClientPayloads {
         ClientDivinity.set(p);
     }
 
+    public static void onCosmos(com.josephison.fiatlux.network.SyncCosmosPayload p) {
+        ClientCosmos.set(p);
+    }
+
     public static void onFx(FxPayload p) {
         FxManager.handle(p);
     }
