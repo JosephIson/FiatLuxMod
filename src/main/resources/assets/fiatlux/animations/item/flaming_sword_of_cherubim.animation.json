@@ -1,0 +1,117 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.flaming_sword_of_cherubim.idle": {
+   "loop": true,
+   "animation_length": 2.0,
+   "bones": {
+    "fire_l": {
+     "scale": [
+      "1 + math.sin(query.anim_time * 540 + 0) * 0.12",
+      "1 + math.sin(query.anim_time * 720 + 40) * 0.18",
+      1
+     ],
+     "rotation": [
+      0,
+      0,
+      "math.sin(query.anim_time * 360) * 4"
+     ]
+    },
+    "fire_r": {
+     "scale": [
+      "1 + math.sin(query.anim_time * 540 + 90) * 0.12",
+      "1 + math.sin(query.anim_time * 720 + 130) * 0.18",
+      1
+     ],
+     "rotation": [
+      0,
+      0,
+      "math.sin(query.anim_time * 360 + 90) * -4"
+     ]
+    },
+    "fire_tip": {
+     "scale": [
+      "1 + math.sin(query.anim_time * 900 + 0) * 0.15",
+      "1 + math.sin(query.anim_time * 600 + 60) * 0.25",
+      "1 + math.sin(query.anim_time * 900 + 0) * 0.15"
+     ],
+     "rotation": [
+      0,
+      "query.anim_time * 180",
+      0
+     ]
+    },
+    "pommel": {
+     "scale": [
+      1,
+      1,
+      1
+     ]
+    }
+   }
+  },
+  "animation.flaming_sword_of_cherubim.ignite": {
+   "loop": false,
+   "animation_length": 0.6,
+   "bones": {
+    "fire_l": {
+     "scale": {
+      "0.0": [
+       0.2,
+       0.2,
+       1
+      ],
+      "0.3": [
+       1.6,
+       1.4,
+       1
+      ],
+      "0.6": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "fire_r": {
+     "scale": {
+      "0.0": [
+       0.2,
+       0.2,
+       1
+      ],
+      "0.3": [
+       1.6,
+       1.4,
+       1
+      ],
+      "0.6": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "fire_tip": {
+     "scale": {
+      "0.0": [
+       0.2,
+       0.2,
+       0.2
+      ],
+      "0.35": [
+       2.2,
+       2.6,
+       2.2
+      ],
+      "0.6": [
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  }
+ }
+}
