@@ -29,3 +29,4 @@ __pycache__/
 *.pyc
 # local dev worlds/screens
 run/
+/fiatlux-*.jar
