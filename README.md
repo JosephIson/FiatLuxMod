@@ -42,7 +42,9 @@ Model work needs only Python 3 with Pillow.
   | glory add <n> | essence <player> <n> | pilgrim <player> <true|false>`
 * `/fiatlux cosmos` shows the universe, every world, the moral climate and the Underworld.
   `/fiatlux planet create <type> [name] | planet life <name>`,
-  `/fiatlux sim step <seconds>`, `/fiatlux event bigbang|rebellion|fall|cleanse`
+  `/fiatlux planet visit <name>` (walk on a created world), `/fiatlux realm heaven|underworld|earth`,
+  `/fiatlux host` (the nine choirs and how many of each are loaded, loyal and rebel),
+  `/fiatlux sim step <seconds>`, `/fiatlux event bigbang|rebellion|fall|castout|cleanse`
 
 ### Play modes
 * **Unbound** (default): every power is available. The essence cost multiplier defaults to 0.
@@ -62,7 +64,9 @@ Model work needs only Python 3 with Pillow.
 | Fire from Heaven | 1 Kgs 18:38 | Lightning and a celestial pillar; consumes the corrupt |
 | Divide the Waters | Ex 14:21-22 | Dry corridor through water, walled by stilled water |
 | Windows of Heaven | Gen 7:11 | Flood that spreads outward ring by ring; storm |
-| Send an Angel / Seraph / Cherub / Ophan | Heb 1:14 and below | Summons one of the Host |
+| Visit World | | Walk on the next created world, under its own sky and gravity |
+| Cast Out | Rev 12:9; Luke 10:18 | Strikes down the rebel angels in your gaze and around it: they fall into the Underworld |
+| Send an Angel / Archangel / Principality, Summon a Power / Virtue / Dominion / Seraph / Cherub / Ophan | Heb 1:14 and below | Summons one of the nine choirs |
 | Jacob's Ladder | Gen 28:12 | Travel between Heaven and the earth |
 
 ## The self-sustaining creation (§0, §5-§7, §10.2)
@@ -103,7 +107,38 @@ capped by `planetsPerStep`, so the cost per tick stays bounded however large the
 | **Seraph** | Isa 6:2-6 | Six burning wings: one pair **veils the face** and one **veils the feet** (verified 0% / 0.5% visible from the front by ray casting), one pair flies. Tongs hold a live coal from the altar. | 354 / 130 (T3: 250/70) |
 | **Cherub** | Ezek 1:5-13; 10:12-14 | Four faces (man in front, lion on the right, ox on the left, eagle behind); two wings stretched upward and two covering the body; human hands under the wings on four sides; straight legs and calf's hooves of burnished brass; body like burning coals; eyes throughout. | 467 / 163 (T3) |
 | **Ophan** | Ezek 1:15-21; 10:9-13 | A wheel within a wheel, the colour of beryl, rims full of eyes that blink independently, around a burning spirit core. Multipart: four rim `PartEntity` hit-boxes. | 480 / 134 (T3) |
+| **Dominion** | Col 1:16 | The man in linen vested for rule: sapphire stole embroidered with gold, a crown, the sceptre in one hand and the orb with a cross in the other, great wings. **Office:** strengthens the lower choirs, burdens enemies. | 350 / 99 (T3) |
+| **Virtue** | Eph 1:21; 1 Pet 3:22 | Robed in light, a sunburst behind the head, the lily of grace, one hand raised in blessing. **Office:** heals the wounded and lifts afflictions. | 318 / 99 (T3) |
+| **Power** | Eph 6:12-17; Jude 1:6; Rev 20:1 | Armed for war: breastplate with a cross, helmet with a plume, pauldrons, the sword of the Spirit with an edge of holy fire, and the great chain. **Office:** binds the corrupt; doubly fierce to the fallen. | 389 / 104 (T3) |
+| **Principality** | Col 1:16; Dan 10:13, 21 | A prince over a people: circlet with a cross, crimson cloak, the swallow-tailed standard of its people, a cross-headed sceptre. **Office:** guards mortals from every hostile creature and shields them. | 302 / 100 |
+| **Archangel** | 1 Thess 4:16; Jude 1:9; Rev 12:7 | Captain of the Host: gold breastplate over linen, crimson cloak, great wings, the spear that thrusts down the dragon, and the trumpet of God. **Office:** the trumpet blast strikes and hurls back enemies. Michael leads the war in heaven. | 334 / 100 |
+| **Fallen Angel** | Isa 14:12; Luke 10:18; Jude 1:6 | Scorched ash-grey flesh cracked with smouldering veins, a blackened robe torn to ribbons, a halo broken into drifting tarnished shards, red eyes, and torn skeletal bat wings with a few burnt feathers left. | 246 / 88 (T2) |
 | **Flaming Sword** | Gen 3:24 | Gold cherub-wing guard, ivory and gold grip, sapphire pommel, translucent crystal blade wreathed in animated holy fire. | 98 / 10 |
+
+Scripture names every choir of the hierarchy (`entity/Choir`, highest first): Seraphim, Cherubim,
+Thrones / Dominions, Virtues, Powers / Principalities, Archangels, Angels. It *describes* only some
+of them. The second and third spheres are built on the man in linen of Daniel 10 and set apart by the
+regalia tradition gives each office.
+
+### War in heaven and the Fall
+When corruption crosses `rebellionCorruptionThreshold` (or on `/fiatlux event rebellion`), the
+proud among the living Host turn. A rebel host musters in Heaven from every choir, led the
+first time by *Lucifer, son of the morning*. Michael the Archangel and the Powers stand against it.
+Rebels are tinted toward blood and ash and cannot die, only fall. When one is defeated, or the
+Creator speaks **Cast Out**, lightning strikes it and its radiance shatters into gold shards and
+torn feathers. The sky splits in a crimson fracture, and it mutates into a Fallen Angel that
+plunges through the sky into the Underworld and lands in a crater-wave of fire. The war ends when
+no rebel remains.
+
+### Realms
+* **Created worlds**: each planet you form is bound to one of 16 dimensions (`planet_0..15`) with
+  its own terrain: Earth-like meadows, seas and snowy peaks; volcanic basalt, lava lakes and crater
+  cones; cratered regolith moons; banded gas-giant cloud decks; crystalline plains with crystal
+  spires. Each has its own gravity and an atmosphere tinted by its air, and you land on safe ground.
+* **The Underworld** (not the Nether): sulfur plains, obsidian mountains, abyssal rivers and a
+  dark red sky. Its settlements take the infernal era in which they were first generated: bone
+  camps with soul-fire pits, gothic bastions, soul-engine foundries with rail lines, and
+  neon-banded megacity blocks. Fallen angels dwell there.
 
 Heaven follows Revelation 21: floating cloud islands, streets of "pure gold, as it were
 transparent glass", jasper "clear as crystal", lamp pillars of Lux, and a sky with the light
@@ -157,21 +192,7 @@ match the game, and every model is checked against its tier minimum at generatio
 Outputs open directly in Blockbench for hand polishing.
 
 ## Roadmap
-Done so far: the §10 starting task, the foundations of §0-§2, Heaven (§5), the scriptural Host and the
-Flaming Sword (§3-§4), and the abstract simulation layer of §6-§7 (cosmos, mortals, rebellion,
-Underworld eras). Planned next:
-1. **Realm Forge, planets as places, and the Underworld dimension**: runtime-created dimensions
-   (this also removes vanilla's one-time "experimental settings" notice), with planets you can
-   visit (gravity, haze, day length) and the Underworld's sulfur plains and abyssal rivers. Era
-   progression already simulated there will drive structures: bone camps, fortresses,
-   foundries, neon megacities.
-2. **Embodied civilisation**: mortals and demons as Tier 1 GeckoLib NPCs living out the simulated
-   settlements; covenants, commandments and prophets; soul records, the Judgment Seat and redemption havens.
-3. **The rest of the arsenal**: Michael's Lance, the Staff of Wonders, Trumpets of Judgment,
-   infernal tech blades and soul firearms.
-4. **Cosmic expansion**: the Big Bang, planetary systems and the Chronicle's milestone events.
-5. **Colossal beings** (Leviathan, Behemoth) as multipart entities; Blockbench hot-reload and
-   a `.geo.json` exporter for species designed in-game.
-6. **The Son** (§8), the **Achievement Forge** and management GUIs (§9): Creation Codex,
-   Species Designer, Realm Forge, Judgment Seat, Commandment Editor.
-7. Bespoke audio to replace the vanilla placeholder layers in `sounds.json`.
+See [SPEC_STATUS.md](SPEC_STATUS.md) for every item of the design spec (§0–§10) marked Done,
+Partial or Not yet, with where it lives in the code. The largest remaining pieces are the Son
+(§8), the rest of the weapon arsenal (§4), mortal and demon entities with Soul Records and
+Judgment (§6–§7), the management GUIs (§9), and the Tier 4 colossi (§3).
