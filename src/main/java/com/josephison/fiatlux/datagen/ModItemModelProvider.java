@@ -29,13 +29,13 @@ public class ModItemModelProvider extends ItemModelProvider {
         getBuilder("flaming_sword_of_cherubim").parent(new ModelFile.UncheckedModelFile("builtin/entity"))
                 .guiLight(net.minecraft.client.renderer.block.model.BlockModel.GuiLight.FRONT)
                 .transforms()
-                .transform(ItemDisplayContext.GUI).rotation(0, 0, -45).translation(-5.5f, -5.5f, 0).scale(0.38f).end()
-                .transform(ItemDisplayContext.FIXED).rotation(0, 0, -45).translation(-5.5f, -5.5f, 0).scale(0.38f).end()
+                .transform(ItemDisplayContext.GUI).rotation(0, 0, -45).translation(-7.2f, -7.2f, 0).scale(0.5f).end()
+                .transform(ItemDisplayContext.FIXED).rotation(0, 0, -45).translation(-7.2f, -7.2f, 0).scale(0.5f).end()
                 .transform(ItemDisplayContext.GROUND).translation(0, 1, 0).scale(0.3f).end()
-                .transform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(0, -90, 0).translation(0, -3.5f, 1).scale(0.6f).end()
-                .transform(ItemDisplayContext.THIRD_PERSON_LEFT_HAND).rotation(0, 90, 0).translation(0, -3.5f, 1).scale(0.6f).end()
-                .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND).rotation(0, -90, 25).translation(1.13f, -1.5f, 1.13f).scale(0.45f).end()
-                .transform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND).rotation(0, 90, -25).translation(1.13f, -1.5f, 1.13f).scale(0.45f).end()
+                .transform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(0, -90, 55).translation(0, 1.5f, 0.5f).scale(0.6f).end()
+                .transform(ItemDisplayContext.THIRD_PERSON_LEFT_HAND).rotation(0, 90, -55).translation(0, 1.5f, 0.5f).scale(0.6f).end()
+                .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND).rotation(0, -90, 25).translation(1.13f, 2.2f, 1.13f).scale(0.4f).end()
+                .transform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND).rotation(0, 90, -25).translation(1.13f, 2.2f, 1.13f).scale(0.4f).end()
                 .end();
     }
 }

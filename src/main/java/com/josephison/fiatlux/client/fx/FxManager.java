@@ -69,8 +69,8 @@ public final class FxManager {
         RandomSource rand = level.random;
         switch (FxKind.byId(p.kind())) {
             case FIAT_LUX -> {
-                RINGS.add(new Ring(at, r * 1.2f, col, 34, 0.9f, true));
-                RINGS.add(new Ring(at, r * 0.65f, 0xFFFFFFFF, 24, 0.5f, false));
+                RINGS.add(new Ring(at, r * 1.2f, 0xFFFFC850, 34, 0.9f, true));
+                RINGS.add(new Ring(at, r * 0.65f, 0xFFFFF0B0, 24, 0.5f, false));
                 BEAMS.add(new Beam(at, 6f, r * 0.12f, col, 16));
                 burstSphere(level, ModParticles.HOLY_SPARK.get(), at, 140, 0.25, 0.7);
                 burstSphere(level, ModParticles.RADIANCE.get(), at, 18, 0.05, 0.15);
@@ -203,14 +203,19 @@ public final class FxManager {
         Vec3 cam = event.getCamera().getPosition();
         PoseStack ps = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
         ps.pushPose();
         ps.translate(-cam.x, -cam.y, -cam.z);
         Matrix4f m = ps.last().pose();
+        // pass 1 (alpha-blended): a deep-gold rim so light still reads against Heaven's bright sky
+        VertexConsumer rim = buffers.getBuffer(RenderType.debugQuads());
+        for (Ring r : RINGS) drawRingRim(rim, m, r, partial);
+        buffers.endBatch(RenderType.debugQuads());
+        // pass 2 (additive): the light itself
+        VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
         for (Beam b : BEAMS) drawBeam(vc, m, b, partial);
         for (Ring r : RINGS) drawRing(vc, m, r, partial);
-        ps.popPose();
         buffers.endBatch(RenderType.lightning());
+        ps.popPose();
     }
 
     private static void drawBeam(VertexConsumer vc, Matrix4f m, Beam b, float partial) {
@@ -242,6 +247,24 @@ public final class FxManager {
             vc.addVertex(m, x1, y + height, z1).setColor(r, g, bl, a1);
             vc.addVertex(m, x1, y, z1).setColor(r, g, bl, a0);
             vc.addVertex(m, x0, y, z0).setColor(r, g, bl, a0);
+        }
+    }
+
+    private static void drawRingRim(VertexConsumer vc, Matrix4f m, Ring ring, float partial) {
+        float t = Math.min(1f, (ring.age + partial) / ring.life);
+        float ease = 1f - (1f - t) * (1f - t) * (1f - t);
+        float outer = Math.max(0.05f, ring.maxR * ease);
+        float inner = Math.max(0f, outer - ring.width * 0.6f);
+        int r = (int) (((ring.color >> 16) & 255) * 0.85f), g = (int) (((ring.color >> 8) & 255) * 0.62f), b = (int) ((ring.color & 255) * 0.25f);
+        int a = (int) ((1f - t) * 140);
+        float cx = (float) ring.c.x, cy = (float) ring.c.y + 0.04f, cz = (float) ring.c.z;
+        for (int i = 0; i < 72; i++) {
+            float a0 = Mth.TWO_PI * i / 72, a1 = Mth.TWO_PI * (i + 1) / 72;
+            float c0 = Mth.cos(a0), s0 = Mth.sin(a0), c1 = Mth.cos(a1), s1 = Mth.sin(a1);
+            vc.addVertex(m, cx + c0 * inner, cy, cz + s0 * inner).setColor(r, g, b, 0);
+            vc.addVertex(m, cx + c1 * inner, cy, cz + s1 * inner).setColor(r, g, b, 0);
+            vc.addVertex(m, cx + c1 * outer, cy, cz + s1 * outer).setColor(r, g, b, a);
+            vc.addVertex(m, cx + c0 * outer, cy, cz + s0 * outer).setColor(r, g, b, a);
         }
     }
 

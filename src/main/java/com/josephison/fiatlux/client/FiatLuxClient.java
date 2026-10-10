@@ -13,6 +13,7 @@ import com.josephison.fiatlux.registry.ModEntities;
 import com.josephison.fiatlux.registry.ModItems;
 import com.josephison.fiatlux.registry.ModParticles;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -88,13 +89,21 @@ public class FiatLuxClient {
         while (Keybinds.CAST.consumeClick()) {
             PacketDistributor.sendToServer(new CastPowerPayload(ClientDivinity.get().state().selectedPower()));
         }
-        // the held Flaming Sword sheds living fire
-        Player p = mc.player;
-        if (mc.level.getGameTime() % 2 == 0 && (p.getMainHandItem().is(ModItems.FLAMING_SWORD.get()) || p.getOffhandItem().is(ModItems.FLAMING_SWORD.get()))) {
-            Vec3 look = p.getLookAngle();
-            Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
-            Vec3 hand = p.getEyePosition().add(right.scale(0.45)).add(look.scale(0.6)).add(0, -0.25 + mc.level.random.nextDouble() * 0.6, 0);
-            mc.level.addParticle(ModParticles.DIVINE_FLAME.get(), hand.x, hand.y, hand.z, 0, 0.02, 0);
+        // a held Flaming Sword sheds living fire along its blade. The local player's own sword is
+        // skipped in first person: particles at the camera would swamp the view.
+        if (mc.level.getGameTime() % 2 == 0) {
+            boolean firstPerson = mc.options.getCameraType().isFirstPerson();
+            for (Player p : mc.level.players()) {
+                if (p.distanceToSqr(mc.player) > 48 * 48 || (p == mc.player && firstPerson)) continue;
+                if (!p.getMainHandItem().is(ModItems.FLAMING_SWORD.get())) continue;
+                float yaw = p.yBodyRot * Mth.DEG_TO_RAD;
+                Vec3 forward = new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw));
+                Vec3 right = new Vec3(-Mth.cos(yaw), 0, -Mth.sin(yaw));
+                Vec3 hand = p.position().add(right.scale(0.4)).add(forward.scale(0.25)).add(0, 0.75, 0);
+                double along = mc.level.random.nextDouble() * 1.3;
+                mc.level.addParticle(ModParticles.DIVINE_FLAME.get(), hand.x + forward.x * along * 0.6, hand.y + along * 0.8,
+                        hand.z + forward.z * along * 0.6, 0, 0.015, 0);
+            }
         }
     }
 }
