@@ -26,6 +26,7 @@ class Material:
     color: tuple            # base RGB
     pattern: str = "plain"  # plain, cloth, gold, feather, skin, hair, crystal, fire, eye, metal, wood, rune, steel
     emissive: bool = False  # painted into the _glowmask atlas as well
+    glow_veins: bool = False  # with emissive: only the vein/glyph texels glow (burning-coal look)
     alpha: int = 255
     accent: tuple | None = None
 
@@ -50,6 +51,10 @@ def _key_pattern(i, j, period=6):
     """Greek-key / meander band used for embroidered hems."""
     a, b = i % period, j % period
     return (a == 0 and b < period - 1) or (b == 0 and a > 0) or (a == period - 2 and 1 < b < period - 1) or (b == period - 2 and 2 <= a <= period - 2)
+
+
+_GLOW = [False]
+_COAL_SEEDS = {}
 
 
 def texel(mat: Material, face: str, i, j, w, h, rng: random.Random, vertical: bool, density: int):
@@ -135,32 +140,44 @@ def texel(mat: Material, face: str, i, j, w, h, rng: random.Random, vertical: bo
         glyph = (i % (2 * density + 1) == density and j % 2 == 0) or (j % (3 * density) == density and i % 2 == 1)
         if glyph or (edge == 1 and w > 3 and h > 3):
             c = accent
+            _GLOW[0] = True
+    elif p == "coal":
+        # cracked coal (Ezek 1:13): Voronoi cells of dark coal outlined by continuous ember veins
+        seeds = _COAL_SEEDS.get((w, h, face))
+        if seeds is None:
+            r2 = random.Random(w * 7919 + h * 104729 + hash(face) % 1000)
+            k = max(3, (w * h) // 12)
+            seeds = [(r2.uniform(0, w), r2.uniform(0, h)) for _ in range(k)]
+            _COAL_SEEDS[(w, h, face)] = seeds
+        ds = sorted((i + 0.5 - sx) ** 2 + (j + 0.5 - sy) ** 2 for sx, sy in seeds)
+        gap = math.sqrt(ds[1]) - math.sqrt(ds[0]) if len(ds) > 1 else 9
+        if gap < 0.5:
+            c = _mix((255, 236, 160), accent, gap / 0.5)
+            _GLOW[0] = True
+        else:
+            c = _shade(c, 0.82 + min(0.25, math.sqrt(ds[0]) * 0.05) + n * 0.05)
 
-    if side and p not in ("eye", "fire", "rune"):
+    if side and p not in ("eye", "fire", "rune", "coal"):
         c = _shade(c, 1.06 - 0.16 * v)          # ambient occlusion toward the bottom
         if j == 0:
             c = _shade(c, 1.08)                  # rim light on the top edge
     return _shade(c, FACE_LIGHT[face] if p != "eye" else 1.0), a
 
 
-def paint_face(px, rect, mat, face, rng, vertical, density):
+def paint_face(px, gpx, rect, mat, face, rng, vertical, density):
+    """Paints one face; emissive texels are also written to the glowmask. Returns True if any glow."""
     x0, y0, w, h = rect
+    glowed = False
     for j in range(h):
         for i in range(w):
+            _GLOW[0] = False
             c, a = texel(mat, face, i, j, w, h, rng, vertical, density)
             px[x0 + i, y0 + j] = (*c, a)
-
-
-def paint_glow(px, tex_px, rect, mat: Material):
-    """Emissive texels copy their lit colour into the glowmask (bright areas glow brighter)."""
-    x0, y0, w, h = rect
-    for j in range(h):
-        for i in range(w):
-            r, g, b, a = tex_px[x0 + i, y0 + j]
-            if a == 0:
-                continue
-            boost = 1.15 if mat.pattern in ("fire", "rune", "crystal") else 1.0
-            px[x0 + i, y0 + j] = (_clamp(r * boost), _clamp(g * boost), _clamp(b * boost), 255)
+            if mat.emissive and a > 0 and (_GLOW[0] or not mat.glow_veins):
+                boost = 1.15 if mat.pattern in ("fire", "rune", "crystal", "coal") else 1.0
+                gpx[x0 + i, y0 + j] = (_clamp(c[0] * boost), _clamp(c[1] * boost), _clamp(c[2] * boost), 255)
+                glowed = True
+    return glowed
 
 
 # ----------------------------------------------------------------------------- geometry
@@ -225,10 +242,10 @@ class Model:
                 rot = (0, -deg + 90, 0)
             elif axis == "z":  # ring facing forward
                 p = (cx + radius * math.cos(ang), cy + radius * math.sin(ang), cz)
-                rot = (0, 0, deg + 90)
+                rot = (0, 0, -(deg + 90))   # GeckoLib mirrors x, which reverses z-rotation
             else:              # axis x
                 p = (cx, cy + radius * math.cos(ang), cz + radius * math.sin(ang))
-                rot = (deg + 90, 0, 0)
+                rot = (-(deg + 90), 0, 0)   # GeckoLib negates x-rotation
             sx, sy, sz = seg_size
             self.cube(bone, (p[0] - sx / 2, p[1] - sy / 2, p[2] - sz / 2), seg_size, material,
                       rotation=rot, pivot=p, **kw)
@@ -304,10 +321,7 @@ class Model:
                 vertical = c.size[1] >= max(c.size[0], c.size[2])
                 faces = {}
                 for f, r in rects.items():
-                    paint_face(tp, r, c.material, f, rng, vertical, self.density)
-                    if c.material.emissive:
-                        paint_glow(gp, tp, r, c.material)
-                        any_glow = True
+                    any_glow |= paint_face(tp, gp, r, c.material, f, rng, vertical, self.density)
                     uv_u, uv_v, uw, uh = r
                     if f == "down":  # Bedrock samples the bottom face flipped
                         faces[f] = {"uv": [uv_u, uv_v + uh], "uv_size": [uw, -uh]}

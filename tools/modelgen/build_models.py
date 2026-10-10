@@ -23,6 +23,8 @@ MODELS = {
     "flaming_sword": ("item", "flaming_sword_of_cherubim", 40, 8),
     "angel": ("entity", "angel", 120, 40),      # Tier 2 - Daniel 10:5-6
     "seraph": ("entity", "seraph", 250, 70),    # Tier 3 - Isaiah 6:2
+    "cherub": ("entity", "cherub", 250, 70),    # Tier 3 - Ezekiel 1:5-13, 10:12-14
+    "ophan": ("entity", "ophan", 250, 70),      # Tier 3 - Ezekiel 1:15-21, 10:9-13
 }
 
 

@@ -84,7 +84,7 @@ def eye(m, name, parent, center, normal, size=1.0, iris=None, lids=True):
     iris = iris or EYE_IRIS
     cx, cy, cz = center
     s = size
-    rot = {"-z": (0, 0, 0), "+z": (0, 180, 0), "-x": (0, -90, 0), "+x": (0, 90, 0),
+    rot = {"-z": (0, 0, 0), "+z": (0, 180, 0), "-x": (0, 90, 0), "+x": (0, -90, 0),
            "+y": (90, 0, 0), "-y": (-90, 0, 0)}[normal]
     b = m.bone(name, center, parent, rotation=rot)
     m.cube(b, (cx - 0.9 * s, cy - 0.55 * s, cz - 0.15 * s), (1.8 * s, 1.1 * s, 0.3 * s), SCLERA)
@@ -244,7 +244,7 @@ def head(m, prefix, parent, base, skin, face, shade, lips, eye_mat, iris=None, h
 
 
 def veil_wing(m, prefix, side, parent, root, wrist, bar_y, front_z, inner_x, outer_x, length,
-              feathers=7, feather=FEATHER, shade=FEATHER_SHADE, accent=FEATHER_GOLD, wrap=28.0):
+              feathers=7, feather=FEATHER, shade=FEATHER_SHADE, accent=FEATHER_GOLD, wrap=28.0, eyes=None):
     """A wing folded forward as a veil (Isaiah 6:2: "with twain he covered his face, and with
     twain he covered his feet"). The wing arm rises from `root` (on the back) and arches to
     `wrist` in front of the body; from a carpal bar at height `bar_y` and depth `front_z` a
@@ -294,4 +294,30 @@ def veil_wing(m, prefix, side, parent, root, wrist, bar_y, front_z, inner_x, out
         m.cube(fb, (X(x) - 0.12, bar_y - L + 0.6, front_z + 0.05), (0.24, L - 1.0, 0.2), accent)   # rachis
         cl = L * 0.45                                                                         # covert
         m.cube(fb, (lo + 0.1, bar_y - cl, front_z - 0.35), (w - 0.2, cl, 0.35), accent if k % 2 else feather)
+        if eyes is not None and k % 2 == 0:   # Ezek 10:12 - wings full of eyes
+            m.cube(fb, (X(x) - 0.5, bar_y - cl * 0.6, front_z - 0.45), (1.0, 0.75, 0.1), eyes)
+            m.cube(fb, (X(x) - 0.45, bar_y - L * 0.75, front_z + 0.05 - 0.1), (0.9, 0.7, 0.1), eyes)
     return rb
+
+
+def limb(m, bone, a, b, thick, mat, inflate=0.0):
+    """A square-section box spanning point a to point b (file space), oriented with GeckoLib's
+    conventions. Chain several to draw horns, tusks, arches and tails without gaps."""
+    ax, ay, az = a
+    bx, by, bz = b
+    dx, dy, dz = bx - ax, by - ay, bz - az
+    L = math.sqrt(dx * dx + dy * dy + dz * dz)
+    c = ((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2)
+    # rotate the +y axis onto d: tilt toward z about x, then lean toward x about z
+    pitch = math.degrees(math.atan2(dz, dy))
+    roll = math.degrees(math.atan2(dx, math.sqrt(dy * dy + dz * dz)))
+    return m.cube(bone, (c[0] - thick / 2, c[1] - L / 2 - thick * 0.15, c[2] - thick / 2), (thick, L + thick * 0.3, thick), mat,
+                  rotation=(-pitch, 0, roll), pivot=c, inflate=inflate)
+
+
+def curve(m, bone, points, thick0, thick1, mat):
+    """Tapered chain of limb() segments through `points`."""
+    n = len(points) - 1
+    for i in range(n):
+        t = thick0 + (thick1 - thick0) * (i / max(1, n - 1))
+        limb(m, bone, points[i], points[i + 1], t, mat)
