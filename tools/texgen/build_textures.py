@@ -331,3 +331,73 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ----------------------------------------------------------------------------- underworld & worlds
+
+def mottled(name, base, var, seed, speck=None, speck_rate=0):
+    img = Image.new("RGBA", (16, 16))
+    g = [noise_grid(s) for s in (seed, seed + 1, seed + 2)]
+    r = random.Random(seed)
+    for y in range(16):
+        for x in range(16):
+            n = fbm(g, x, y)
+            c = [base[i] + (n - 0.5) * var[i] for i in range(3)]
+            if speck and r.random() < speck_rate:
+                c = speck
+            img.putpixel((x, y), (clamp(c[0]), clamp(c[1]), clamp(c[2]), 255))
+    save(img, f"block/{name}.png")
+
+
+def neon(name, rgb):
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            edge = x in (0, 15) or y in (0, 15)
+            tube = y in (5, 10) or x in (3, 12)
+            core = (y in (5, 10) and 2 < x < 13) or (x in (3, 12) and 2 < y < 13)
+            if edge:
+                c = (30, 28, 34)
+            elif core:
+                c = (255, min(255, rgb[1] + 120), min(255, rgb[2] + 120))
+            elif tube:
+                c = rgb
+            else:
+                c = tuple(int(v * 0.25) + 10 for v in rgb)
+            img.putpixel((x, y), (*c, 255))
+    save(img, f"block/{name}.png")
+
+
+def underworld_textures():
+    mottled("sulfur", (226, 200, 64), (60, 60, 30), 301, (255, 246, 160), 0.05)
+    mottled("brimstone", (120, 46, 20), (80, 40, 20), 311, (255, 170, 40), 0.12)
+    mottled("abyssal_stone", (34, 24, 44), (30, 20, 40), 321, (90, 60, 120), 0.03)
+    neon("neon_crimson", (230, 30, 70))
+    neon("neon_violet", (150, 50, 240))
+    # soul engine: riveted steel casing around a cyan soul-glow core
+    img = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 3.5:
+                c = (120, 240, 255) if d < 2 else (40, 160, 200)
+            elif (x in (1, 14) and y % 4 == 1) or (y in (1, 14) and x % 4 == 1):
+                c = (180, 180, 190)
+            else:
+                c = (70, 72, 80) if (x + y) % 5 else (60, 62, 70)
+            img.putpixel((x, y), (*c, 255))
+    save(img, "block/soul_engine.png")
+    mottled("regolith", (176, 174, 168), (40, 40, 40), 331, (120, 118, 112), 0.08)
+    for name, base, seed in (("cloud_band_amber", (230, 170, 90), 341), ("cloud_band_cream", (240, 226, 196), 351), ("cloud_band_rust", (180, 96, 60), 361)):
+        img = Image.new("RGBA", (16, 16))
+        g = [noise_grid(s) for s in (seed, seed + 1)]
+        for y in range(16):
+            for x in range(16):
+                band = math.sin((y + fbm(g, x, y) * 6) * 0.8) * 0.5 + 0.5
+                c = [base[i] * (0.85 + 0.2 * band) for i in range(3)]
+                img.putpixel((x, y), (clamp(c[0]), clamp(c[1]), clamp(c[2]), 255))
+        save(img, f"block/{name}.png")
+
+
+if __name__ == "__main__":
+    underworld_textures()

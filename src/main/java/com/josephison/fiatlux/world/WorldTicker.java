@@ -111,7 +111,21 @@ public final class WorldTicker {
         // 4. the Underworld
         stepUnderworld(server, governance, cosmos, f, days);
 
+        com.josephison.fiatlux.realm.UnderworldSettlements.currentEra = cosmos.underworld.era;
+        com.josephison.fiatlux.realm.UnderworldSettlements.dirty = false;
         cosmos.setDirty();
+    }
+
+    @SubscribeEvent
+    public static void onServerStarting(net.neoforged.neoforge.event.server.ServerStartingEvent event) {
+        // load the cosmos now so worldgen threads see each Underworld region's founding era and the planet slots
+        CosmicExpanseSavedData.get(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+        com.josephison.fiatlux.realm.UnderworldSettlements.CELL_ERAS.clear();
+        com.josephison.fiatlux.realm.UnderworldSettlements.currentEra = com.josephison.fiatlux.world.cosmos.UnderworldEra.TRIBAL_PITS;
     }
 
     private static double[] stepCivilisation(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, Planet p, double f) {

@@ -19,6 +19,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.JASPER.get());
         simpleBlock(ModBlocks.CLOUDSTONE.get());
         simpleBlock(ModBlocks.PEARL.get());
+        for (var b : java.util.List.of(ModBlocks.SULFUR, ModBlocks.BRIMSTONE, ModBlocks.ABYSSAL_STONE, ModBlocks.NEON_CRIMSON,
+                ModBlocks.NEON_VIOLET, ModBlocks.SOUL_ENGINE, ModBlocks.REGOLITH, ModBlocks.CLOUD_BAND_AMBER,
+                ModBlocks.CLOUD_BAND_CREAM, ModBlocks.CLOUD_BAND_RUST)) {
+            simpleBlock(b.get());
+        }
         translucent(ModBlocks.GOLDEN_STREET.get(), "golden_street");
         translucent(ModBlocks.STILLED_WATER.get(), "stilled_water");
         ModelFile crystal = models().cross("celestial_crystal", modLoc("block/celestial_crystal")).renderType("cutout");

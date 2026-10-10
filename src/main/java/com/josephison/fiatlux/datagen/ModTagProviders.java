@@ -27,7 +27,10 @@ public final class ModTagProviders {
         protected void addTags(HolderLookup.Provider provider) {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.JASPER.get(), ModBlocks.PEARL.get(), ModBlocks.GOLDEN_STREET.get(),
                     ModBlocks.CELESTIAL_CRYSTAL.get(), ModBlocks.LUX_BLOCK.get());
-            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.CLOUDSTONE.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SULFUR.get(), ModBlocks.BRIMSTONE.get(), ModBlocks.ABYSSAL_STONE.get(),
+                    ModBlocks.NEON_CRIMSON.get(), ModBlocks.NEON_VIOLET.get(), ModBlocks.SOUL_ENGINE.get());
+            tag(BlockTags.MINEABLE_WITH_SHOVEL).add(ModBlocks.CLOUDSTONE.get(), ModBlocks.REGOLITH.get(), ModBlocks.CLOUD_BAND_AMBER.get(),
+                    ModBlocks.CLOUD_BAND_CREAM.get(), ModBlocks.CLOUD_BAND_RUST.get());
             tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.JASPER.get(), ModBlocks.GOLDEN_STREET.get());
         }
     }

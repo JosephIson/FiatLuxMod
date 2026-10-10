@@ -22,11 +22,20 @@ public class ModBlockLoot extends BlockLootSubProvider {
         dropSelf(ModBlocks.CLOUDSTONE.get());
         dropSelf(ModBlocks.PEARL.get());
         dropSelf(ModBlocks.CELESTIAL_CRYSTAL.get());
+        extra().forEach(b -> dropSelf(b));
+    }
+
+    private static List<Block> extra() {
+        return List.of(ModBlocks.SULFUR.get(), ModBlocks.BRIMSTONE.get(), ModBlocks.ABYSSAL_STONE.get(), ModBlocks.NEON_CRIMSON.get(),
+                ModBlocks.NEON_VIOLET.get(), ModBlocks.SOUL_ENGINE.get(), ModBlocks.REGOLITH.get(), ModBlocks.CLOUD_BAND_AMBER.get(),
+                ModBlocks.CLOUD_BAND_CREAM.get(), ModBlocks.CLOUD_BAND_RUST.get());
     }
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return List.of(ModBlocks.LUX_BLOCK.get(), ModBlocks.GOLDEN_STREET.get(), ModBlocks.JASPER.get(),
-                ModBlocks.CLOUDSTONE.get(), ModBlocks.PEARL.get(), ModBlocks.CELESTIAL_CRYSTAL.get());
+        List<Block> all = new java.util.ArrayList<>(List.of(ModBlocks.LUX_BLOCK.get(), ModBlocks.GOLDEN_STREET.get(), ModBlocks.JASPER.get(),
+                ModBlocks.CLOUDSTONE.get(), ModBlocks.PEARL.get(), ModBlocks.CELESTIAL_CRYSTAL.get()));
+        all.addAll(extra());
+        return all;
     }
 }

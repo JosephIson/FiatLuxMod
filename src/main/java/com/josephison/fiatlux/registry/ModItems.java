@@ -21,6 +21,16 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> CLOUDSTONE = ITEMS.registerSimpleBlockItem(ModBlocks.CLOUDSTONE);
     public static final DeferredItem<BlockItem> CELESTIAL_CRYSTAL = ITEMS.registerSimpleBlockItem(ModBlocks.CELESTIAL_CRYSTAL);
     public static final DeferredItem<BlockItem> PEARL = ITEMS.registerSimpleBlockItem(ModBlocks.PEARL);
+    public static final DeferredItem<BlockItem> SULFUR = ITEMS.registerSimpleBlockItem(ModBlocks.SULFUR);
+    public static final DeferredItem<BlockItem> BRIMSTONE = ITEMS.registerSimpleBlockItem(ModBlocks.BRIMSTONE);
+    public static final DeferredItem<BlockItem> ABYSSAL_STONE = ITEMS.registerSimpleBlockItem(ModBlocks.ABYSSAL_STONE);
+    public static final DeferredItem<BlockItem> NEON_CRIMSON = ITEMS.registerSimpleBlockItem(ModBlocks.NEON_CRIMSON);
+    public static final DeferredItem<BlockItem> NEON_VIOLET = ITEMS.registerSimpleBlockItem(ModBlocks.NEON_VIOLET);
+    public static final DeferredItem<BlockItem> SOUL_ENGINE = ITEMS.registerSimpleBlockItem(ModBlocks.SOUL_ENGINE);
+    public static final DeferredItem<BlockItem> REGOLITH = ITEMS.registerSimpleBlockItem(ModBlocks.REGOLITH);
+    public static final DeferredItem<BlockItem> CLOUD_BAND_AMBER = ITEMS.registerSimpleBlockItem(ModBlocks.CLOUD_BAND_AMBER);
+    public static final DeferredItem<BlockItem> CLOUD_BAND_CREAM = ITEMS.registerSimpleBlockItem(ModBlocks.CLOUD_BAND_CREAM);
+    public static final DeferredItem<BlockItem> CLOUD_BAND_RUST = ITEMS.registerSimpleBlockItem(ModBlocks.CLOUD_BAND_RUST);
 
     public static final DeferredItem<DeferredSpawnEggItem> ANGEL_SPAWN_EGG = ITEMS.register("angel_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.ANGEL, 0xF4F2E8, 0xF6C43C, new Item.Properties()));

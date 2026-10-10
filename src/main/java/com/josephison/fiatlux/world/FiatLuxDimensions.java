@@ -11,5 +11,8 @@ public final class FiatLuxDimensions {
     public static final ResourceKey<Level> HEAVEN = ResourceKey.create(Registries.DIMENSION, FiatLux.id("heaven"));
     public static final ResourceKey<DimensionType> HEAVEN_TYPE = ResourceKey.create(Registries.DIMENSION_TYPE, FiatLux.id("heaven"));
 
+    /** The Underworld: a realm of its own, separate from the vanilla Nether (design doc section 6). */
+    public static final ResourceKey<Level> UNDERWORLD = ResourceKey.create(Registries.DIMENSION, FiatLux.id("underworld"));
+
     private FiatLuxDimensions() {}
 }

@@ -1,0 +1,7 @@
+{
+  "type": "fiatlux:underworld",
+  "generator": {
+    "type": "fiatlux:underworld",
+    "biome_source": { "type": "minecraft:fixed", "biome": "fiatlux:underworld" }
+  }
+}

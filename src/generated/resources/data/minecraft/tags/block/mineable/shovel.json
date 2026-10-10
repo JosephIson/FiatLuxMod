@@ -1,5 +1,9 @@
 {
   "values": [
-    "fiatlux:cloudstone"
+    "fiatlux:cloudstone",
+    "fiatlux:regolith",
+    "fiatlux:cloud_band_amber",
+    "fiatlux:cloud_band_cream",
+    "fiatlux:cloud_band_rust"
   ]
 }

@@ -18,6 +18,12 @@ import com.josephison.fiatlux.world.cosmos.Planet;
 import com.josephison.fiatlux.world.cosmos.PlanetType;
 import com.josephison.fiatlux.world.cosmos.UnderworldState;
 import com.josephison.fiatlux.world.HeavenChunkGenerator;
+import com.josephison.fiatlux.world.cosmos.UnderworldEra;
+import com.josephison.fiatlux.realm.PlanetChunkGenerator;
+import com.josephison.fiatlux.realm.RealmPool;
+import com.josephison.fiatlux.realm.UnderworldChunkGenerator;
+import com.josephison.fiatlux.realm.UnderworldSettlements;
+import net.minecraft.world.level.block.Block;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
@@ -80,6 +86,116 @@ public final class FiatLuxGameTests {
         helper.assertTrue(kerb != null && kerb.is(ModBlocks.JASPER.get()), "expected a jasper kerb at (-3," + y + ",10) but found " + kerb);
         helper.assertTrue(lamp != null && lamp.is(ModBlocks.LUX_BLOCK.get()), "expected a lamp of Lux at (-3," + (y + 4) + ",15) but found " + lamp);
         helper.assertTrue(gen.stateAt(24, y + 30, 24) == null, "the sky above Heaven should be open");
+        helper.succeed();
+    }
+
+    /** Decodes one of the mod's datapack dimensions with Minecraft's own codecs and returns its generator. */
+    private static ChunkGenerator decodeGenerator(MinecraftServer server, String dimension) {
+        try (var reader = server.getResourceManager().getResourceOrThrow(FiatLux.id("dimension/" + dimension + ".json")).openAsReader()) {
+            JsonElement json = JsonParser.parseReader(reader);
+            RegistryOps<JsonElement> ops = server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+            return LevelStem.CODEC.parse(ops, json).getOrThrow(msg -> new IllegalStateException(dimension + ".json: " + msg)).generator();
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("cannot read " + dimension + ".json", e);
+        }
+    }
+
+    /** Topmost generated block in each column of a square, as a set of blocks. */
+    private static java.util.Set<Block> surfaces(java.util.function.IntFunction<java.util.function.IntFunction<java.util.function.IntFunction<BlockState>>> at,
+                                                 int from, int to, int step, int top) {
+        java.util.Set<Block> out = new java.util.HashSet<>();
+        for (int x = from; x <= to; x += step) {
+            for (int z = from; z <= to; z += step) {
+                for (int y = top; y > -64; y--) {
+                    BlockState b = at.apply(x).apply(y).apply(z);
+                    if (b != null && !b.isAir()) {
+                        out.add(b.getBlock());
+                        break;
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Every created world is an enterable dimension: planet_0.json decodes to the planet generator,
+     * and binding its slot to each world type yields that type's ground - meadows and seas, basalt and
+     * lava, regolith, banded cloud decks, or calcite with crystal spires. An unbound slot is void.
+     */
+    @GameTest(template = "empty")
+    public static void createdWorldsAreEnterable(GameTestHelper helper) {
+        ChunkGenerator generator = decodeGenerator(helper.getLevel().getServer(), "planet_0");
+        helper.assertTrue(generator instanceof PlanetChunkGenerator, "planet_0 does not use the planet generator: " + generator);
+        PlanetChunkGenerator gen = (PlanetChunkGenerator) generator;
+        RealmPool.Settings saved = RealmPool.get(gen.slot());
+        try {
+            RealmPool.bind(gen.slot(), null);
+            helper.assertTrue(gen.stateAt(0, 64, 0) == null && gen.stateAt(0, -64, 0) == null, "an unformed world should be void");
+            java.util.Map<PlanetType, List<Block>> expect = java.util.Map.of(
+                    PlanetType.EARTHLIKE, List.of(Blocks.GRASS_BLOCK, Blocks.WATER),
+                    PlanetType.VOLCANIC, List.of(Blocks.BASALT, Blocks.LAVA),
+                    PlanetType.BARREN_MOON, List.of(ModBlocks.REGOLITH.get()),
+                    PlanetType.GAS_GIANT, List.of(ModBlocks.CLOUD_BAND_AMBER.get(), ModBlocks.CLOUD_BAND_CREAM.get(), ModBlocks.CLOUD_BAND_RUST.get()),
+                    PlanetType.CRYSTALLINE, List.of(Blocks.CALCITE, ModBlocks.CELESTIAL_CRYSTAL.get()));
+            for (PlanetType type : PlanetType.values()) {
+                RealmPool.bind(gen.slot(), new RealmPool.Settings("Test" + type, type, 1234L + type.ordinal(), type.gravity));
+                var found = surfaces(x -> y -> z -> gen.stateAt(x, y, z), -400, 400, 8, 200);
+                for (Block b : expect.get(type)) {
+                    helper.assertTrue(found.contains(b), type + " world has no " + b + " at its surface; found " + found);
+                }
+                helper.assertTrue(gen.stateAt(0, -63, 0) != null || type == PlanetType.GAS_GIANT, type + " world has no floor");
+            }
+        } finally {
+            RealmPool.bind(gen.slot(), saved);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The Underworld decodes to its own generator: sulfur plains, obsidian mountains and abyssal
+     * rivers, and its settlements take the era of the Underworld when first generated - bone totems
+     * in the Tribal/Pits age, bastions in the Feudal age, soul-engine foundries, then neon towers.
+     */
+    @GameTest(template = "empty")
+    public static void underworldHasItsEras(GameTestHelper helper) {
+        ChunkGenerator generator = decodeGenerator(helper.getLevel().getServer(), "underworld");
+        helper.assertTrue(generator instanceof UnderworldChunkGenerator, "the Underworld does not use its generator: " + generator);
+        UnderworldChunkGenerator gen = (UnderworldChunkGenerator) generator;
+        var terrain = surfaces(x -> y -> z -> gen.terrainAt(x, y, z), -1500, 1500, 12, 200);
+        for (Block b : List.of(ModBlocks.SULFUR.get(), Blocks.OBSIDIAN, Blocks.WATER)) {
+            helper.assertTrue(terrain.contains(b), "Underworld terrain lacks " + b + "; found " + terrain);
+        }
+        java.util.Map<UnderworldEra, Block> landmark = java.util.Map.of(
+                UnderworldEra.TRIBAL_PITS, Blocks.BONE_BLOCK,
+                UnderworldEra.FEUDAL_CASTLE, Blocks.POLISHED_BLACKSTONE_BRICKS,
+                UnderworldEra.INDUSTRIAL, ModBlocks.SOUL_ENGINE.get(),
+                UnderworldEra.MODERN_CYBERNETIC, ModBlocks.NEON_CRIMSON.get());
+        UnderworldEra savedEra = UnderworldSettlements.currentEra;
+        try {
+            int cell = 50_000;   // far from anything a player explored, and forgotten afterwards
+            for (UnderworldEra era : UnderworldEra.values()) {
+                UnderworldSettlements.currentEra = era;
+                UnderworldSettlements.Settlement s = null;
+                int cx = cell;
+                while (s == null) s = UnderworldSettlements.settlementIn(++cx, cell, (x, z) -> 64);
+                helper.assertTrue(s.era() == era, "a new settlement took era " + s.era() + " instead of " + era);
+                boolean seen = false;
+                for (int dx = -45; dx <= 45 && !seen; dx++)
+                    for (int dz = -45; dz <= 45 && !seen; dz++)
+                        for (int dy = 0; dy <= 30 && !seen; dy++) {
+                            BlockState b = UnderworldSettlements.blockAt(s, s.cx() + dx, s.baseY() + dy, s.cz() + dz);
+                            seen = b != null && b.is(landmark.get(era));
+                        }
+                helper.assertTrue(seen, era + " settlement has no " + landmark.get(era));
+                UnderworldSettlements.currentEra = UnderworldEra.MODERN_CYBERNETIC;
+                helper.assertTrue(UnderworldSettlements.settlementIn(cx, cell, (x, z) -> 64).era() == era, "a settlement forgot its era");
+                UnderworldSettlements.CELL_ERAS.remove(UnderworldSettlements.cellKey(cx, cell));
+                cell += 10;
+            }
+        } finally {
+            UnderworldSettlements.currentEra = savedEra;
+        }
         helper.succeed();
     }
 

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "fiatlux:block/cloud_band_rust"
+  }
+}

@@ -34,6 +34,16 @@ public class ModLanguageProvider extends LanguageProvider {
         add(ModBlocks.CELESTIAL_CRYSTAL.get(), "Celestial Crystal");
         add(ModBlocks.PEARL.get(), "Pearl");
         add(ModBlocks.STILLED_WATER.get(), "Stilled Water");
+        add(ModBlocks.SULFUR.get(), "Sulfur");
+        add(ModBlocks.BRIMSTONE.get(), "Brimstone");
+        add(ModBlocks.ABYSSAL_STONE.get(), "Abyssal Stone");
+        add(ModBlocks.NEON_CRIMSON.get(), "Crimson Neon");
+        add(ModBlocks.NEON_VIOLET.get(), "Violet Neon");
+        add(ModBlocks.SOUL_ENGINE.get(), "Soul Engine");
+        add(ModBlocks.REGOLITH.get(), "Regolith");
+        add(ModBlocks.CLOUD_BAND_AMBER.get(), "Amber Cloud Band");
+        add(ModBlocks.CLOUD_BAND_CREAM.get(), "Cream Cloud Band");
+        add(ModBlocks.CLOUD_BAND_RUST.get(), "Rust Cloud Band");
         add("tooltip.fiatlux.kindled", "Holy fire: %s / 5");
         add("tooltip.fiatlux.smitten", "Corrupt beings smitten: %s");
         add("tooltip.fiatlux.flaming_sword.use", "Use: wave of holy fire. Sneak-use on ground: station it as a guardian.");
@@ -57,6 +67,7 @@ public class ModLanguageProvider extends LanguageProvider {
         power("cosmic_spark", "Cosmic Spark", "\"In the beginning God created the heaven and the earth.\" The Big Bang: galaxies are born. (Gen 1:1)");
         power("planetary_genesis", "Planetary Genesis", "Forms a new world and sets it in its orbit around the throne. (Gen 1:14-16)");
         power("breath_of_life", "Breath of Life", "\"...breathed into his nostrils the breath of life; and man became a living soul.\" (Gen 2:7)");
+        power("visit_world", "Walk upon a World", "Carries you to the next created world, to stand upon its ground under its own sky and gravity.");
         power("fiat_lux", "Fiat Lux", "\"Let there be light: and there was light.\" Floods the darkness with unseen light. (Gen 1:3)");
         power("evening_and_morning", "Evening and Morning", "Brings the next dusk or dawn. \"And the evening and the morning were the first day.\" (Gen 1:5)");
         power("bless", "Bless", "\"The LORD bless thee, and keep thee.\" Blesses the creature you behold, or yourself. (Num 6:24)");
@@ -79,6 +90,9 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.no_universe", "The void is without form: speak the Cosmic Spark first.");
         add("message.fiatlux.planet_formed", "%s is formed: a %s world, set in its orbit.");
         add("message.fiatlux.no_lifeless_world", "There is no habitable world still waiting for life.");
+        add("message.fiatlux.world_unformed", "That world is without form, and void.");
+        add("message.fiatlux.no_worlds", "No world has yet been formed. Speak Planetary Genesis.");
+        add("message.fiatlux.arrived", "You stand upon %s, a %s world.");
         add("planet_type.fiatlux.earthlike", "Earth-like");
         add("planet_type.fiatlux.volcanic", "volcanic");
         add("planet_type.fiatlux.barren_moon", "barren moon");

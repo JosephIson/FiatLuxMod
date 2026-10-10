@@ -93,6 +93,7 @@ public class CosmicExpanseSavedData extends SavedData {
                 a, 3.0 * Math.pow(a, 1.5), random.nextDouble(), (random.nextDouble() - 0.5) * 30.0, type.gravity, type.dayLength,
                 type.accentColor, 0, 0, 0, com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER, 0);
         planets.add(p);
+        com.josephison.fiatlux.realm.RealmPool.publish(planets);
         setDirty();
         return p;
     }
@@ -126,6 +127,16 @@ public class CosmicExpanseSavedData extends SavedData {
         UnderworldState.CODEC.parse(NbtOps.INSTANCE, tag.get("underworld")).result().ifPresent(u -> d.underworld = u);
         d.planetCursor = tag.getInt("planet_cursor");
         d.pendingGlory = tag.getDouble("pending_glory");
+        // the era each explored Underworld region was founded in
+        com.josephison.fiatlux.realm.UnderworldSettlements.CELL_ERAS.clear();
+        long[] cells = tag.getLongArray("underworld_cells");
+        byte[] eras = tag.getByteArray("underworld_cell_eras");
+        for (int i = 0; i < Math.min(cells.length, eras.length); i++) {
+            com.josephison.fiatlux.realm.UnderworldSettlements.CELL_ERAS.put(cells[i],
+                    com.josephison.fiatlux.world.cosmos.UnderworldEra.values()[Math.max(0, Math.min(3, eras[i]))]);
+        }
+        com.josephison.fiatlux.realm.UnderworldSettlements.currentEra = d.underworld.era;
+        com.josephison.fiatlux.realm.RealmPool.publish(d.planets);
         return d;
     }
 
@@ -144,6 +155,17 @@ public class CosmicExpanseSavedData extends SavedData {
         UnderworldState.CODEC.encodeStart(NbtOps.INSTANCE, underworld).result().ifPresent(t -> tag.put("underworld", t));
         tag.putInt("planet_cursor", planetCursor);
         tag.putDouble("pending_glory", pendingGlory);
+        var cellMap = com.josephison.fiatlux.realm.UnderworldSettlements.CELL_ERAS;
+        long[] cells = new long[cellMap.size()];
+        byte[] eras = new byte[cellMap.size()];
+        int i = 0;
+        for (var e : cellMap.entrySet()) {
+            if (i >= cells.length) break;
+            cells[i] = e.getKey();
+            eras[i++] = (byte) e.getValue().ordinal();
+        }
+        tag.putLongArray("underworld_cells", java.util.Arrays.copyOf(cells, i));
+        tag.putByteArray("underworld_cell_eras", java.util.Arrays.copyOf(eras, i));
         return tag;
     }
 }

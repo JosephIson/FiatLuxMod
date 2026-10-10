@@ -1,4 +1,4 @@
-// 1.21.1	2026-10-10T21:00:41.28913118	Tags for minecraft:block mod id fiatlux
-bd6a3c787ba79c6ac6910ee2d4ec2fb0e8101c7b data/minecraft/tags/block/mineable/pickaxe.json
-08ee4c78d29000e6da662de461f2bea28e9df0c0 data/minecraft/tags/block/mineable/shovel.json
+// 1.21.1	2026-10-10T22:25:15.982458378	Tags for minecraft:block mod id fiatlux
+d18e7f4f3c20d8e2da3bbbaeea97bbbb61d572a5 data/minecraft/tags/block/mineable/pickaxe.json
+5531070ef20b374e5420516cf3b5373d42bdc5a9 data/minecraft/tags/block/mineable/shovel.json
 279dfc791e5a545c2fbf73a00ad76adeafcc0c9b data/minecraft/tags/block/needs_iron_tool.json

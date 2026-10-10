@@ -32,6 +32,7 @@ public final class DivinityEvents {
         if (event.getEntity() instanceof ServerPlayer sp && sp.tickCount % 20 == 0) {
             Divinity.regenerate(sp);
             Divinity.sync(sp);
+            com.josephison.fiatlux.realm.RealmTravel.applyGravity(sp);   // each world's own physical law
         }
     }
 
@@ -50,6 +51,9 @@ public final class DivinityEvents {
 
     @SubscribeEvent
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer sp) Divinity.sync(sp);
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            Divinity.sync(sp);
+            com.josephison.fiatlux.realm.RealmTravel.applyGravity(sp);
+        }
     }
 }

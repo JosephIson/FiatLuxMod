@@ -99,12 +99,32 @@ public final class FiatLuxCommand {
                                     return 1;
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
+                .then(Commands.literal("realm")
+                        .then(Commands.literal("heaven").executes(c -> HeavenTravel.toHeaven(c.getSource().getPlayerOrException()) ? 1 : 0))
+                        .then(Commands.literal("underworld").executes(c -> com.josephison.fiatlux.realm.RealmTravel.toUnderworld(c.getSource().getPlayerOrException()) ? 1 : 0))
+                        .then(Commands.literal("earth").executes(c -> {
+                            HeavenTravel.toEarth(c.getSource().getPlayerOrException());
+                            return 1;
+                        })))
                 .then(Commands.literal("planet").requires(FiatLuxCommand::isGod)
                         .then(Commands.literal("create").then(Commands.argument("type", StringArgumentType.word())
                                 .suggests((c, b) -> SharedSuggestionProvider.suggest(Arrays.stream(PlanetType.values()).map(PlanetType::getSerializedName), b))
                                 .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), null))
                                 .then(Commands.argument("name", StringArgumentType.word())
                                         .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), StringArgumentType.getString(c, "name"))))))
+                        .then(Commands.literal("visit").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                            var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            String name = StringArgumentType.getString(c, "name");
+                            int slot = -1;
+                            for (int i = 0; i < Math.min(cosmos.planets.size(), com.josephison.fiatlux.realm.RealmPool.SIZE); i++) {
+                                if (cosmos.planets.get(i).name.equalsIgnoreCase(name)) slot = i;
+                            }
+                            if (slot < 0) {
+                                c.getSource().sendFailure(Component.translatable("message.fiatlux.world_unformed"));
+                                return 0;
+                            }
+                            return com.josephison.fiatlux.realm.RealmTravel.toPlanet(c.getSource().getPlayerOrException(), slot) ? 1 : 0;
+                        })))
                         .then(Commands.literal("life").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
                             var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
                             var p = cosmos.planet(StringArgumentType.getString(c, "name")).orElse(null);

@@ -1,0 +1,11 @@
+{
+  "type": "fiatlux:planet",
+  "generator": {
+    "type": "fiatlux:planet",
+    "slot": 9,
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "fiatlux:created_world"
+    }
+  }
+}

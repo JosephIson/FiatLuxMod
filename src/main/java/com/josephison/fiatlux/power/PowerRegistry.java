@@ -6,6 +6,7 @@ import com.josephison.fiatlux.power.powers.BlessPower;
 import com.josephison.fiatlux.power.powers.BreathOfLifePower;
 import com.josephison.fiatlux.power.powers.CosmicSparkPower;
 import com.josephison.fiatlux.power.powers.PlanetaryGenesisPower;
+import com.josephison.fiatlux.power.powers.VisitWorldPower;
 import com.josephison.fiatlux.power.powers.DelugePower;
 import com.josephison.fiatlux.power.powers.EveningAndMorningPower;
 import com.josephison.fiatlux.power.powers.FiatLuxPower;
@@ -46,6 +47,8 @@ public final class PowerRegistry {
     public static final DeferredHolder<AbstractDivinePower, PlanetaryGenesisPower> PLANETARY_GENESIS = POWERS.register("planetary_genesis", PlanetaryGenesisPower::new);
     // Genesis 2:7 - "breathed into his nostrils the breath of life"
     public static final DeferredHolder<AbstractDivinePower, BreathOfLifePower> BREATH_OF_LIFE = POWERS.register("breath_of_life", BreathOfLifePower::new);
+    // Walk upon a created world
+    public static final DeferredHolder<AbstractDivinePower, VisitWorldPower> VISIT_WORLD = POWERS.register("visit_world", VisitWorldPower::new);
     // Hebrews 1:14 - "ministering spirits, sent forth to minister"
     public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SEND_ANGEL = POWERS.register("send_angel",
             () -> new SummonHostPower(40f, 0, 0xFFF4EBC8, ModEntities.ANGEL::get));

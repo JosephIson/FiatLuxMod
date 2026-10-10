@@ -15,5 +15,11 @@ public final class ModWorldgen {
     public static final DeferredHolder<MapCodec<? extends ChunkGenerator>, MapCodec<HeavenChunkGenerator>> HEAVEN =
             CHUNK_GENERATORS.register("heaven", () -> HeavenChunkGenerator.CODEC);
 
+    public static final DeferredHolder<MapCodec<? extends ChunkGenerator>, MapCodec<com.josephison.fiatlux.realm.UnderworldChunkGenerator>> UNDERWORLD =
+            CHUNK_GENERATORS.register("underworld", () -> com.josephison.fiatlux.realm.UnderworldChunkGenerator.CODEC);
+
+    public static final DeferredHolder<MapCodec<? extends ChunkGenerator>, MapCodec<com.josephison.fiatlux.realm.PlanetChunkGenerator>> PLANET =
+            CHUNK_GENERATORS.register("planet", () -> com.josephison.fiatlux.realm.PlanetChunkGenerator.CODEC);
+
     private ModWorldgen() {}
 }

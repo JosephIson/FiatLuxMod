@@ -42,5 +42,40 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.WATER).strength(-1f, 3600000f).noLootTable()
                     .noOcclusion().isViewBlocking((s, l, p) -> false).sound(SoundType.WET_GRASS).lightLevel(s -> 2)));
 
+    // --- the Underworld (design doc section 6)
+    /** Sulfur plains: crumbling yellow stone that smoulders. */
+    public static final DeferredBlock<Block> SULFUR = BLOCKS.registerSimpleBlock("sulfur",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.8f).sound(SoundType.TUFF));
+    /** Brimstone: the burning stone that fuels infernal industry. */
+    public static final DeferredBlock<Block> BRIMSTONE = BLOCKS.register("brimstone", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(1.5f).sound(SoundType.NETHERRACK)
+                    .lightLevel(s -> 7).emissiveRendering((s, l, p) -> true).requiresCorrectToolForDrops()));
+    /** The black-violet bedrock of the abyss. */
+    public static final DeferredBlock<Block> ABYSSAL_STONE = BLOCKS.registerSimpleBlock("abyssal_stone",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(2.5f, 9f).sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+    /** Neon of the Modern/Cybernetic era megacities. */
+    public static final DeferredBlock<Block> NEON_CRIMSON = BLOCKS.register("neon_crimson", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.6f).sound(SoundType.GLASS)
+                    .lightLevel(s -> 15).emissiveRendering((s, l, p) -> true)));
+    public static final DeferredBlock<Block> NEON_VIOLET = BLOCKS.register("neon_violet", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(0.6f).sound(SoundType.GLASS)
+                    .lightLevel(s -> 15).emissiveRendering((s, l, p) -> true)));
+    /** Soul-engine casing of the Industrial era. */
+    public static final DeferredBlock<Block> SOUL_ENGINE = BLOCKS.register("soul_engine", () -> new Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(3f, 6f).sound(SoundType.METAL)
+                    .lightLevel(s -> 10).emissiveRendering((s, l, p) -> true).requiresCorrectToolForDrops()));
+
+    // --- created worlds (design doc section 5)
+    /** Lunar regolith: fine grey dust of barren moons. */
+    public static final DeferredBlock<Block> REGOLITH = BLOCKS.registerSimpleBlock("regolith",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.6f).sound(SoundType.SAND));
+    /** Gas-giant cloud decks: walkable bands of dense vapour. */
+    public static final DeferredBlock<Block> CLOUD_BAND_AMBER = BLOCKS.registerSimpleBlock("cloud_band_amber",
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.3f).sound(SoundType.WOOL));
+    public static final DeferredBlock<Block> CLOUD_BAND_CREAM = BLOCKS.registerSimpleBlock("cloud_band_cream",
+            BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.3f).sound(SoundType.WOOL));
+    public static final DeferredBlock<Block> CLOUD_BAND_RUST = BLOCKS.registerSimpleBlock("cloud_band_rust",
+            BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.3f).sound(SoundType.WOOL));
+
     private ModBlocks() {}
 }

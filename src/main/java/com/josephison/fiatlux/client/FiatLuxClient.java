@@ -78,6 +78,8 @@ public class FiatLuxClient {
 
     private static void skies(RegisterDimensionSpecialEffectsEvent e) {
         e.register(FiatLux.id("heaven"), new HeavenSkyEffects());
+        e.register(FiatLux.id("underworld"), new com.josephison.fiatlux.client.fx.UnderworldSkyEffects());
+        e.register(FiatLux.id("planet"), new com.josephison.fiatlux.client.fx.PlanetSkyEffects());
     }
 
     private static void clientTick(ClientTickEvent.Post e) {

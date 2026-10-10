@@ -14,7 +14,9 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        for (String block : new String[]{"lux_block", "golden_street", "jasper", "cloudstone", "pearl"}) {
+        for (String block : new String[]{"lux_block", "golden_street", "jasper", "cloudstone", "pearl",
+                "sulfur", "brimstone", "abyssal_stone", "neon_crimson", "neon_violet", "soul_engine", "regolith",
+                "cloud_band_amber", "cloud_band_cream", "cloud_band_rust"}) {
             withExistingParent(block, modLoc("block/" + block));
         }
         getBuilder("celestial_crystal").parent(new ModelFile.UncheckedModelFile("item/generated"))
