@@ -122,4 +122,9 @@ public class OphanEntity extends HeavenlyBeing {
     protected RawAnimation judgmentAnimation() {
         return WHIRL;
     }
+
+    @Override
+    public Choir choir() {
+        return Choir.THRONES;
+    }
 }

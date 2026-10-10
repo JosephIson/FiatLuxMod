@@ -42,7 +42,8 @@ public final class ModTagProviders {
 
         @Override
         protected void addTags(HolderLookup.Provider provider) {
-            tag(ModTags.HEAVENLY_HOST).add(ModEntities.ANGEL.get(), ModEntities.SERAPH.get(), ModEntities.CHERUB.get(), ModEntities.OPHAN.get());
+            tag(ModTags.HEAVENLY_HOST).add(ModEntities.ANGEL.get(), ModEntities.SERAPH.get(), ModEntities.CHERUB.get(), ModEntities.OPHAN.get(),
+                    ModEntities.DOMINION.get(), ModEntities.VIRTUE.get(), ModEntities.POWER.get(), ModEntities.PRINCIPALITY.get(), ModEntities.ARCHANGEL.get());
             tag(ModTags.CORRUPT).addTag(EntityTypeTags.UNDEAD).add(EntityType.BLAZE, EntityType.GHAST, EntityType.VEX,
                     EntityType.EVOKER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH, EntityType.PIGLIN_BRUTE,
                     EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.SILVERFISH, EntityType.MAGMA_CUBE)

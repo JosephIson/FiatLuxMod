@@ -83,3 +83,22 @@ BURNT_FEATHER = Material("burnt_feather", (70, 64, 66), "feather", accent=(40, 3
 HALO_BROKEN = Material("halo_broken", (156, 122, 58), "gold", accent=(90, 64, 30))   # tarnished, no longer lit
 HALO_CRACK = Material("halo_crack", (255, 80, 40), "fire", emissive=True, alpha=220, accent=(160, 20, 10))
 HAIR_ASH = Material("hair_ash", (40, 36, 40), "hair")
+
+# --- the second and third spheres ------------------------------------------------------
+DOMINION_STOLE = Material("dominion_stole", (48, 78, 168), "cloth", accent=(246, 196, 60))   # sapphire (Ex 24:10)
+LIGHT_ROBE = Material("light_robe", (255, 246, 214), "cloth", emissive=True, alpha=235, accent=(255, 214, 120))
+LIGHT_ROBE_SHADE = Material("light_robe_shade", (250, 232, 190), "cloth", emissive=True, alpha=235, accent=(255, 200, 100))
+VIRTUE_FEATHER = Material("virtue_feather", (255, 244, 206), "feather", emissive=True, accent=(255, 210, 110))
+SUNRAY = Material("sunray", (255, 226, 120), "fire", emissive=True, alpha=220, accent=(255, 170, 40))
+LILY = Material("lily", (250, 250, 244), "plain")
+LILY_STEM = Material("lily_stem", (96, 150, 80), "plain")
+STEEL = Material("steel", (182, 190, 204), "steel", accent=(236, 242, 252))
+STEEL_DARK = Material("steel_dark", (124, 132, 146), "steel", accent=(190, 198, 210))
+CHAIN = Material("chain", (150, 156, 168), "metal", accent=(210, 216, 226))
+POWER_FEATHER = Material("power_feather", (214, 218, 228), "feather", accent=(160, 166, 180))
+POWER_FEATHER_SHADE = Material("power_feather_shade", (178, 184, 198), "feather", accent=(130, 136, 150))
+PLUME = Material("plume", (246, 246, 250), "feather", accent=(200, 40, 40))
+CRIMSON_CLOAK = Material("crimson_cloak", (158, 30, 42), "cloth", accent=(246, 196, 60))
+BANNER = Material("banner", (244, 240, 228), "cloth", accent=(200, 40, 40))
+BANNER_CROSS = Material("banner_cross", (196, 32, 40), "plain")
+WOOD = Material("wood", (120, 82, 50), "wood")

@@ -55,6 +55,21 @@ public final class PowerRegistry {
     // Hebrews 1:14 - "ministering spirits, sent forth to minister"
     public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SEND_ANGEL = POWERS.register("send_angel",
             () -> new SummonHostPower(40f, 0, 0xFFF4EBC8, ModEntities.ANGEL::get));
+    // 1 Thessalonians 4:16 - "the voice of the archangel, and ... the trump of God"
+    public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SEND_ARCHANGEL = POWERS.register("send_archangel",
+            () -> new SummonHostPower(80f, 1, 0xFFFFE6A0, ModEntities.ARCHANGEL::get));
+    // Daniel 10:21 - "Michael your prince": the princes set over peoples
+    public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SEND_PRINCIPALITY = POWERS.register("send_principality",
+            () -> new SummonHostPower(70f, 1, 0xFFFFD27A, ModEntities.PRINCIPALITY::get));
+    // Ephesians 6:12; Jude 1:6 - the warriors who hold the fallen in chains
+    public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SUMMON_POWER = POWERS.register("summon_power",
+            () -> new SummonHostPower(120f, 2, 0xFFDDE4FF, ModEntities.POWER::get));
+    // Ephesians 1:21 - "far above all principality, and power, and might"
+    public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SUMMON_VIRTUE = POWERS.register("summon_virtue",
+            () -> new SummonHostPower(110f, 2, 0xFFFFF0B0, ModEntities.VIRTUE::get));
+    // Colossians 1:16 - "whether they be thrones, or dominions"
+    public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SUMMON_DOMINION = POWERS.register("summon_dominion",
+            () -> new SummonHostPower(150f, 3, 0xFF6A8CFF, ModEntities.DOMINION::get));
     // Isaiah 6:2
     public static final DeferredHolder<AbstractDivinePower, SummonHostPower> SUMMON_SERAPH = POWERS.register("summon_seraph",
             () -> new SummonHostPower(160f, 2, 0xFFFFA040, ModEntities.SERAPH::get));

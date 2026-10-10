@@ -79,4 +79,9 @@ public class CherubEntity extends HeavenlyBeing {
     protected RawAnimation judgmentAnimation() {
         return MOVE;
     }
+
+    @Override
+    public Choir choir() {
+        return Choir.CHERUBIM;
+    }
 }

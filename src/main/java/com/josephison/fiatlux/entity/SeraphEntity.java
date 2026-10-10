@@ -88,4 +88,9 @@ public class SeraphEntity extends HeavenlyBeing {
     protected RawAnimation judgmentAnimation() {
         return HOLY;
     }
+
+    @Override
+    public Choir choir() {
+        return Choir.SERAPHIM;
+    }
 }

@@ -240,6 +240,9 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
                         : e != getCreator() && ModTags.isCorrupt(e)));
     }
 
+    /** This being's place in the celestial hierarchy. */
+    public abstract Choir choir();
+
     /** Distance at which this being executes judgment on its target. */
     public abstract double judgmentRange();
 

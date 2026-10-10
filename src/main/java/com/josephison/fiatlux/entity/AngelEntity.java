@@ -61,4 +61,9 @@ public class AngelEntity extends HeavenlyBeing {
     protected RawAnimation judgmentAnimation() {
         return SMITE;
     }
+
+    @Override
+    public Choir choir() {
+        return Choir.ANGELS;
+    }
 }

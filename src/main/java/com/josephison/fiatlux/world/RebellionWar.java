@@ -27,6 +27,10 @@ import java.util.List;
  * prevails and every rebel still standing is cast down.
  */
 public final class RebellionWar {
+    private static final List<java.util.function.Supplier<? extends EntityType<? extends HeavenlyBeing>>> REBEL_CHOIRS = List.of(
+            ModEntities.ANGEL, ModEntities.PRINCIPALITY, ModEntities.POWER, ModEntities.ANGEL, ModEntities.VIRTUE,
+            ModEntities.ARCHANGEL, ModEntities.DOMINION, ModEntities.ANGEL, ModEntities.SERAPH);
+
     private RebellionWar() {}
 
     /** Where the war is fought: Heaven if it exists, otherwise the overworld. */
@@ -67,8 +71,8 @@ public final class RebellionWar {
         int count = Math.min(max, 3 + (int) Math.round(cosmos.angelicPride * 6));
         boolean first = cosmos.fallenAngels < 1;
         for (int i = 0; i < count; i++) {
-            EntityType<? extends HeavenlyBeing> type = i == 0 ? ModEntities.CHERUB.get()
-                    : i % 4 == 3 ? ModEntities.SERAPH.get() : ModEntities.ANGEL.get();
+            // "the anointed cherub that covereth" (Ezek 28:14) leads; the rest come from every choir
+            EntityType<? extends HeavenlyBeing> type = i == 0 ? ModEntities.CHERUB.get() : REBEL_CHOIRS.get(i % REBEL_CHOIRS.size()).get();
             Vec3 at = c.add(7 + (i % 3) * 3, (i / 3) * 2.5, (i % 2 == 0 ? 1 : -1) * (i * 1.6));
             HeavenlyBeing rebel = spawn(level, type, at, 0xFFFF3A2A);
             if (rebel == null) continue;
@@ -81,7 +85,8 @@ public final class RebellionWar {
         int loyal = 1 + count / 4;   // Michael and a few of his angels: the war is the Creator's to end
         for (int i = 0; i < loyal; i++) {
             Vec3 at = c.add(-7 - (i % 3) * 3, (i / 3) * 2.5, (i % 2 == 0 ? 1 : -1) * (i * 1.6));
-            HeavenlyBeing defender = spawn(level, ModEntities.ANGEL.get(), at, 0xFFFFE6A0);
+            // "Michael and his angels fought against the dragon" (Rev 12:7): the archangel leads the Powers
+            HeavenlyBeing defender = spawn(level, i == 0 ? ModEntities.ARCHANGEL.get() : ModEntities.POWER.get(), at, 0xFFFFE6A0);
             if (defender == null) continue;
             defender.setAngelState(new AngelState(0f, 1f));
             if (i == 0) defender.setCustomName(Component.translatable("entity.fiatlux.michael"));

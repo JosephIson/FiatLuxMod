@@ -3,6 +3,11 @@ package com.josephison.fiatlux.registry;
 import com.josephison.fiatlux.FiatLux;
 import com.josephison.fiatlux.entity.AngelEntity;
 import com.josephison.fiatlux.entity.CherubEntity;
+import com.josephison.fiatlux.entity.DominionEntity;
+import com.josephison.fiatlux.entity.VirtueEntity;
+import com.josephison.fiatlux.entity.PowerEntity;
+import com.josephison.fiatlux.entity.PrincipalityEntity;
+import com.josephison.fiatlux.entity.ArchangelEntity;
 import com.josephison.fiatlux.entity.FallenEntity;
 import com.josephison.fiatlux.entity.OphanEntity;
 import com.josephison.fiatlux.entity.SeraphEntity;
@@ -28,6 +33,21 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<OphanEntity>> OPHAN = ENTITIES.register("ophan",
             () -> EntityType.Builder.of(OphanEntity::new, MobCategory.CREATURE).sized(2.4f, 3.4f).fireImmune()
                     .clientTrackingRange(12).build(FiatLux.id("ophan").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<DominionEntity>> DOMINION = ENTITIES.register("dominion",
+            () -> EntityType.Builder.of(DominionEntity::new, MobCategory.CREATURE).sized(0.8f, 2.7f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("dominion").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<VirtueEntity>> VIRTUE = ENTITIES.register("virtue",
+            () -> EntityType.Builder.of(VirtueEntity::new, MobCategory.CREATURE).sized(0.8f, 2.7f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("virtue").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<PowerEntity>> POWER = ENTITIES.register("power",
+            () -> EntityType.Builder.of(PowerEntity::new, MobCategory.CREATURE).sized(0.9f, 2.8f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("power").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<PrincipalityEntity>> PRINCIPALITY = ENTITIES.register("principality",
+            () -> EntityType.Builder.of(PrincipalityEntity::new, MobCategory.CREATURE).sized(0.8f, 2.7f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("principality").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<ArchangelEntity>> ARCHANGEL = ENTITIES.register("archangel",
+            () -> EntityType.Builder.of(ArchangelEntity::new, MobCategory.CREATURE).sized(0.9f, 2.8f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("archangel").toString()));
     public static final DeferredHolder<EntityType<?>, EntityType<FallenEntity>> FALLEN = ENTITIES.register("fallen",
             () -> EntityType.Builder.of(FallenEntity::new, MobCategory.MONSTER).sized(0.8f, 2.4f).fireImmune()
                     .clientTrackingRange(12).build(FiatLux.id("fallen").toString()));

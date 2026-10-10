@@ -22,6 +22,12 @@ public class FallenRenderer extends GeoEntityRenderer<FallenEntity> {
         this.shadowRadius = 0.7f;
     }
 
+    /** Lit by its own smouldering cracks: never darker than the glow of embers in the Underworld's gloom. */
+    @Override
+    protected int getBlockLightLevel(FallenEntity entity, net.minecraft.core.BlockPos pos) {
+        return Math.max(9, super.getBlockLightLevel(entity, pos));
+    }
+
     @Override
     public RenderType getRenderType(FallenEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
         return RenderType.entityTranslucent(texture);

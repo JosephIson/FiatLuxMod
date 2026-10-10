@@ -72,6 +72,11 @@ public class FiatLux {
         event.put(ModEntities.SERAPH.get(), SeraphEntity.createAttributes().build());
         event.put(ModEntities.CHERUB.get(), CherubEntity.createAttributes().build());
         event.put(ModEntities.OPHAN.get(), OphanEntity.createAttributes().build());
+        event.put(ModEntities.DOMINION.get(), com.josephison.fiatlux.entity.DominionEntity.createAttributes().build());
+        event.put(ModEntities.VIRTUE.get(), com.josephison.fiatlux.entity.VirtueEntity.createAttributes().build());
+        event.put(ModEntities.POWER.get(), com.josephison.fiatlux.entity.PowerEntity.createAttributes().build());
+        event.put(ModEntities.PRINCIPALITY.get(), com.josephison.fiatlux.entity.PrincipalityEntity.createAttributes().build());
+        event.put(ModEntities.ARCHANGEL.get(), com.josephison.fiatlux.entity.ArchangelEntity.createAttributes().build());
         event.put(ModEntities.FALLEN.get(), com.josephison.fiatlux.entity.FallenEntity.createAttributes().build());
     }
 

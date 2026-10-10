@@ -26,6 +26,11 @@ MODELS = {
     "cherub": ("entity", "cherub", 250, 70),    # Tier 3 - Ezekiel 1:5-13, 10:12-14
     "ophan": ("entity", "ophan", 250, 70),      # Tier 3 - Ezekiel 1:15-21, 10:9-13
     "fallen": ("entity", "fallen", 120, 40),    # Tier 2 - Isaiah 14:12, Luke 10:18, Rev 12:9
+    "dominion": ("entity", "dominion", 250, 70),          # Tier 3 - Col 1:16
+    "virtue": ("entity", "virtue", 250, 70),              # Tier 3 - Eph 1:21
+    "power": ("entity", "power", 250, 70),                # Tier 3 - Eph 6:12, Jude 1:6, Rev 20:1
+    "principality": ("entity", "principality", 120, 40),  # Tier 2 - Col 1:16, Dan 10:13
+    "archangel": ("entity", "archangel", 120, 40),        # Tier 2 - 1 Thess 4:16, Jude 1:9
 }
 
 

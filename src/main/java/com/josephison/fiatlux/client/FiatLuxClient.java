@@ -54,6 +54,11 @@ public class FiatLuxClient {
         e.registerEntityRenderer(ModEntities.SERAPH.get(), ctx -> new HostRenderer<>(ctx, "seraph", 1.2f, 0.8f, false));
         e.registerEntityRenderer(ModEntities.CHERUB.get(), ctx -> new HostRenderer<>(ctx, "cherub", 1.45f, 1.0f, true));
         e.registerEntityRenderer(ModEntities.OPHAN.get(), ctx -> new HostRenderer<>(ctx, "ophan", 1.5f, 1.2f, false));
+        e.registerEntityRenderer(ModEntities.DOMINION.get(), ctx -> new HostRenderer<>(ctx, "dominion", 1.1f, 0.6f, true));
+        e.registerEntityRenderer(ModEntities.VIRTUE.get(), ctx -> new HostRenderer<>(ctx, "virtue", 1.05f, 0.6f, true));
+        e.registerEntityRenderer(ModEntities.POWER.get(), ctx -> new HostRenderer<>(ctx, "power", 1.1f, 0.6f, true));
+        e.registerEntityRenderer(ModEntities.PRINCIPALITY.get(), ctx -> new HostRenderer<>(ctx, "principality", 1.0f, 0.6f, true));
+        e.registerEntityRenderer(ModEntities.ARCHANGEL.get(), ctx -> new HostRenderer<>(ctx, "archangel", 1.15f, 0.6f, true));
         e.registerEntityRenderer(ModEntities.STATIONED_SWORD.get(), StationedSwordRenderer::new);
         e.registerEntityRenderer(ModEntities.FALLEN.get(), com.josephison.fiatlux.client.render.FallenRenderer::new);
     }

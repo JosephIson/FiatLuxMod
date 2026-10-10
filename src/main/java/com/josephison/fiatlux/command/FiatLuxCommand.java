@@ -99,6 +99,7 @@ public final class FiatLuxCommand {
                                     return 1;
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
+                .then(Commands.literal("host").executes(c -> host(c.getSource())))
                 .then(Commands.literal("realm")
                         .then(Commands.literal("heaven").executes(c -> HeavenTravel.toHeaven(c.getSource().getPlayerOrException()) ? 1 : 0))
                         .then(Commands.literal("underworld").executes(c -> com.josephison.fiatlux.realm.RealmTravel.toUnderworld(c.getSource().getPlayerOrException()) ? 1 : 0))
@@ -170,6 +171,23 @@ public final class FiatLuxCommand {
                                             p.getDisplayName()), true);
                                     return 1;
                                 })))));
+    }
+
+    /** Lists the nine choirs in order, with the loaded members of each (loyal and rebel). */
+    private static int host(CommandSourceStack src) {
+        java.util.Map<com.josephison.fiatlux.entity.Choir, int[]> counts = new java.util.EnumMap<>(com.josephison.fiatlux.entity.Choir.class);
+        for (var level : src.getServer().getAllLevels()) {
+            for (var b : level.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(com.josephison.fiatlux.entity.HeavenlyBeing.class), b -> true)) {
+                counts.computeIfAbsent(b.choir(), k -> new int[2])[b.isRebel() ? 1 : 0]++;
+            }
+        }
+        src.sendSuccess(() -> Component.translatable("command.fiatlux.host.header").withStyle(s -> s.withColor(0xF5D77A)), false);
+        for (var choir : com.josephison.fiatlux.entity.Choir.values()) {
+            int[] n = counts.getOrDefault(choir, new int[2]);
+            src.sendSuccess(() -> Component.translatable("command.fiatlux.host.line", choir.rank(), choir.displayName(), choir.sphere(),
+                    choir.office(), choir.scripture(), n[0], n[1]), false);
+        }
+        return 1;
     }
 
     private static int createPlanet(CommandSourceStack src, String typeName, String name) {

@@ -222,16 +222,35 @@ public final class FiatLuxGameTests {
     @GameTest(template = "empty")
     public static void heavenlyHostSpawns(GameTestHelper helper) {
         List<EntityType<? extends HeavenlyBeing>> host = List.of(ModEntities.ANGEL.get(), ModEntities.SERAPH.get(),
-                ModEntities.CHERUB.get(), ModEntities.OPHAN.get());
+                ModEntities.CHERUB.get(), ModEntities.OPHAN.get(), ModEntities.DOMINION.get(), ModEntities.VIRTUE.get(),
+                ModEntities.POWER.get(), ModEntities.PRINCIPALITY.get(), ModEntities.ARCHANGEL.get());
+        java.util.Set<com.josephison.fiatlux.entity.Choir> choirs = java.util.EnumSet.noneOf(com.josephison.fiatlux.entity.Choir.class);
         for (EntityType<? extends HeavenlyBeing> type : host) {
             HeavenlyBeing being = helper.spawn(type, new BlockPos(2, 2, 2));
             helper.assertTrue(being.isAlive(), type + " did not survive spawning");
             helper.assertTrue(being.isNoGravity(), type + " should fly");
             helper.assertTrue(being.getType().is(ModTags.HEAVENLY_HOST), type + " is missing from #fiatlux:heavenly_host");
             helper.assertTrue(being.getAnimatableInstanceCache() != null, type + " has no GeckoLib cache");
+            helper.assertTrue(choirs.add(being.choir()), type + " shares its choir with another order");
             being.discard();
         }
+        helper.assertTrue(choirs.size() == 9, "the hierarchy is incomplete: " + choirs);
         helper.succeed();
+    }
+
+    /** A Virtue's office is the miracle of healing: a wounded angel beside it is restored. */
+    @GameTest(template = "empty", timeoutTicks = 260)
+    public static void virtuesHeal(GameTestHelper helper) {
+        HeavenlyBeing wounded = helper.spawn(ModEntities.ANGEL.get(), new BlockPos(2, 2, 2));
+        wounded.setAngelState(new com.josephison.fiatlux.divinity.AngelState(0f, 1f));
+        wounded.setHealth(10f);
+        HeavenlyBeing virtue = helper.spawn(ModEntities.VIRTUE.get(), new BlockPos(4, 2, 2));
+        virtue.setAngelState(new com.josephison.fiatlux.divinity.AngelState(0f, 1f));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(wounded.getHealth() > 14f, "the Virtue did not heal the wounded angel: " + wounded.getHealth());
+            wounded.discard();
+            virtue.discard();
+        });
     }
 
     /**

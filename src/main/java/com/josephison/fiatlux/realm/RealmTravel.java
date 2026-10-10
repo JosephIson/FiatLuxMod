@@ -20,14 +20,39 @@ public final class RealmTravel {
 
     private RealmTravel() {}
 
-    /** Lands the player on solid ground near (x, z) in the given level. Returns false if there is no ground. */
+    /**
+     * Lands the player on safe, solid ground near (x, z): searches outward in a spiral for a column
+     * whose surface is a solid block with no fluid on it (not the lava of a crater lake or the sea).
+     * Falls back to the plain surface at (x, z). Returns false if there is no ground at all.
+     */
     public static boolean arrive(ServerPlayer player, ServerLevel level, int x, int z) {
-        level.getChunk(x >> 4, z >> 4);                                   // generate the landing site
+        for (int r = 0; r <= 96; r += 6) {
+            int steps = r == 0 ? 1 : 16;
+            for (int k = 0; k < steps; k++) {
+                double a = Math.PI * 2 * k / steps;
+                int px = x + (int) Math.round(Math.cos(a) * r), pz = z + (int) Math.round(Math.sin(a) * r);
+                level.getChunk(px >> 4, pz >> 4);                     // generate the landing site
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, px, pz);
+                if (y <= level.getMinBuildHeight() + 1) continue;
+                net.minecraft.core.BlockPos ground = new net.minecraft.core.BlockPos(px, y - 1, pz);
+                var state = level.getBlockState(ground);
+                if (state.getFluidState().isEmpty() && state.isFaceSturdy(level, ground, net.minecraft.core.Direction.UP)
+                        && !state.is(net.minecraft.world.level.block.Blocks.MAGMA_BLOCK)) {
+                    land(player, level, px, y, pz);
+                    return true;
+                }
+            }
+        }
+        level.getChunk(x >> 4, z >> 4);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
         if (y <= level.getMinBuildHeight() + 1) return false;
+        land(player, level, x, y, z);
+        return true;
+    }
+
+    private static void land(ServerPlayer player, ServerLevel level, int x, int y, int z) {
         player.teleportTo(level, x + 0.5, y + 0.1, z + 0.5, player.getYRot(), 0f);
         player.fallDistance = 0;
-        return true;
     }
 
     public static boolean toPlanet(ServerPlayer player, int slot) {

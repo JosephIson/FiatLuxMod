@@ -1,6 +1,7 @@
-// 1.21.1	2026-10-10T22:38:30.484949593	Item Models: fiatlux
+// 1.21.1	2026-10-10T22:53:02.079268856	Item Models: fiatlux
 56f15a3f9bcbbe60bb4d41178e6009b816d79b31 assets/fiatlux/models/item/abyssal_stone.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/angel_spawn_egg.json
+63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/archangel_spawn_egg.json
 0d90a86c58822b94ead552c491d0f3236826614f assets/fiatlux/models/item/brimstone.json
 16df536957f0c796796bc4b94fc137b862825123 assets/fiatlux/models/item/celestial_crystal.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/cherub_spawn_egg.json
@@ -9,6 +10,7 @@ c0be5ea0bc550c866a7a95fd2c8100ee7e45d36f assets/fiatlux/models/item/cloud_band_a
 fb045e4aa70a211e003f4737bf804a043794811f assets/fiatlux/models/item/cloud_band_rust.json
 41333db863acb6462a653b466df9d08f67350aef assets/fiatlux/models/item/cloudstone.json
 1d4ee36f6b6182fb1baaf6214a43b7900e27ba1e assets/fiatlux/models/item/divine_scepter.json
+63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/dominion_spawn_egg.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/fallen_spawn_egg.json
 9d3925509b8efe5474e4ccfd33b908be60a0f451 assets/fiatlux/models/item/flaming_sword_of_cherubim.json
 f5108d5d39cb7d573cf5ee662da4d536b95ae47b assets/fiatlux/models/item/golden_street.json
@@ -18,7 +20,10 @@ dcda4e25ca30b9fc878bad5e113b76f3b01f5852 assets/fiatlux/models/item/neon_crimson
 27e158ca0a93237bd8555a7c83afd275448856cd assets/fiatlux/models/item/neon_violet.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/ophan_spawn_egg.json
 b3790290413d0b291706b8c4c231b4a32645ad44 assets/fiatlux/models/item/pearl.json
+63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/power_spawn_egg.json
+63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/principality_spawn_egg.json
 136e541da6db68008ae8bcf478ded99b9408a702 assets/fiatlux/models/item/regolith.json
 63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/seraph_spawn_egg.json
 2da538bef89947cbf8fca9fb7e6837695385fc24 assets/fiatlux/models/item/soul_engine.json
 13604b6c8bb95572df71a428a7f45d0c1d89ee8f assets/fiatlux/models/item/sulfur.json
+63ec6c618a3a23eab4cab9c52d7d3250de9b516e assets/fiatlux/models/item/virtue_spawn_egg.json
