@@ -95,7 +95,8 @@ public final class Faiths {
         if (speaker.religion() == null || speaker.religion().equals(listener.religion())) return false;
         Religion faith = Generations.get(speaker.getServer()).religion(speaker.religion());
         if (faith == null) return false;
-        double chance = 0.04 + listener.doubt() * 0.25 + (speaker.profession() == Profession.PRIEST ? 0.08 : 0);
+        double chance = 0.04 + listener.doubt() * 0.25 + (speaker.profession() == Profession.PRIEST ? 0.08 : 0)
+                + (speaker.getUUID().equals(faith.leader) ? 0.12 : 0);   // those who lead a faith preach it best
         if (faith.deity.true_ && listener.hasTrait(Trait.PIOUS)) chance += 0.1;
         if (!faith.deity.true_ && (listener.hasTrait(Trait.GREEDY) || listener.hasTrait(Trait.PROUD))) chance += 0.08;
         if (r.nextDouble() >= chance) return false;

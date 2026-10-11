@@ -807,7 +807,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         }
         if (tickCount % 100 == 3) {
             var polity = com.josephison.fiatlux.civilization.Justice.polityOf(level, this);
-            String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale()) : "";
+            String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale())
+                    : com.josephison.fiatlux.civilization.Churches.titleOf(level, this);
             if (!t.equals(title())) entityData.set(DATA_TITLE, t);
         }
         if (isNephil() && tickCount % 100 == 3) growAsGiant();
@@ -818,6 +819,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         possessionTick(level, year);
         exorcistTick(level);
         faithTick(level, year);
+        leaveTick(level, year);
         familyTick(level, year);
         viceTick(level, year);
         if (speechTicks == 0 && act() == NONE && random.nextInt(40) == 0) {
@@ -945,12 +947,23 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             double rate = hasTrait(Trait.PROUD) || hasTrait(Trait.CURIOUS) ? 0.004 : hasTrait(Trait.PIOUS) ? 0.0005 : 0.001;
             setDoubt(doubt + rate);
         }
-        if (doubt > 0.85 && (profession == Profession.PRIEST || hasTrait(Trait.PROUD)) && random.nextInt(600) == 0
-                && level.getEntitiesOfClass(MortalEntity.class, new AABB(s.centre).inflate(80)).size() >= 4) {
-            Religion born = Faiths.schism(level, this, worldName());
-            say("No more waiting on silent heavens. We will worship " + born.deityName + "!");
-            emote(ParticleTypes.SMOKE, 10);
-        }
+    }
+
+    /**
+     * Those who doubt, or whose faith's leader has shamed it, may leave it - for a faith that is near,
+     * for one of their own founding, or for none (see {@link com.josephison.fiatlux.civilization.Churches#apostasy}).
+     * Its leader does not leave the flock it leads.
+     */
+    private void leaveTick(ServerLevel level, int year) {
+        Religion faith = Faiths.of(this);
+        if (faith == null || isChild() || getUUID().equals(faith.leader)) return;
+        MortalEntity leader = faith.leader != null && level.getEntity(faith.leader) instanceof MortalEntity m ? m : null;
+        boolean shamed = leader != null && com.josephison.fiatlux.civilization.Churches.corrupt(leader) && distanceToSqr(leader) < 96 * 96;
+        double pull = (doubt > 0.6 ? (doubt - 0.6) * 2.5 : 0) + (shamed ? 0.3 : 0) + (hasTrait(Trait.PROUD) || hasTrait(Trait.CURIOUS) ? 0.1 : 0)
+                - (hasTrait(Trait.PIOUS) ? 0.2 : 0);
+        if (pull <= 0 || random.nextDouble() > pull * FiatLuxConfig.COMMON.apostasyRate.get() * 20.0 / year) return;
+        Religion now = com.josephison.fiatlux.civilization.Churches.apostasy(level, this, faith);
+        if (now != null) emote(now.deity.true_ ? ParticleTypes.ENCHANT : ParticleTypes.SMOKE, 10);
     }
 
     /** Married women of age may bear children; answered prayers for a child are kept. */
@@ -1433,7 +1446,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         String stage = isChild() ? "child" : isElder() ? "elder" : profession.id;
         if (!title().isEmpty()) {
             var polity = com.josephison.fiatlux.civilization.Justice.polityOf((ServerLevel) level(), this);
-            stage = title() + (polity != null ? " of the " + polity.name : "");
+            boolean rules = polity != null && getUUID().equals(polity.ruler);
+            stage = title() + (rules ? " of the " + polity.name : faith != null ? " of the " + faith.name : "");
         }
         if (isPossessed()) {
             player.sendSystemMessage(Component.literal("An unclean spirit is in " + (isMale() ? "him" : "her") + ": " + spirit

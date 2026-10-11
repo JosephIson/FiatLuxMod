@@ -5,6 +5,7 @@ import com.josephison.fiatlux.entity.HeavenlyBeing;
 import com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction;
 import com.josephison.fiatlux.registry.ModEntities;
 import com.josephison.fiatlux.registry.ModParticles;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -21,11 +22,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
 /**
- * A rift from the Underworld: a jagged tear standing on the ground of a living world, dark at its
- * heart and burning at its edges, through which unclean spirits come up "out of the bottomless pit"
- * (Rev 9:2) to go about seeking whom they may enter. It stays open a while, sending them up one by
- * one, and closes; a holy angel standing by seals it, and so does its Creator's stroke - "the gates of
- * hell shall not prevail" (Matt 16:18).
+ * A rift from the Underworld: a jagged tear standing upright on the ground of a living world, burning
+ * at its edges, through which unclean spirits come up "out of the bottomless pit" (Rev 9:2) to go about
+ * seeking whom they may enter. Through it the Underworld itself can be seen - its ash plains, brimstone
+ * and the lights of its cities, in true perspective as one moves (see {@link com.josephison.fiatlux.portal.Portals}) -
+ * and its twin stands on the far side, looking back into the world; whoever steps through one comes
+ * out of the other. It stays open a while, sending the spirits up one by one, and closes; a holy angel
+ * standing by seals it, and so does its Creator's stroke - "the gates of hell shall not prevail"
+ * (Matt 16:18).
  */
 public class RiftEntity extends Entity {
     /** Ticks a rift stands open, and the ticks it takes to close. */
@@ -36,6 +40,17 @@ public class RiftEntity extends Entity {
     private String lord = "";
     private Affliction affliction = Affliction.DISCORD;
     private boolean legion;
+    /** How long a holy angel has stood by it; at SEAL_TICKS it is sealed. */
+    private int holyTicks;
+    public static final int SEAL_TICKS = 160;
+    /** The far side: its dimension, the base of the twin rift there, and the twin itself. */
+    private String farDim = "";
+    private BlockPos farBase = BlockPos.ZERO;
+    @org.jetbrains.annotations.Nullable private java.util.UUID twin;
+    private boolean isTwin;
+    /** How wide the tear is at its widest, and how tall. */
+    public static final float HEIGHT = 5.2f, HALF_WIDTH = 1.2f;
+    private static final int UNDERWORLD_FOG = 0x3A0E0A, WORLD_FOG = 0xA8C8E8;
 
     public RiftEntity(EntityType<? extends RiftEntity> type, Level level) {
         super(type, level);
@@ -77,6 +92,9 @@ public class RiftEntity extends Entity {
     public void seal(String by) {
         if (closing() || !(level() instanceof ServerLevel sl)) return;
         entityData.set(CLOSED_AT, age());
+        com.josephison.fiatlux.portal.Portals.close(this);
+        RiftEntity other = twin();
+        if (other != null) other.seal("");
         sl.playSound(null, blockPosition(), SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 1.5f, 1.6f);
         sl.sendParticles(ModParticles.HOLY_SPARK.get(), getX(), getY() + 2.5, getZ(), 60, 0.4, 1.6, 0.4, 0.2);
         if (!by.isEmpty()) {
@@ -105,6 +123,23 @@ public class RiftEntity extends Entity {
             return;
         }
         ServerLevel sl = (ServerLevel) level();
+        if (age == 1 && !isTwin && farDim.isEmpty()) openOnto(sl);
+        if (!closing() && age > 30 && !farDim.isEmpty()) {
+            ServerLevel far = sl.getServer().getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                    net.minecraft.resources.ResourceLocation.parse(farDim)));
+            if (far != null) {
+                if (!com.josephison.fiatlux.portal.Portals.isOpen(this) && age % 40 == 0) {   // after a reload, the view is captured again
+                    com.josephison.fiatlux.portal.Portals.open(this, far, farBase, getYRot(), "rift", isTwin ? WORLD_FOG : UNDERWORLD_FOG, 28, 10, 22);
+                }
+                float half = HALF_WIDTH * openness(0) * 0.8f;
+                com.josephison.fiatlux.portal.Portals.cross(this, half, HEIGHT - 1, far, net.minecraft.world.phys.Vec3.atBottomCenterOf(farBase), getYRot());
+            }
+        }
+        if (isTwin) {   // the far side only looks back; it sends no one up, and closes with its rift
+            if (age >= OPEN + 200) seal("");
+            if (closing() && age - entityData.get(CLOSED_AT) >= CLOSING) discard();
+            return;
+        }
         if (age == 1) {
             sl.playSound(null, blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.2f, 0.4f);
             sl.playSound(null, blockPosition(), SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 1.2f, 0.5f);
@@ -115,15 +150,68 @@ public class RiftEntity extends Entity {
             release(sl);
             spirits--;
         }
-        // a holy angel standing by seals it
+        // a holy angel standing by seals it, if it stands there long enough
         if (!closing() && age % 20 == 0) {
-            for (HeavenlyBeing b : sl.getEntitiesOfClass(HeavenlyBeing.class, getBoundingBox().inflate(7), b -> !b.isRebel())) {
-                seal(b.getName().getString());
-                break;
-            }
+            HeavenlyBeing holy = sl.getEntitiesOfClass(HeavenlyBeing.class, getBoundingBox().inflate(7), b -> !b.isRebel()).stream().findFirst().orElse(null);
+            holyTicks = holy == null ? Math.max(0, holyTicks - 20) : holyTicks + 20;
+            if (holy != null) sl.sendParticles(ModParticles.HOLY_SPARK.get(), getX(), getY() + 2.5, getZ(), 6, 0.3, 1.4, 0.3, 0.05);
+            if (holy != null && holyTicks >= SEAL_TICKS) seal(holy.getName().getString());
         }
         if (!closing() && age >= OPEN) seal("");
         if (closing() && age - entityData.get(CLOSED_AT) >= CLOSING) discard();
+    }
+
+    /**
+     * Tears through to the Underworld: finds the ground there beneath the same place, sets the twin
+     * rift on it facing the same way, and opens the view each way.
+     */
+    private void openOnto(ServerLevel sl) {
+        ServerLevel under = sl.getServer().getLevel(com.josephison.fiatlux.world.FiatLuxDimensions.UNDERWORLD);
+        if (under == null || under == sl) return;
+        int x = getBlockX(), z = getBlockZ();
+        under.getChunk(x >> 4, z >> 4);
+        int y = under.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        BlockPos base = new BlockPos(x, Math.max(under.getMinBuildHeight() + 2, y), z);
+        farDim = under.dimension().location().toString();
+        farBase = base;
+        RiftEntity t = com.josephison.fiatlux.registry.ModEntities.RIFT.get().create(under);
+        if (t != null) {
+            t.isTwin = true;
+            t.spirits = 0;
+            t.farDim = sl.dimension().location().toString();
+            t.farBase = blockPosition();
+            t.twin = getUUID();
+            t.moveTo(base.getX() + 0.5, base.getY(), base.getZ() + 0.5, getYRot(), 0);
+            under.addFreshEntity(t);
+            twin = t.getUUID();
+            com.josephison.fiatlux.portal.Portals.open(t, sl, blockPosition(), getYRot(), "rift", WORLD_FOG, 28, 10, 22);
+        }
+        com.josephison.fiatlux.portal.Portals.open(this, under, base, getYRot(), "rift", UNDERWORLD_FOG, 28, 10, 22);
+    }
+
+    @org.jetbrains.annotations.Nullable
+    private RiftEntity twin() {
+        if (twin == null || farDim.isEmpty() || !(level() instanceof ServerLevel sl)) return null;
+        ServerLevel far = sl.getServer().getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                net.minecraft.resources.ResourceLocation.parse(farDim)));
+        return far != null && far.getEntity(twin) instanceof RiftEntity r ? r : null;
+    }
+
+    /**
+     * The shape of the tear: a jagged spine up the middle (x offset per segment) and its half-width
+     * per segment, the same for every client (from the entity's id). Widest in the middle, closed at the ends.
+     */
+    public static float[][] outline(int id, float open) {
+        int n = 14;
+        net.minecraft.util.RandomSource r = net.minecraft.util.RandomSource.create(id * 31L);
+        float[] x = new float[n + 1], w = new float[n + 1];
+        for (int i = 0; i <= n; i++) {
+            float k = i / (float) n;
+            x[i] = (r.nextFloat() - 0.5f) * 0.6f;
+            float bulge = (float) Math.sin(Math.PI * k);
+            w[i] = (0.1f + HALF_WIDTH * (float) Math.pow(bulge, 0.8) * (0.7f + r.nextFloat() * 0.3f)) * open;
+        }
+        return new float[][]{x, w};
     }
 
     /** One spirit comes up through the rift. */
@@ -154,6 +242,12 @@ public class RiftEntity extends Entity {
     }
 
     @Override
+    public void remove(RemovalReason reason) {
+        com.josephison.fiatlux.portal.Portals.close(this);
+        super.remove(reason);
+    }
+
+    @Override
     public boolean shouldRenderAtSqrDistance(double distance) {
         return distance < 160 * 160;
     }
@@ -164,6 +258,10 @@ public class RiftEntity extends Entity {
         spirits = tag.getInt("Spirits");
         lord = tag.getString("Lord");
         legion = tag.getBoolean("Legion");
+        farDim = tag.getString("FarDim");
+        farBase = BlockPos.of(tag.getLong("FarBase"));
+        twin = tag.hasUUID("Twin") ? tag.getUUID("Twin") : null;
+        isTwin = tag.getBoolean("IsTwin");
         try {
             affliction = Affliction.valueOf(tag.getString("Affliction"));
         } catch (IllegalArgumentException ignored) {
@@ -176,6 +274,10 @@ public class RiftEntity extends Entity {
         tag.putInt("Spirits", spirits);
         tag.putString("Lord", lord);
         tag.putBoolean("Legion", legion);
+        tag.putString("FarDim", farDim);
+        tag.putLong("FarBase", farBase.asLong());
+        if (twin != null) tag.putUUID("Twin", twin);
+        tag.putBoolean("IsTwin", isTwin);
         tag.putString("Affliction", affliction.name());
     }
 }

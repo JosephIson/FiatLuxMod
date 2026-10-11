@@ -48,6 +48,10 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.BooleanValue watchersDescend;
         public final ModConfigSpec.IntValue watchersMinPeople;
         public final ModConfigSpec.DoubleValue riftChance;
+        public final ModConfigSpec.DoubleValue schismChance;
+        public final ModConfigSpec.IntValue hostInHeaven;
+        public final ModConfigSpec.IntValue hostOnWorlds;
+        public final ModConfigSpec.DoubleValue apostasyRate;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -156,6 +160,19 @@ public final class FiatLuxConfig {
             b.comment("Unclean spirits, rifts and possession").push("possession");
             riftChance = b.comment("Base chance each second that a rift from the Underworld opens near a town of a fallen world (more by night and on sinful worlds).")
                     .defineInRange("riftChance", 0.0008, 0.0, 1.0);
+            b.pop();
+
+            b.comment("The living Heavenly Host").push("host");
+            hostInHeaven = b.comment("How many of the Heavenly Host live about each player in Heaven (all nine choirs; 0 for none).")
+                    .defineInRange("hostInHeaven", 14, 0, 100);
+            hostOnWorlds = b.comment("How many ministering angels pass over each player on the earth and the living worlds (0 for none).")
+                    .defineInRange("hostOnWorlds", 2, 0, 30);
+            b.pop();
+
+            b.comment("Faiths: leaders, branches and those who leave").push("faiths");
+            schismChance = b.comment("Chance per mortal year that a faith of eight or more followers splits into a new branch (more with many towns or a corrupt leader).")
+                    .defineInRange("schismChance", 0.06, 0.0, 10.0);
+            apostasyRate = b.comment("Chance per mortal year that a doubting mortal (doubt over 0.6) leaves its faith.").defineInRange("apostasyRate", 0.25, 0.0, 10.0);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

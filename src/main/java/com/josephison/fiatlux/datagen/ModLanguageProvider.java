@@ -107,6 +107,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.eden.planted", "And the LORD God planted a garden eastward in Eden; and there he put the man whom he had formed. (Genesis 2:8)");
         add("message.fiatlux.cain.warning", "Sin lies at Cain's door. Sneak and use Cain to bless him before it masters him - or let it be.");
         add("message.fiatlux.eden.serpent_driven_off", "The serpent slips away into the grass. The tempter will return.");
+        add("message.fiatlux.faith.split", "%s has broken with the %s and founded the %s, %s.");
         add(com.josephison.fiatlux.registry.ModEntities.RIFT.get(), "Rift from the Underworld");
         add(com.josephison.fiatlux.registry.ModEntities.SPIRIT.get(), "Unclean Spirit");
         add(com.josephison.fiatlux.registry.ModEntities.GUARDIAN.get(), "Guardian Angel");

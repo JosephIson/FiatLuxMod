@@ -123,6 +123,16 @@ Thrones / Dominions, Virtues, Powers / Principalities, Archangels, Angels. It *d
 of them. The second and third spheres are built on the man in linen of Daniel 10 and set apart by the
 regalia tradition gives each office.
 
+### The living Host
+From the moment a world is made, Heaven is full: the Heavenly Host of all nine choirs lives about
+whoever walks its streets. Angels are the most numerous, then archangels, principalities, powers,
+virtues, dominions, cherubim, seraphim and ophanim, the highest fewest (Daniel 7:10). Some keep
+stations among the streets and some fly overhead, and on arrival they are all there at once. On the
+earth and the living worlds a few ministering angels pass overhead (Heb 1:14). These serve no
+Creator in particular, so in the war in Heaven it is from among them that the rebels rise.
+Summoning powers still send a being that is yours. Change the numbers with `hostInHeaven` and
+`hostOnWorlds`, or set them to 0.
+
 ### War in heaven and the Fall
 When corruption crosses `rebellionCorruptionThreshold` (or on `/fiatlux event rebellion`), the
 proud among the living Host turn. A rebel host musters in Heaven from every choir, led the
@@ -279,6 +289,25 @@ hung with fruit you can pick.
   * **Timing and commands**: the year of the Flood runs at `floodDayTicks` per day. `/fiatlux flood`
     shows where it stands, `/fiatlux flood next` hastens it to its next stage, and
     `/fiatlux flood bow` sets a rainbow in the sky to the south of you.
+* **Faiths: leaders, branches and those who leave**: every faith has a leader. It is called an
+  elder, then a high priest, a patriarch, an archbishop and a primate as the ages pass. False faiths
+  have their own leaders: a sun-priest, a star-seer, a hierophant of the fallen, a druid, a
+  pontifex. When a leader dies, the faithful choose another, a priest first. Leaders carry their
+  title (use them to see it) and preach their faith best. A corrupt leader brings **scandal**
+  (Micah 3:11), and the flock doubts.
+  * **Branches**: faiths **split into branches** over doctrine: the keeping of holy days, images in
+    the sanctuary, who may lead, the corruption of the leader ("I am of Paul; and I of Apollos",
+    1 Cor 1:12). A dissenter founds the *Reformed*, *Orthodox* or *Free* branch, the branch "of
+    Enoch", or "the …ites", and most of the faithful in the dissenter's town go with them. Splits are
+    likelier when a faith spans many towns or its leader is corrupt.
+  * **Leaving**: single mortals **leave** their faith when they doubt, are proud or curious, or are
+    shamed by their leader. They may join the faith most of their neighbours hold, or found one of
+    their own: the sun, the stars, the ancestors, an idol or one of the fallen, the Great Mother of
+    the groves, or, under an empire, the divine emperor himself. Others hold to **no god at all**
+    and gather into a school of reason (Psalm 14:1). A faith whose last follower dies is no more.
+  * **Commands**: `/fiatlux faiths` shows the faiths of your world as a family tree of branches,
+    each with its followers, its leader and what it split over. `/fiatlux faiths split` splits the
+    faith of the mortal nearest you, and the Cosmos screen lists leaders and branches.
 * **Unclean spirits and possession** (Eph 6:12): once angels have fallen, **rifts** from the
   Underworld tear open now and then near the towns of fallen worlds. They come more often by night
   and on sinful worlds. Each is a jagged burning tear standing on the ground, and unclean spirits
@@ -288,6 +317,12 @@ hung with fruit you can pick.
   * **Who they enter**: a spirit looks for someone of weak faith (an idolater, a doubter, or one
     with more sin than virtue) and enters them. Finding no one, it "walketh through dry places,
     seeking rest" (Matt 12:43).
+  * **A window into the Underworld**: a rift is a real opening. Look into it and you see the
+    Underworld beyond: its ash plains, brimstone and rivers, in true perspective as you move, the
+    way the Immersive Portals mod shows the far side of a portal. A twin rift opens in the
+    Underworld looking back into the world, and **walking through either one takes you to the other
+    side**. A guardian angel standing by seals a rift in about eight seconds, and its twin with it.
+    The same portal view will be used for the TARDIS door, so that it is bigger on the inside.
   * **What it does**: the possessed writhe in fits, are shadowed, cry out and cannot pray or work.
     Each spirit does what its lord's office gives it: stealing from the store, sowing quarrels,
     striking out (Acts 19:16), infirmity (Luke 13:11), casting its host into fire and water

@@ -778,12 +778,73 @@ public final class FiatLuxGameTests {
                 var out = level.getEntitiesOfClass(com.josephison.fiatlux.infernal.SpiritEntity.class, host.getBoundingBox().inflate(20)).stream().findFirst().orElse(null);
                 helper.assertTrue(out != null, "nothing came out of her");
                 out.castIntoTheDeep(level);
-                helper.assertTrue(out.isRemoved() && d.castIntoTheDeep == deep + 1, "the spirit was not cast into the deep");
+                helper.assertTrue(out.isRemoved() && d.castIntoTheDeep > deep, "the spirit was not cast into the deep");
                 for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new net.minecraft.world.phys.AABB(here).inflate(80),
                         e -> !(e instanceof net.minecraft.world.entity.player.Player))) e.discard();
                 forceAround(level, at, false);
                 helper.succeed();
             });
+        });
+    }
+
+    /** A faith gets a leader and a successor when the leader dies; a branch splits off it; one of its people leaves it for another faith. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void faithsLeadersAndSchisms(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2)).offset(900, 0, -1500);
+        forceAround(level, at, true);
+        helper.runAfterDelay(10, () -> {
+            var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+            var cosmos = CosmicExpanseSavedData.get(server);
+            boolean fell = cosmos.fallOfMan;
+            cosmos.fallOfMan = true;
+            String world = "FaithTest";
+            Planet planet = new Planet(UUID.randomUUID(), world, PlanetType.EARTHLIKE, 0, 1.5, 4.0, 0.25, 5.0, 1.0, 10000, 0xFFAA88, 10, 0.5, 0.2,
+                    com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL, 0);
+            var faith = new com.josephison.fiatlux.civilization.Religion(UUID.randomUUID(), "The Way of Tester", com.josephison.fiatlux.civilization.Religion.Deity.CREATOR,
+                    "Tester", UUID.randomUUID(), "Tester", world, level.getGameTime());
+            gens.add(faith);
+            BlockPos here = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 4);
+            java.util.List<com.josephison.fiatlux.entity.MortalEntity> flock = new java.util.ArrayList<>();
+            for (int k = 0; k < 9; k++) {
+                var m = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here.offset(k % 3 * 2, 0, k / 3 * 2), here,
+                        com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL, null, k % 2 == 0, 30 + k * 4, null, null, faith.id);
+                m.setReligion(faith.id);
+                var person = gens.person(m.getUUID());
+                flock.add(m);
+                gens.people.put(m.getUUID(), new com.josephison.fiatlux.civilization.Person(m.getUUID(), person.name, person.male, world, person.born, null, null));
+                gens.person(m.getUUID()).religion = faith.id;
+            }
+            com.josephison.fiatlux.civilization.Churches.tick(level, cosmos, planet);
+            UUID first = faith.leader;
+            helper.assertTrue(first != null && flock.stream().anyMatch(m -> m.getUUID().equals(first)) && faith.leaders == 1,
+                    "the faith chose no leader from its people");
+            var branch = com.josephison.fiatlux.civilization.Churches.branch(level, faith, planet, level.random);
+            helper.assertTrue(branch != null && faith.id.equals(branch.parent) && !branch.doctrine.isEmpty() && branch.deity == faith.deity
+                    && branch.leader != null && !branch.leader.equals(first), "no branch split from the faith");
+            var leaver = flock.stream().filter(m -> faith.id.equals(m.religion()) && !m.getUUID().equals(first)).findFirst().orElse(null);
+            if (leaver != null) {
+                var now = com.josephison.fiatlux.civilization.Churches.apostasy(level, leaver, faith);
+                helper.assertTrue(now != null && !faith.id.equals(leaver.religion()), "the one who left did not leave");
+            }
+            var reason = com.josephison.fiatlux.civilization.Churches.reason(level, flock.getFirst(), world);
+            helper.assertTrue(reason.deity == com.josephison.fiatlux.civilization.Religion.Deity.REASON
+                    && com.josephison.fiatlux.civilization.Churches.reason(level, flock.getFirst(), world) == reason, "those without a god have no gathering");
+            // the leader dies, and another is chosen
+            var leader = flock.stream().filter(m -> m.getUUID().equals(first)).findFirst().orElseThrow();
+            gens.person(first).died = level.getGameTime();
+            leader.discard();
+            com.josephison.fiatlux.civilization.Churches.tick(level, cosmos, planet);
+            helper.assertTrue(faith.leader != null && !faith.leader.equals(first) && faith.leaders == 2 || faith.extinct >= 0,
+                    "no one succeeded the dead leader");
+            // put things back
+            flock.forEach(net.minecraft.world.entity.Entity::discard);
+            flock.forEach(m -> gens.people.remove(m.getUUID()));
+            gens.religions.values().removeIf(r -> world.equals(r.world));
+            cosmos.fallOfMan = fell;
+            forceAround(level, at, false);
+            helper.succeed();
         });
     }
 

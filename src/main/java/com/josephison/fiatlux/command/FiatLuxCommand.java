@@ -152,6 +152,38 @@ public final class FiatLuxCommand {
                     }
                     return all.size();
                 }))
+                .then(Commands.literal("faiths").executes(c -> {
+                    // every faith of the world you stand on: its followers, its leader, and the branches that split from it
+                    var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(c.getSource().getLevel().dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    if (world == null) {
+                        c.getSource().sendFailure(Component.literal("Stand on a created world to see its faiths."));
+                        return 0;
+                    }
+                    var lines = com.josephison.fiatlux.civilization.Churches.describe(c.getSource().getServer(), world);
+                    c.getSource().sendSuccess(() -> Component.literal("The faiths of " + world.name + ":").withStyle(s -> s.withColor(0xF5D77A)), false);
+                    for (String l : lines) c.getSource().sendSuccess(() -> Component.literal(l).withStyle(s -> s.withColor(0xC8C0B0)), false);
+                    return lines.size();
+                })
+                        .then(Commands.literal("split").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // the faith of the mortal nearest you splits now
+                            var level = c.getSource().getLevel();
+                            var m = level.getNearestEntity(com.josephison.fiatlux.entity.MortalEntity.class,
+                                    net.minecraft.world.entity.ai.targeting.TargetingConditions.forNonCombat().ignoreLineOfSight(), null,
+                                    c.getSource().getPosition().x, c.getSource().getPosition().y, c.getSource().getPosition().z,
+                                    new net.minecraft.world.phys.AABB(BlockPos.containing(c.getSource().getPosition())).inflate(64));
+                            var faith = m == null ? null : com.josephison.fiatlux.civilization.Faiths.of(m);
+                            var world = m == null ? null : m.planet();
+                            var b = faith == null || world == null ? null : com.josephison.fiatlux.civilization.Churches.branch(level, faith, world, level.random);
+                            if (b == null) {
+                                c.getSource().sendFailure(Component.literal("There is no faith here with a dissenter to split it."));
+                                return 0;
+                            }
+                            c.getSource().sendSuccess(() -> Component.literal(b.founder + " founded the " + b.name + ", split from the " + faith.name + " " + b.doctrine + ".")
+                                    .withStyle(s -> s.withColor(0xE0A060)), true);
+                            return 1;
+                        })))
                 .then(Commands.literal("spirits").executes(c -> {
                     c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.infernal.Infernal.describe(c.getSource().getServer()))
                             .withStyle(s -> s.withColor(0xD08070)), false);

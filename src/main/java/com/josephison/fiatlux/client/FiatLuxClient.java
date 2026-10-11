@@ -48,6 +48,9 @@ public class FiatLuxClient {
         NeoForge.EVENT_BUS.addListener(FxManager::render);
         NeoForge.EVENT_BUS.addListener(com.josephison.fiatlux.client.fx.VoidBodies::render);
         NeoForge.EVENT_BUS.addListener(com.josephison.fiatlux.client.fx.FloodSea::render);
+        NeoForge.EVENT_BUS.addListener(com.josephison.fiatlux.client.portal.PortalViews::render);
+        NeoForge.EVENT_BUS.addListener(com.josephison.fiatlux.client.portal.PortalViews::tick);
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> com.josephison.fiatlux.client.portal.PortalViews.clear());
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> com.josephison.fiatlux.client.fx.FloodSea.update(
                 com.josephison.fiatlux.network.FloodPayload.NONE));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> FxManager.clear());

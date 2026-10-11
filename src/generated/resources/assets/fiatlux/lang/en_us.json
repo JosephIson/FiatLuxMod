@@ -206,6 +206,7 @@
   "message.fiatlux.faith.answered": "You have answered the prayers of %s. Their faith is renewed.",
   "message.fiatlux.faith.petition": "[Prayer] %s of %s: \"%s\"",
   "message.fiatlux.faith.schism": "%s of %s has turned away from you and founded the %s, worshipping %s.",
+  "message.fiatlux.faith.split": "%s has broken with the %s and founded the %s, %s.",
   "message.fiatlux.fell_into_abyss": "You fall through %s, the bottomless pit, into the Underworld. (Revelation 9:1-2)",
   "message.fiatlux.flood.already": "%s is already in the days of the ark on %s.",
   "message.fiatlux.flood.begun": "%s has found grace in your eyes, and goes to build the ark on %s.",

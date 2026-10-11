@@ -155,7 +155,9 @@ public class CosmosScreen extends Screen {
                     if (!faiths.isEmpty()) text("Faiths:", GOLD, 0);
                     for (int f = 0; f < faiths.size(); f++) {
                         CompoundTag fa = faiths.getCompound(f);
-                        text(fa.getString("name") + " - " + fa.getInt("followers") + " following " + fa.getString("deity"),
+                        text(fa.getString("name") + " - " + fa.getInt("followers") + " following " + fa.getString("deity")
+                                        + (fa.getString("leader").isEmpty() ? "" : ", led by " + fa.getString("leader"))
+                                        + (fa.getString("parent").isEmpty() ? "" : " (split from the " + fa.getString("parent") + ")"),
                                 0xFF000000 | fa.getInt("color"), 8);
                     }
                 }

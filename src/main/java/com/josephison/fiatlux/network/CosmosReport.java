@@ -150,7 +150,7 @@ public record CosmosReport(CompoundTag data) implements CustomPacketPayload {
             w.put("towns", towns);
             ListTag faiths = new ListTag();
             faithsByWorld.getOrDefault(p.name, Map.of()).entrySet().stream()
-                    .sorted((a, b) -> b.getValue() - a.getValue()).limit(4).forEach(e -> {
+                    .sorted((a, b) -> b.getValue() - a.getValue()).limit(6).forEach(e -> {
                         Religion r = gens.religion(e.getKey());
                         if (r == null) return;
                         CompoundTag f = new CompoundTag();
@@ -159,6 +159,9 @@ public record CosmosReport(CompoundTag data) implements CustomPacketPayload {
                         f.putInt("followers", e.getValue());
                         f.putInt("color", r.deity.color);
                         f.putBoolean("true", r.deity.true_);
+                        f.putString("leader", r.leaderName.isEmpty() ? "" : r.leaderTitle(p.era) + " " + r.leaderName);
+                        Religion parent = gens.religion(r.parent);
+                        f.putString("parent", parent == null ? "" : parent.name);
                         faiths.add(f);
                     });
             w.put("faiths", faiths);

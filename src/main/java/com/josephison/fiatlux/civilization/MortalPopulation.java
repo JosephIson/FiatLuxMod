@@ -82,6 +82,7 @@ public final class MortalPopulation {
             }
             expand(level, cosmos, p, towns);
             Government.tick(level, cosmos, p, cosmos.townsOf(p.id));   // their rulers and their laws
+            Churches.tick(level, cosmos, p);                            // their faiths: leaders, branches and the faithful who leave
         }
     }
 
