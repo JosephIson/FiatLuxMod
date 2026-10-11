@@ -185,11 +185,15 @@ public final class PortalViews {
         GL11.glDepthRange(0.0, 1.0);
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         // 3. the far side itself, in its place behind the opening, in its own haze
-        Matrix4f m = new Matrix4f(viewMat).translate((float) (origin.x - cam.x), (float) (origin.y - cam.y), (float) (origin.z - cam.z));
-        // far-side coordinates -> world: rotate the far facing onto this one, about the anchor
+        // far-side coordinates -> world: turn the far facing onto this one, about the anchor. The turn goes into the
+        // model-view matrix; the offset goes into CHUNK_OFFSET, as vanilla terrain does, so that the shader sees
+        // camera-relative positions (its fog is measured from them, and would otherwise swallow everything)
         float turn = (float) Math.toRadians(yaw - view.destYaw);
-        m.rotateY(-turn);
-        m.translate((float) (view.snapshot.min.getX() - view.ax), (float) (view.snapshot.min.getY() - view.ay), (float) (view.snapshot.min.getZ() - view.az));
+        Matrix4f m = new Matrix4f(viewMat).rotateY(-turn);
+        Vector3f toOrigin = new Matrix4f().rotateY(turn).transformDirection(
+                new Vector3f((float) (origin.x - cam.x), (float) (origin.y - cam.y), (float) (origin.z - cam.z)));
+        Vector3f offset = toOrigin.add((float) (view.snapshot.min.getX() - view.ax), (float) (view.snapshot.min.getY() - view.ay),
+                (float) (view.snapshot.min.getZ() - view.az));
         float[] fogColour = RenderSystem.getShaderFogColor().clone();
         float fogStart = RenderSystem.getShaderFogStart(), fogEnd = RenderSystem.getShaderFogEnd();
         var fogShape = RenderSystem.getShaderFogShape();
@@ -208,11 +212,12 @@ public final class PortalViews {
                 shader.setDefaultUniforms(VertexFormat.Mode.QUADS, m, proj, mc.getWindow());
                 shader.apply();
                 if (shader.CHUNK_OFFSET != null) {
-                    shader.CHUNK_OFFSET.set(0f, 0f, 0f);
+                    shader.CHUNK_OFFSET.set(offset.x, offset.y, offset.z);
                     shader.CHUNK_OFFSET.upload();
                 }
                 vb.bind();
                 vb.draw();
+                if (shader.CHUNK_OFFSET != null) shader.CHUNK_OFFSET.set(0f, 0f, 0f);
                 shader.clear();
             }
             VertexBuffer.unbind();
