@@ -68,7 +68,7 @@ public final class SonPayloads {
             if (!level.isLoaded(s.centre)) continue;
             List<Mother> mothers = new ArrayList<>();
             for (MortalEntity m : level.getEntitiesOfClass(MortalEntity.class, new AABB(s.centre).inflate(64),
-                    m -> !m.isMale() && !m.isChild() && m.ageYears() < 40 && !m.isPossessed())) {
+                    m -> !m.isMale() && !m.isChild() && m.ageYears() < 50 && !m.isPossessed())) {
                 Person p = g.person(m.getUUID());
                 String line = p != null && !p.line.isEmpty() ? ", of the line of " + p.line.substring(0, 1).toUpperCase() + p.line.substring(1) : "";
                 String parents = p != null && p.father != null && g.person(p.father) != null ? ", daughter of " + g.person(p.father).name : "";

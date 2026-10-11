@@ -198,13 +198,19 @@ public final class TheSon {
     @Nullable
     static MortalEntity chooseMother(ServerLevel level, Settlement town, Religion faith) {
         Generations g = Generations.get(level.getServer());
-        return level.getEntitiesOfClass(MortalEntity.class, new AABB(town.centre).inflate(64),
-                        m -> !m.isMale() && !m.isChild() && m.ageYears() < 40 && !m.isPossessed() && m.sentence() == Justice.Sentence.NONE)
+        MortalEntity chosen = level.getEntitiesOfClass(MortalEntity.class, new AABB(town.centre).inflate(64),
+                        m -> !m.isMale() && !m.isChild() && m.ageYears() < 50 && !m.isPossessed() && m.sentence() == Justice.Sentence.NONE)
                 .stream().max(Comparator.comparingDouble(m -> {
                     Person p = g.person(m.getUUID());
                     return (faith.id.equals(m.religion()) ? 4 : 0) + (m.spouseId() == null ? 3 : 0) + (m.hasTrait(Trait.PIOUS) ? 2 : 0)
                             + (p != null && !p.line.isEmpty() && !p.line.equals("cain") ? 2 : 0) + level.random.nextDouble();
                 })).orElse(null);
+        if (chosen != null) return chosen;
+        // no woman of age in the town: providence brings one forth, a young woman of the faith
+        Planet world = world(level);
+        BlockPos at = MortalPopulation.safeGround(level, town.centre.getX() + 3, town.centre.getZ() + 4, 6);
+        return MortalPopulation.bringForth(level, at != null ? at : town.centre, town.centre, world != null ? world.era : MortalEra.AGRARIAN,
+                null, false, 17, null, null, faith.id);
     }
 
     // ================================================================== the story, a second at a time
@@ -482,6 +488,27 @@ public final class TheSon {
         }
         b.append(", which was of ").append(d.creatorName).append(".");
         return b.toString();
+    }
+
+    /** Ends the story where it stands (the Son is taken away), so that it can be begun again. */
+    public static String reset(MinecraftServer server) {
+        SonData d = SonData.get(server);
+        if (d.stage == SonData.Stage.NONE) return "The Son has not been sent.";
+        ServerLevel level = level(server, d);
+        if (level != null) {
+            MortalEntity son = mortal(level, d.son);
+            if (son != null) {
+                son.release();
+                son.discard();
+            }
+            if (d.town != null) dismiss(level, d.town);
+            if (d.tomb != null) Passion.seal(level, d.tomb, false);
+        }
+        String name = d.name;
+        d.to(SonData.Stage.NONE, 0);
+        d.son = null;
+        awaitingVoice = "";
+        return "The story of " + name + " is set aside; /fiatlux son to send the Son again.";
     }
 
     // ================================================================== reports

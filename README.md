@@ -334,6 +334,44 @@ hung with fruit you can pick.
   * **Commands and config**: `/fiatlux prophets` lists every prophet, their oracles and wonders,
     and the judgments foretold. `/fiatlux prophet <name>` calls one. `prophetChance` sets how often
     prophets are raised.
+* **The Son** (Galatians 4:4): in the fulness of the time, send your Son into a world you made.
+  * **Choosing him**: on that world, `/fiatlux son` opens a chooser for his **name** (with
+    suggestions), his **likeness** (shown turning, with a halo), the **town** he is born in, and his
+    **mother**, picked from the town's women or left to your providence. `/fiatlux son status`
+    shows where his story stands.
+  * **The birth**: Gabriel comes to his mother (Luke 1), and a just man takes her to wife. He is
+    born under a star seen from far across the land. An angel and then the whole Host appear to
+    the shepherds ("Glory to … in the highest"), wise men come from the other towns with gold,
+    frankincense and myrrh, and the ruler is troubled. At twelve he teaches the elders in the
+    temple.
+  * **Baptism and temptation**: he is baptised by the prophet of his day. The heavens open, a dove
+    descends, and you are asked to speak from heaven ("This is my beloved Son, in whom I am well
+    pleased"); your own words are used. In the wilderness the Devil tempts him three times, and
+    angels minister to him.
+  * **The ministry**: he calls twelve disciples (one of them loves silver) and goes from town to
+    town, giving the Sermon on the Mount and the parables, and hearers believe. He casts out unclean
+    spirits (Legion goes into the swine), heals, calms the storm, turns water into wine at a wedding
+    feast, feeds the multitude, walks on the water, and raises the dead: someone who really died is
+    restored from the Book of Generations with the same name, kin and face. On a mountain he is
+    transfigured, and the prophets who went before appear with him.
+  * **The Passion**:
+    * He rides into the chief city on a donkey to cries of Hosanna, cleanses the temple and eats
+      the Last Supper; the betrayer goes out.
+    * He prays in the garden while his disciples sleep, and is betrayed with a kiss.
+    * He is tried before the priest and the ruler; a prisoner is released in his place, Peter
+      denies him, and the ruler washes his hands.
+    * He is crucified between two thieves with his charge written over him, and speaks the seven
+      words from the cross; the earth quakes and the veil is torn.
+    * He is laid in a tomb sealed with a great stone. Meanwhile he preaches to the spirits in
+      prison, and souls are led up out of the Underworld.
+  * **Glory**: the stone is rolled away and he rises, shining. The women come, he appears to the
+    disciples, and Thomas believes. Faith spreads across the world.
+  * **The Ascension and Pentecost**: he ascends into the clouds before his disciples. At Pentecost
+    tongues of fire rest on them and they speak in many tongues, the **Church of his name** is
+    born, and apostles go out to every living world. Four of them write **the Gospels**, with the
+    Acts of the Apostles, into the church's scriptures.
+  * **Pacing**: at `sonPace = 1` the whole story takes about forty minutes; `sonMinistrySeconds`
+    sets the length of the ministry, and `/fiatlux son next` moves on to the next part.
 * **Scripture**: every people writes its own holy books out of what really happened on its world.
   * **When**: once it farms and has a priest, a scholar or an elder to write.
   * **The Book of Beginnings**: "In the beginning Dev created the heavens and Eden…", with chapters

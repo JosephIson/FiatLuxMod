@@ -209,6 +209,12 @@ public final class FiatLuxCommand {
                             c.getSource().sendSuccess(() -> Component.literal("The Son is sent.").withStyle(st -> st.withColor(0xF5D77A)), true);
                             return 1;
                         })))
+                        .then(Commands.literal("reset").executes(c -> {
+                            // ends the story where it stands, so it can be begun again
+                            String what = com.josephison.fiatlux.son.TheSon.reset(c.getSource().getServer());
+                            c.getSource().sendSuccess(() -> Component.literal(what).withStyle(st -> st.withColor(0xE8C890)), true);
+                            return 1;
+                        }))
                         .then(Commands.literal("status").executes(c -> {
                             c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.son.TheSon.describe(c.getSource().getServer()))
                                     .withStyle(st -> st.withColor(0xF5D77A)), false);

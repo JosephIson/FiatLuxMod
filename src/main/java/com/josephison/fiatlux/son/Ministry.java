@@ -61,7 +61,7 @@ final class Ministry {
                 d.baptistName = baptist.getName().getString();
                 baptist.say("Repent ye: for the kingdom of " + g + " is at hand.");
                 TheSon.narrate(level, baptist.blockPosition(), "In those days came " + d.baptistName + " the Baptist, preaching, and saying, Repent ye: "
-                        + "for the kingdom of " + g + " is at hand. Then went out to " + (d.baptistName.endsWith("s") ? "him" : "him") + " all the land, and were baptised.",
+                        + "for the kingdom of " + g + " is at hand. Then went out to " + (baptist.isMale() ? "him" : "her") + " all the land, and were baptised.",
                         "Matthew 3:1-6");
             }
             d.setDirty();
@@ -130,7 +130,6 @@ final class Ministry {
     /** The Creator is asked to speak the words from heaven, and the story waits a little for them. */
     static void askVoice(ServerLevel level, SonData d, MortalEntity son, String what, String words) {
         ServerPlayer creator = d.creator == null ? null : level.getServer().getPlayerList().getPlayer(d.creator);
-        d.step++;
         d.since = level.getGameTime();
         d.setDirty();
         TheSon.spoken = "";
