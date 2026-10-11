@@ -49,7 +49,7 @@ public class RiftEntity extends Entity {
     @org.jetbrains.annotations.Nullable private java.util.UUID twin;
     private boolean isTwin;
     /** How wide the tear is at its widest, and how tall. */
-    public static final float HEIGHT = 5.2f, HALF_WIDTH = 1.2f;
+    public static final float HEIGHT = 6.0f, HALF_WIDTH = 2.0f;
     private static final int UNDERWORLD_FOG = 0x3A0E0A, WORLD_FOG = 0xA8C8E8;
 
     public RiftEntity(EntityType<? extends RiftEntity> type, Level level) {
@@ -113,12 +113,14 @@ public class RiftEntity extends Entity {
         entityData.set(AGE, age);
         if (level().isClientSide) {
             float o = openness(0);
-            if (o > 0.2f) {
-                for (int i = 0; i < 2; i++) {
-                    level().addParticle(random.nextBoolean() ? ModParticles.EMBER.get() : ParticleTypes.LARGE_SMOKE,
-                            getX() + (random.nextDouble() - 0.5) * 0.8, getY() + random.nextDouble() * 4.5, getZ() + (random.nextDouble() - 0.5) * 0.8,
-                            (random.nextDouble() - 0.5) * 0.04, 0.04, (random.nextDouble() - 0.5) * 0.04);
-                }
+            if (o > 0.2f) {   // embers and smoke rise from its burning lips, not across the opening
+                float[][] edge = outline(getId(), o);
+                int n = edge[0].length - 1, i = random.nextInt(n + 1);
+                double side = random.nextBoolean() ? 1 : -1;
+                double lx = edge[0][i] + side * edge[1][i] * (0.85 + random.nextDouble() * 0.4), ly = HEIGHT * i / n;
+                net.minecraft.world.phys.Vec3 a = com.josephison.fiatlux.portal.Portals.across(getYRot());
+                level().addParticle(random.nextInt(3) == 0 ? ParticleTypes.SMOKE : ModParticles.EMBER.get(),
+                        getX() + a.x * lx, getY() + ly, getZ() + a.z * lx, a.x * side * 0.02, 0.03, a.z * side * 0.02);
             }
             return;
         }

@@ -36,8 +36,8 @@ public class RiftRenderer extends EntityRenderer<RiftEntity> {
         // the burning lips of the tear, around the opening
         VertexConsumer glow = buffers.getBuffer(RenderType.lightning());
         float flicker = 0.75f + 0.25f * (float) Math.sin(t * 0.7f);
-        lips(glow, m, o, 0.8f, 1.5f, 0xE8, 0x30, 0x18, (int) (140 * flicker));
-        lips(glow, m, o, 0.8f, 1.12f, 0xFF, 0x90, 0x38, (int) (200 * flicker));
+        lips(glow, m, o, 0.8f, 1.22f, 0xE8, 0x30, 0x18, (int) (120 * flicker));
+        lips(glow, m, o, 0.8f, 0.95f, 0xFF, 0xA0, 0x40, (int) (210 * flicker));
         if (!PortalViews.showing(rift)) {   // until the far side is seen: darkness
             VertexConsumer dark = buffers.getBuffer(RenderType.debugQuads());
             band(dark, m, o, -0.8f, 0.8f, 0x08, 0x02, 0x04, 255);
