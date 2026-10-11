@@ -82,8 +82,42 @@ public class HeavenChunkGenerator extends ChunkGenerator {
         return h * 0x94D049BB133111EBL;
     }
 
+    /** Distance from the central crossing to the gates of pearl on each of its four streets. */
+    public static final int GATE_DISTANCE = 24;
+
+    /**
+     * "And the twelve gates were twelve pearls; every several gate was of one pearl" (Revelation
+     * 21:21). An arch of pearl spans each of the four streets leaving the central crossing; within
+     * it hangs the veil through which one passes out of Heaven into the Void. Null if not part of a gate.
+     */
+    public BlockState gateAt(int x, int y, int z) {
+        int dy = y - level;
+        if (dy < -3 || dy > 12) return null;
+        int along, across;
+        if (Math.abs(z) >= GATE_DISTANCE - 1 && Math.abs(z) <= GATE_DISTANCE + 1 && Math.abs(x) <= 6) {
+            along = Math.abs(z);
+            across = Math.abs(x);
+        } else if (Math.abs(x) >= GATE_DISTANCE - 1 && Math.abs(x) <= GATE_DISTANCE + 1 && Math.abs(z) <= 6) {
+            along = Math.abs(x);
+            across = Math.abs(z);
+        } else {
+            return null;
+        }
+        boolean middle = along == GATE_DISTANCE;
+        // the arch: an elliptical crown of pearl over pillars two blocks thick
+        int crown = 8 + (int) Math.round(3.0 * Math.sqrt(Math.max(0.0, 1.0 - (across / 5.6) * (across / 5.6))));
+        if (across >= 4 && across <= 5 && dy >= -3 && dy <= crown) return ModBlocks.PEARL.get().defaultBlockState();   // pillars and footings
+        if (across <= 5 && (dy == crown || dy == crown - 1) && dy > 0) {
+            return middle && across == 0 && dy == crown ? ModBlocks.LUX_BLOCK.get().defaultBlockState() : ModBlocks.PEARL.get().defaultBlockState();
+        }
+        if (middle && across <= 3 && dy >= 1 && dy < crown - 1) return ModBlocks.VOID_GATE.get().defaultBlockState();
+        return null;
+    }
+
     /** The block at (x, y, z) in Heaven. */
     public BlockState stateAt(int x, int y, int z) {
+        BlockState gate = gateAt(x, y, z);
+        if (gate != null) return gate;
         int lane = lane(x, z);
         if (lane >= 0) {
             if (y == level) {

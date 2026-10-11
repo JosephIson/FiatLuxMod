@@ -26,6 +26,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
         }
         translucent(ModBlocks.GOLDEN_STREET.get(), "golden_street");
         translucent(ModBlocks.STILLED_WATER.get(), "stilled_water");
+        translucent(ModBlocks.VOID_GATE.get(), "void_gate");
         ModelFile crystal = models().cross("celestial_crystal", modLoc("block/celestial_crystal")).renderType("cutout");
         directionalBlock(ModBlocks.CELESTIAL_CRYSTAL.get(), crystal);
     }

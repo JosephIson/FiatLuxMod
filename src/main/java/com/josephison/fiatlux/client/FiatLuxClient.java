@@ -46,6 +46,7 @@ public class FiatLuxClient {
         modBus.addListener(FiatLuxClient::skies);
         NeoForge.EVENT_BUS.addListener(FiatLuxClient::clientTick);
         NeoForge.EVENT_BUS.addListener(FxManager::render);
+        NeoForge.EVENT_BUS.addListener(com.josephison.fiatlux.client.fx.VoidBodies::render);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> FxManager.clear());
     }
 
@@ -88,6 +89,7 @@ public class FiatLuxClient {
         e.register(FiatLux.id("heaven"), new HeavenSkyEffects());
         e.register(FiatLux.id("underworld"), new com.josephison.fiatlux.client.fx.UnderworldSkyEffects());
         e.register(FiatLux.id("planet"), new com.josephison.fiatlux.client.fx.PlanetSkyEffects());
+        e.register(FiatLux.id("void"), new com.josephison.fiatlux.client.fx.VoidSkyEffects());
     }
 
     private static void clientTick(ClientTickEvent.Post e) {

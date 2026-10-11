@@ -96,7 +96,7 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
     }
 
     /** Galaxies born of the Big Bang: spiral arms of tinted star-dust that unfurl as the universe ages. */
-    private static void drawGalaxies(PoseStack ps, float secondsSinceBang, float time) {
+    static void drawGalaxies(PoseStack ps, float secondsSinceBang, float time) {
         float formation = Mth.clamp((secondsSinceBang - 2f) / 20f, 0f, 1f);
         if (formation <= 0) return;
         for (SyncCosmosPayload.GalaxyView g : ClientCosmos.get().galaxies()) {
@@ -208,7 +208,7 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
     }
 
     /** The first seconds after the Big Bang: an expanding shell of many-coloured light and radiating beams. */
-    private static void drawBigBang(Matrix4f m, float t) {
+    static void drawBigBang(Matrix4f m, float t) {
         float fade = t < 1f ? t : Mth.clamp(1f - (t - 4f) / 10f, 0f, 1f);
         float radius = 4f + t * 14f;
         int[][] shells = {{255, 255, 255}, {255, 210, 120}, {180, 120, 255}, {110, 200, 255}};

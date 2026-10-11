@@ -15,7 +15,14 @@ public class AscendPower extends AbstractDivinePower {
     @Override
     public boolean cast(PowerContext ctx) {
         Fx.send(ctx.level(), FxKind.CELESTIAL_PILLAR, ctx.caster().position(), 200f, 0xFFFFF6D8, 30);
-        HeavenTravel.toggle(ctx.caster());
+        int world = com.josephison.fiatlux.realm.RealmPool.slotOf(ctx.caster().level().dimension());
+        if (world >= 0) {
+            com.josephison.fiatlux.realm.RealmTravel.worldToVoid(ctx.caster(), world);   // up out of the atmosphere
+        } else if (ctx.caster().level().dimension() == com.josephison.fiatlux.world.FiatLuxDimensions.VOID) {
+            com.josephison.fiatlux.realm.RealmTravel.voidToHeaven(ctx.caster());
+        } else {
+            HeavenTravel.toggle(ctx.caster());
+        }
         Fx.send(ctx.caster().serverLevel(), FxKind.GLORY_FLASH, ctx.caster().position(), 6f, 0xFFFFF6D8, 30);
         return true;
     }

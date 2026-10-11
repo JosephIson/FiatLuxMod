@@ -102,6 +102,7 @@ public final class FiatLuxCommand {
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
                 .then(Commands.literal("realm")
                         .then(Commands.literal("heaven").executes(c -> HeavenTravel.toHeaven(c.getSource().getPlayerOrException()) ? 1 : 0))
+                        .then(Commands.literal("void").executes(c -> com.josephison.fiatlux.realm.RealmTravel.toVoid(c.getSource().getPlayerOrException()) ? 1 : 0))
                         .then(Commands.literal("underworld").executes(c -> com.josephison.fiatlux.realm.RealmTravel.toUnderworld(c.getSource().getPlayerOrException()) ? 1 : 0))
                         .then(Commands.literal("earth").executes(c -> {
                             HeavenTravel.toEarth(c.getSource().getPlayerOrException());
@@ -113,6 +114,17 @@ public final class FiatLuxCommand {
                                 .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), null))
                                 .then(Commands.argument("name", StringArgumentType.word())
                                         .executes(c -> createPlanet(c.getSource(), StringArgumentType.getString(c, "type"), StringArgumentType.getString(c, "name"))))))
+                        .then(Commands.literal("approach").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                            var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            String name = StringArgumentType.getString(c, "name");
+                            for (int i = 0; i < cosmos.planets.size(); i++) {
+                                if (cosmos.planets.get(i).name.equalsIgnoreCase(name)) {
+                                    return com.josephison.fiatlux.realm.RealmTravel.worldToVoid(c.getSource().getPlayerOrException(), i) ? 1 : 0;
+                                }
+                            }
+                            c.getSource().sendFailure(Component.translatable("message.fiatlux.world_unformed"));
+                            return 0;
+                        })))
                         .then(Commands.literal("visit").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
                             var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
                             String name = StringArgumentType.getString(c, "name");

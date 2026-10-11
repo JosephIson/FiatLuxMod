@@ -29,6 +29,9 @@ public final class DivinityEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer sp && sp.tickCount % 2 == 0) {
+            com.josephison.fiatlux.realm.RealmTravel.tickPassage(sp);   // the Void, Heaven's Gate and the created worlds
+        }
         if (event.getEntity() instanceof ServerPlayer sp && sp.tickCount % 20 == 0) {
             Divinity.regenerate(sp);
             Divinity.sync(sp);
@@ -53,7 +56,7 @@ public final class DivinityEvents {
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
             Divinity.sync(sp);
-            com.josephison.fiatlux.realm.RealmTravel.applyGravity(sp);
+            com.josephison.fiatlux.realm.RealmTravel.onChangedDimension(sp);
         }
     }
 }

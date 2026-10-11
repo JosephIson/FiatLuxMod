@@ -1,0 +1,13 @@
+{
+  "type": "fiatlux:the_void",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "layers": [],
+      "biome": "fiatlux:the_void",
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

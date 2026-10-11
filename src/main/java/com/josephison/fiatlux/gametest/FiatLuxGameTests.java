@@ -199,6 +199,43 @@ public final class FiatLuxGameTests {
         helper.succeed();
     }
 
+    /**
+     * The Void lies beyond Heaven: its dimension decodes to an empty, formless expanse; Heaven's
+     * gates of pearl hold the veil that leads there; and the bodies of the created worlds sit on
+     * their orbits around the greater light, so flying into one is entering it.
+     */
+    @GameTest(template = "empty")
+    public static void theVoidLiesBeyondHeaven(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ChunkGenerator voidGen = decodeGenerator(server, "the_void");
+        helper.assertTrue(voidGen instanceof net.minecraft.world.level.levelgen.FlatLevelSource flat && flat.settings().getLayers().isEmpty(),
+                "the Void should be without form: " + voidGen);
+        HeavenChunkGenerator heaven = (HeavenChunkGenerator) decodeGenerator(server, "heaven");
+        int y = heaven.streetLevel() + 3, d = HeavenChunkGenerator.GATE_DISTANCE;
+        for (int[] g : new int[][]{{0, d}, {0, -d}, {d, 0}, {-d, 0}}) {
+            BlockState veil = heaven.stateAt(g[0], y, g[1]);
+            helper.assertTrue(veil != null && veil.is(ModBlocks.VOID_GATE.get()), "no veil in the gate at " + g[0] + "," + g[1] + ": " + veil);
+        }
+        BlockState pillar = heaven.stateAt(4, y, d);
+        helper.assertTrue(pillar != null && pillar.is(ModBlocks.PEARL.get()), "the gate has no pillar of pearl: " + pillar);
+        helper.assertTrue(heaven.stateAt(0, heaven.streetLevel(), 0).is(ModBlocks.GOLDEN_STREET.get()), "the gates cut the golden street");
+
+        var gate = com.josephison.fiatlux.world.VoidSpace.GATE;
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.inGate(gate), "the gate's own centre is not in its veil");
+        helper.assertTrue(!com.josephison.fiatlux.world.VoidSpace.inGate(com.josephison.fiatlux.world.VoidSpace.arrival()), "arrivals land inside the gate");
+        Planet world = new Planet(UUID.randomUUID(), "VoidTest", PlanetType.GAS_GIANT, 0, 1.5, 4.0, 0.25, 5.0, 2.4, 10000, 0xFFAA88, 0, 0, 0,
+                com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER, 0);
+        var at = com.josephison.fiatlux.world.VoidSpace.planetPos(world);
+        helper.assertTrue(Math.abs(at.distanceTo(com.josephison.fiatlux.world.VoidSpace.SUN) - 1.5 * com.josephison.fiatlux.world.VoidSpace.AU) < 1.0,
+                "the world is not on its orbit: " + at);
+        List<Planet> worlds = List.of(world);
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.planetAt(worlds, at, 0) == 0, "flying into the world's body does not reach it");
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.planetAt(worlds, gate, 0) == -1, "Heaven's Gate is inside a world");
+        var out = com.josephison.fiatlux.world.VoidSpace.leavingWorld(world);
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.planetAt(worlds, out, 1.5) == -1, "one leaving a world lands back inside it");
+        helper.succeed();
+    }
+
     /** The creation queue applies a batched edit over ticks, then undoes it exactly. */
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void creationQueueAppliesAndUndoes(GameTestHelper helper) {

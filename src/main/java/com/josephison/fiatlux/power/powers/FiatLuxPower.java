@@ -29,6 +29,11 @@ public class FiatLuxPower extends AbstractDivinePower {
 
     @Override
     public boolean cast(PowerContext ctx) {
+        // in the formless Void, before anything is, "Let there be light" is the beginning of all things
+        if (ctx.level().dimension() == com.josephison.fiatlux.world.FiatLuxDimensions.VOID
+                && !com.josephison.fiatlux.world.CosmicExpanseSavedData.get(ctx.level().getServer()).hasBigBang()) {
+            return CosmicSparkPower.ignite(ctx.level().getServer(), ctx.caster().getGameProfile().getName());
+        }
         BlockPos c = ctx.targetBlock();
         BlockState light = Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, 15);
         List<EditQueue.Change> changes = new ArrayList<>();

@@ -424,3 +424,38 @@ def underworld_textures():
 
 if __name__ == "__main__":
     underworld_textures()
+
+
+# ----------------------------------------------------------------------------- the Void
+
+def void_gate():
+    """The veil of a gate of pearl: deep starry dark seen through a flowing shimmer of pearl and
+    gold. Built from functions periodic over the tile, so a wall of veil blocks reads as one
+    seamless curtain (8 animated frames)."""
+    from PIL import Image
+    n, frames = 16, 8
+    img = Image.new("RGBA", (n, n * frames))
+    r = random.Random(7)
+    stars = [(r.randrange(n), r.randrange(n), r.random()) for _ in range(7)]
+    tau = math.tau
+    for f in range(frames):
+        t = f / frames
+        for y in range(n):
+            for x in range(n):
+                u, v = x / n, y / n
+                flow = (math.sin(tau * (u + 2 * v) + tau * t) + math.sin(tau * (2 * u - v) - tau * t)
+                        + 0.6 * math.sin(tau * (3 * v) + tau * t * 2)) / 2.6
+                k = 0.45 + 0.4 * flow
+                base, pearl, gold = (18, 16, 46), (238, 232, 255), (255, 214, 120)
+                c = [base[i] + (pearl[i] - base[i]) * k for i in range(3)]
+                g = 0.5 + 0.5 * math.sin(tau * (u - v) + tau * t)
+                c = [c[i] + (gold[i] - c[i]) * 0.3 * g for i in range(3)]
+                img.putpixel((x, y + f * n), (clamp(c[0]), clamp(c[1]), clamp(c[2]), clamp(150 + 80 * k)))
+        for sx, sy, ph in stars:
+            tw = 0.5 + 0.5 * math.sin((t + ph) * tau)
+            img.putpixel((sx, sy + f * n), (255, 255, 240, clamp(150 + 105 * tw)))
+    save(img, "block/void_gate.png", {"animation": {"frametime": 3, "interpolate": True}})
+
+
+if __name__ == "__main__":
+    void_gate()

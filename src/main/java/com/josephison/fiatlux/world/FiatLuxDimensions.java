@@ -14,5 +14,8 @@ public final class FiatLuxDimensions {
     /** The Underworld: a realm of its own, separate from the vanilla Nether (design doc section 6). */
     public static final ResourceKey<Level> UNDERWORLD = ResourceKey.create(Registries.DIMENSION, FiatLux.id("underworld"));
 
+    /** The Void: the formless deep beyond Heaven where the universe begins (Genesis 1:2). */
+    public static final ResourceKey<Level> VOID = ResourceKey.create(Registries.DIMENSION, FiatLux.id("the_void"));
+
     private FiatLuxDimensions() {}
 }

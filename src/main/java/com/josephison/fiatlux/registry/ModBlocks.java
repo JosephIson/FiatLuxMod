@@ -47,6 +47,11 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> SULFUR = BLOCKS.registerSimpleBlock("sulfur",
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.8f).sound(SoundType.TUFF));
     /** Brimstone: the burning stone that fuels infernal industry. */
+    /** The veil within a gate of pearl: passage from Heaven into the Void. */
+    public static final DeferredBlock<com.josephison.fiatlux.world.VoidGateBlock> VOID_GATE = BLOCKS.register("void_gate",
+            () -> new com.josephison.fiatlux.world.VoidGateBlock(BlockBehaviour.Properties.of().noCollission().noOcclusion()
+                    .strength(-1.0f, 3600000.0f).noLootTable().lightLevel(s -> 15).sound(net.minecraft.world.level.block.SoundType.AMETHYST)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
     public static final DeferredBlock<Block> BRIMSTONE = BLOCKS.register("brimstone", () -> new Block(
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(1.5f).sound(SoundType.NETHERRACK)
                     .lightLevel(s -> 7).emissiveRendering((s, l, p) -> true).requiresCorrectToolForDrops()));

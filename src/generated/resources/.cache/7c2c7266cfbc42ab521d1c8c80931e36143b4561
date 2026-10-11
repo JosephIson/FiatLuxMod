@@ -1,4 +1,4 @@
-// 1.21.1	2026-10-10T22:25:15.984168216	Block States: fiatlux
+// 1.21.1	2026-10-11T00:16:41.953626698	Block States: fiatlux
 c6e73fb69d55e46466deac05b7713f9e9e0e1c04 assets/fiatlux/blockstates/abyssal_stone.json
 f3030977cdeecdf743b92f6e971e5d1d4b638be7 assets/fiatlux/blockstates/brimstone.json
 c8875b6f0f349b26d5584e365acc71576f651ae1 assets/fiatlux/blockstates/celestial_crystal.json
@@ -16,6 +16,7 @@ f03ab7de3fa3e64cf9b7a887f81f8d613268530c assets/fiatlux/blockstates/cloud_band_a
 2a087c4d09313f7d070733dd63284c0560d01f75 assets/fiatlux/blockstates/soul_engine.json
 1e7fa5d588f322c3a1583c771a1f580396a31f9f assets/fiatlux/blockstates/stilled_water.json
 6bc6319ceb6a7ba51f6a0d0f8ff97815ae93aeea assets/fiatlux/blockstates/sulfur.json
+62d59a253afbe31c82cf804da9bb47daee626897 assets/fiatlux/blockstates/void_gate.json
 4eedd39b301c722b1ba39efafd52e39d5a3ef52a assets/fiatlux/models/block/abyssal_stone.json
 a0220e8200dc4ee23bfb389c8016e2ee858f0120 assets/fiatlux/models/block/brimstone.json
 e298a4e75f1d920ab45d090ce6c69f7339f5c877 assets/fiatlux/models/block/celestial_crystal.json
@@ -33,3 +34,4 @@ ba289b86b6d41b954ccaea648a968dcdaf612cfe assets/fiatlux/models/block/jasper.json
 8399603ea8e2d02b601277a0ccb8d17c3a1206e9 assets/fiatlux/models/block/soul_engine.json
 67f3bab14fcddb6ad0eacb12674a7c28c5cfa057 assets/fiatlux/models/block/stilled_water.json
 62e872095d74021c4d4e34a534b672cceb85f81b assets/fiatlux/models/block/sulfur.json
+c67b200c2930df677401ac873afdac1e98d1b83f assets/fiatlux/models/block/void_gate.json

@@ -84,6 +84,10 @@ public class ModLanguageProvider extends LanguageProvider {
         add("choir.fiatlux.angels.office", "Third sphere: messengers, ministering spirits sent forth to minister.");
         add(ModEntities.FALLEN.get(), "Fallen Angel");
         add(ModItems.FALLEN_SPAWN_EGG.get(), "Fallen Angel Spawn Egg");
+        add(ModBlocks.VOID_GATE.get(), "Veil of the Gate of Pearl");
+        add("message.fiatlux.void_formless", "The earth was without form, and void; and darkness was upon the face of the deep. (Genesis 1:2) - Speak Let There Be Light, or the Cosmic Spark.");
+        add("message.fiatlux.void_expanse", "The Cosmic Expanse: fly to a world to descend upon it; return through Heaven's Gate behind you.");
+        add("message.fiatlux.left_world", "You rise out of the skies of %s into the Expanse.");
         add("entity.fiatlux.lucifer", "Lucifer, Son of the Morning");
         add("entity.fiatlux.rebel_captain", "Captain of the Rebel Host");
         add("entity.fiatlux.michael", "Michael the Archangel");

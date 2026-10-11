@@ -42,7 +42,8 @@ Model work needs only Python 3 with Pillow.
   | glory add <n> | essence <player> <n> | pilgrim <player> <true|false>`
 * `/fiatlux cosmos` shows the universe, every world, the moral climate and the Underworld.
   `/fiatlux planet create <type> [name] | planet life <name>`,
-  `/fiatlux planet visit <name>` (walk on a created world), `/fiatlux realm heaven|underworld|earth`,
+  `/fiatlux planet visit <name>` (walk on a created world), `/fiatlux planet approach <name>` (fly to it in the Void),
+  `/fiatlux realm heaven|void|underworld|earth`,
   `/fiatlux host` (the nine choirs and how many of each are loaded, loyal and rebel),
   `/fiatlux sim step <seconds>`, `/fiatlux event bigbang|rebellion|fall|castout|cleanse`
 
@@ -131,6 +132,15 @@ plunges through the sky into the Underworld and lands in a crater-wave of fire. 
 no rebel remains.
 
 ### Realms
+* **The Void** (`fiatlux:the_void`): beyond Heaven lies the formless deep where the universe
+  begins. Step through any of Heaven's **gates of pearl** (on the four streets out of the central
+  crossing), or fall from Heaven's islands. Before the Big Bang it is utter darkness: "darkness was
+  upon the face of the deep" (Gen 1:2), with the dark waters below and Heaven's Gate glowing behind
+  you. Speak **Let There Be Light** (or the Cosmic Spark) there and the light bursts out ahead. The
+  sky fills with stars, nebulae and turning galaxies, the greater light kindles, and every world you
+  form circles it as a real globe: lit by the sun, with its own surface, atmosphere and night-side
+  city lights, and rings on gas giants. Flight there is weightless. Fly into a world to descend
+  onto it, rise above its sky to return, and fly back into Heaven's Gate to go home.
 * **Created worlds**: each planet you form is bound to one of 16 dimensions (`planet_0..15`) with
   its own terrain: Earth-like meadows, seas and snowy peaks; volcanic basalt, lava lakes and crater
   cones; cratered regolith moons; banded gas-giant cloud decks; crystalline plains with crystal
