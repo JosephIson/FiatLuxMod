@@ -91,6 +91,20 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.mortal.man", "man");
         add("message.fiatlux.faith.petition", "[Prayer] %s of %s: \"%s\"");
         add(com.josephison.fiatlux.registry.ModEntities.SOUL.get(), "Soul");
+        add(com.josephison.fiatlux.registry.ModEntities.SERPENT.get(), "The Serpent");
+        add(com.josephison.fiatlux.registry.ModItems.SERPENT_SPAWN_EGG.get(), "Serpent Spawn Egg");
+        add(com.josephison.fiatlux.registry.ModBlocks.LIFE_LEAVES.get(), "Leaves of the Tree of Life");
+        add(com.josephison.fiatlux.registry.ModBlocks.KNOWLEDGE_LEAVES.get(), "Leaves of the Tree of Knowledge");
+        add(com.josephison.fiatlux.registry.ModBlocks.LIFE_FRUIT.get(), "Fruit of the Tree of Life");
+        add(com.josephison.fiatlux.registry.ModBlocks.KNOWLEDGE_FRUIT.get(), "Fruit of the Tree of Knowledge");
+        add(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_LIFE.get(), "Fruit of the Tree of Life");
+        add(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_KNOWLEDGE.get(), "Fruit of the Tree of Knowledge of Good and Evil");
+        add("tooltip.fiatlux.fruit_of_life", "\"...and eat, and live for ever\" (Gen 3:22)");
+        add("tooltip.fiatlux.fruit_of_knowledge", "\"...your eyes shall be opened\" (Gen 3:5)");
+        add("message.fiatlux.eden.ate_life", "Life flows through you, as from a river that never runs dry.");
+        add("message.fiatlux.eden.ate_knowledge", "Your eyes are opened. You know good, and you know evil.");
+        add("message.fiatlux.eden.planted", "And the LORD God planted a garden eastward in Eden; and there he put the man whom he had formed. (Genesis 2:8)");
+        add("message.fiatlux.eden.serpent_driven_off", "The serpent slips away into the grass. The tempter will return.");
         add("message.fiatlux.soul.arrives_heaven", "The soul of %s of %s is taken up into Heaven.");
         add("message.fiatlux.soul.arrives_underworld", "The soul of %s of %s falls into the Underworld.");
         add("message.fiatlux.soul.redeemed", "You redeem the soul of %s: it rises into Heaven.");
@@ -232,7 +246,7 @@ public class ModLanguageProvider extends LanguageProvider {
                 {"orbitSpeedMultiplier", "Orbit Speed"}, {"bigBangGalaxies", "Galaxies Born of the Big Bang"},
                 {"populationGrowthMultiplier", "Population Growth"}, {"gloryPerBelieverYear", "Glory per Believer-Year"}, {"maxTownsPerWorld", "Most Towns per World"},
                 {"ticksPerMortalYear", "Ticks per Mortal Year"}, {"eraYearsMultiplier", "Years per Age"}, {"primordialPrideRate", "Primordial Pride"},
-                {"sinMultiplier", "Sin"}, {"maxMortalsPerSettlement", "Most Mortals per Town"}, {"rebellionEnabled", "Rebellion Enabled"},
+                {"sinMultiplier", "Sin"}, {"edenTemptationTicks", "Days of Innocence (ticks)"}, {"maxMortalsPerSettlement", "Most Mortals per Town"}, {"rebellionEnabled", "Rebellion Enabled"},
                 {"rebellionCorruptionThreshold", "Rebellion Corruption Threshold"}, {"rebellionChancePerCheck", "Rebellion Chance"},
                 {"prideGrowthRate", "Angelic Pride Growth"}, {"corruptionDecay", "Corruption Decay"}, {"knowledgeMultiplier", "Underworld Knowledge"},
                 {"soulPowerPerSinnerSoul", "Soul Power per Sinner Soul"}, {"feudalKnowledge", "Feudal Era Knowledge"}, {"industrialKnowledge", "Industrial Era Knowledge"},

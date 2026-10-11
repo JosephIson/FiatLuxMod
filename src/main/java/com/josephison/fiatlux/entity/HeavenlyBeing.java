@@ -59,6 +59,8 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     @Nullable
     private UUID creator;
+    /** A post this being keeps (the cherubim at the east of Eden, Gen 3:24), or null. */
+    @org.jetbrains.annotations.Nullable private net.minecraft.core.BlockPos station;
     private int judgmentCooldown;
     private static final EntityDataAccessor<Boolean> DATA_REBEL = SynchedEntityData.defineId(HeavenlyBeing.class, EntityDataSerializers.BOOLEAN);
     /** Ticks into the cast-out sequence (0 = not being cast out); negative = waiting to be struck. */
@@ -229,6 +231,7 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(2, new JudgeGoal(this));
+        goalSelector.addGoal(3, new KeepStationGoal());
         goalSelector.addGoal(4, new FollowCreatorGoal(this, 1.1, 14f, 5f));
         goalSelector.addGoal(6, new WaterAvoidingRandomFlyingGoal(this, 0.8));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 12f));
@@ -238,6 +241,34 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
                 e -> isRebel() ? (e instanceof HeavenlyBeing b && !b.isRebel()) || e instanceof Player
                         : e != getCreator() && ModTags.isCorrupt(e)));
+    }
+
+    public void setStation(@org.jetbrains.annotations.Nullable net.minecraft.core.BlockPos pos) {
+        this.station = pos;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    public net.minecraft.core.BlockPos station() {
+        return station;
+    }
+
+    /** Keeps its post: wanders no further than a few blocks from it, and is back at once if carried off. */
+    private class KeepStationGoal extends net.minecraft.world.entity.ai.goal.Goal {
+        KeepStationGoal() {
+            setFlags(java.util.EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            return station != null && getTarget() == null && distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(station)) > 9;
+        }
+
+        @Override
+        public void tick() {
+            var at = net.minecraft.world.phys.Vec3.atBottomCenterOf(station);
+            if (distanceToSqr(at) > 24 * 24) moveTo(at.x, at.y + 0.5, at.z);
+            else getNavigation().moveTo(at.x, at.y + 0.5, at.z, 0.9);
+        }
     }
 
     /** This being's place in the celestial hierarchy. */
@@ -357,6 +388,7 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
         if (creator != null) tag.putUUID("Creator", creator);
         tag.putBoolean("Rebel", isRebel());
         tag.putInt("CastOut", entityData.get(DATA_CAST_OUT));
+        if (station != null) tag.putLong("Station", station.asLong());
     }
 
     @Override
@@ -365,6 +397,7 @@ public abstract class HeavenlyBeing extends PathfinderMob implements GeoEntity {
         if (tag.hasUUID("Creator")) creator = tag.getUUID("Creator");
         entityData.set(DATA_REBEL, tag.getBoolean("Rebel"));
         entityData.set(DATA_CAST_OUT, tag.getInt("CastOut"));
+        station = tag.contains("Station") ? net.minecraft.core.BlockPos.of(tag.getLong("Station")) : null;
         if (isBeingCastOut()) freeze();
     }
 

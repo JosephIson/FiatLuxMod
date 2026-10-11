@@ -87,6 +87,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     /** 0 child, 1 adult, 2 elder. */
     private static final EntityDataAccessor<Integer> DATA_STAGE = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> DATA_SPEECH = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.STRING);
+    /** Unashamed in the garden: no coat of skins yet, only plain linen (Gen 2:25, 3:21). */
+    private static final EntityDataAccessor<Boolean> DATA_INNOCENT = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
     public static final int VARIANTS = 8;
     public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7;
     public static final int ADULT_AGE = 16, ELDER_AGE = 62;
@@ -143,6 +145,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         builder.define(DATA_ACT, 0);
         builder.define(DATA_STAGE, 1);
         builder.define(DATA_SPEECH, "");
+        builder.define(DATA_INNOCENT, false);
     }
 
     // ================================================================== identity
@@ -193,6 +196,12 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public boolean isChild() { return entityData.get(DATA_STAGE) == 0; }
     public boolean isElder() { return entityData.get(DATA_STAGE) == 2; }
     public String speech() { return entityData.get(DATA_SPEECH); }
+    public boolean looksInnocent() { return entityData.get(DATA_INNOCENT); }
+
+    /** Before the Fall of Man: neither ageing, hunger, sin nor death. */
+    private boolean innocent(ServerLevel level) {
+        return !CosmicExpanseSavedData.get(level.getServer()).fallOfMan;
+    }
     public Profession profession() { return profession; }
     public boolean hasTrait(Trait t) { return traitA == t || traitB == t; }
     @Nullable public UUID religion() { return religion; }
@@ -300,7 +309,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         return new MortalSpeech.Context(worldName(), era().getSerializedName().replace('_', '-'), profession, traitA, traitB, isChild(), isElder(),
                 other, spouseName.isEmpty() ? "my love" : spouseName, lastChildName.isEmpty() ? "one" : lastChildName,
                 c != null && c.rebellionActive, c != null && !c.blackHoles.isEmpty(), c == null ? 1 : c.planets.size(),
-                c == null ? 0 : (int) c.fallenAngels);
+                c == null ? 0 : (int) c.fallenAngels, c != null && c.fallOfMan, c != null && c.eden == com.josephison.fiatlux.eden.EdenState.EXILED);
     }
 
     private void emote(ParticleOptions particle, int count) {
@@ -655,6 +664,20 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private void lifeTick(ServerLevel level) {
         int year = FiatLuxConfig.COMMON.mortalYearTicks.get();
         if (tickCount % 200 == 3 && person() == null) writeIntoBook();
+        CosmicExpanseSavedData cosmosNow = CosmicExpanseSavedData.get(level.getServer());
+        boolean unclothed = !cosmosNow.fallOfMan || cosmosNow.eden == com.josephison.fiatlux.eden.EdenState.FALLEN
+                || cosmosNow.eden == com.josephison.fiatlux.eden.EdenState.JUDGMENT && cosmosNow.edenStep < 8;
+        if (unclothed != looksInnocent()) entityData.set(DATA_INNOCENT, unclothed);
+        if (innocent(level)) {   // "And they were both naked, the man and his wife, and were not ashamed" (Gen 2:25)
+            hunger = 1;
+            energy = Math.max(energy, 0.5);
+            updateStage();
+            travelTick(level);
+            reactToSurroundings(level);
+            if ("Adam".equals(getName().getString()) && random.nextInt(25) == 0) nameTheBeasts(level);
+            if (speechTicks == 0 && act() == NONE && random.nextInt(40) == 0) say(MortalSpeech.innocentLine(random, getName().getString()));
+            return;
+        }
         double before = age;
         age += 20.0 / year;
         if ((int) before < ADULT_AGE && (int) age >= ADULT_AGE) {
@@ -687,6 +710,22 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             double mood = (hunger + social + energy) / 3 - doubt * 0.3;
             if (mood > 0.75 && random.nextInt(4) == 0) emote(ParticleTypes.HAPPY_VILLAGER, 2);
             else if (mood < 0.3) emote(ParticleTypes.DRIPPING_WATER, 2);
+        }
+    }
+
+    /**
+     * "And out of the ground the LORD God formed every beast of the field ... and brought them unto Adam
+     * to see what he would call them: and whatsoever Adam called every living creature, that was the
+     * name thereof" (Gen 2:19).
+     */
+    private void nameTheBeasts(ServerLevel level) {
+        for (var beast : level.getEntitiesOfClass(net.minecraft.world.entity.animal.Animal.class, getBoundingBox().inflate(9), a -> !a.hasCustomName())) {
+            String kind = beast.getType().getDescription().getString();
+            beast.setCustomName(Component.literal(kind));
+            getLookControl().setLookAt(beast, 30f, 30f);
+            say("You... I shall call you \"" + kind + "\".");
+            emote(ParticleTypes.HAPPY_VILLAGER, 3);
+            return;
         }
     }
 

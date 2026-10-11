@@ -1,0 +1,44 @@
+{
+  "parent": "block/block",
+  "ambientocclusion": false,
+  "textures": { "particle": "#fruit" },
+  "elements": [
+    {
+      "from": [5, 2, 5], "to": [11, 8, 11],
+      "faces": {
+        "north": { "uv": [5, 5, 11, 11], "texture": "#fruit" },
+        "south": { "uv": [5, 5, 11, 11], "texture": "#fruit" },
+        "east": { "uv": [5, 5, 11, 11], "texture": "#fruit" },
+        "west": { "uv": [5, 5, 11, 11], "texture": "#fruit" },
+        "up": { "uv": [5, 5, 11, 11], "texture": "#fruit" },
+        "down": { "uv": [5, 5, 11, 11], "texture": "#fruit" }
+      }
+    },
+    {
+      "from": [6, 8, 6], "to": [10, 9, 10],
+      "faces": {
+        "north": { "uv": [6, 4, 10, 5], "texture": "#fruit" },
+        "south": { "uv": [6, 4, 10, 5], "texture": "#fruit" },
+        "east": { "uv": [6, 4, 10, 5], "texture": "#fruit" },
+        "west": { "uv": [6, 4, 10, 5], "texture": "#fruit" },
+        "up": { "uv": [6, 6, 10, 10], "texture": "#fruit" }
+      }
+    },
+    {
+      "from": [7.5, 9, 7.5], "to": [8.5, 16, 8.5],
+      "faces": {
+        "north": { "uv": [7, 0, 8, 4], "texture": "#fruit" },
+        "south": { "uv": [7, 0, 8, 4], "texture": "#fruit" },
+        "east": { "uv": [7, 0, 8, 4], "texture": "#fruit" },
+        "west": { "uv": [7, 0, 8, 4], "texture": "#fruit" }
+      }
+    },
+    {
+      "from": [8, 11, 7.5], "to": [12, 11.5, 9.5],
+      "faces": {
+        "up": { "uv": [12, 0, 16, 2], "texture": "#fruit" },
+        "down": { "uv": [12, 0, 16, 2], "texture": "#fruit" }
+      }
+    }
+  ]
+}

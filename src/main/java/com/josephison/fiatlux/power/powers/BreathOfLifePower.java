@@ -70,11 +70,19 @@ public class BreathOfLifePower extends AbstractDivinePower {
         var faith = com.josephison.fiatlux.civilization.Generations.get(server)
                 .faithOf(ctx.caster().getUUID(), ctx.caster().getGameProfile().getName(), worldName, ctx.level().getGameTime()).id;
         boolean firstOfWorld = world != null && !world.hasLife();
+        // the very first man and woman are put into a garden planted for them (Gen 2:8)
+        boolean eden = !cosmos.firstPairBorn && cosmos.eden == com.josephison.fiatlux.eden.EdenState.NONE;
         com.josephison.fiatlux.civilization.Settlement settlement = world != null ? cosmos.townNear(world.id, ground) : null;
+        if (eden) {
+            com.josephison.fiatlux.eden.EdenGarden.plant(ctx.level(), ground, world != null ? world.id : null);
+            CosmosData.get(server).record(server, ctx.caster().getGameProfile().getName(), "eden",
+                    "planted a garden eastward in Eden, and there put the man whom they had formed.");
+            ctx.caster().sendSystemMessage(Component.translatable("message.fiatlux.eden.planted").withStyle(st -> st.withColor(0xF5D77A).withItalic(true)));
+        }
         if (firstOfWorld) {
             cosmos.breatheLife(world);
             cosmos.lifeGivers.put(world.id, com.mojang.datafixers.util.Pair.of(ctx.caster().getUUID(), ctx.caster().getGameProfile().getName()));
-            if (settlement == null) {
+            if (settlement == null && !eden) {
                 settlement = new com.josephison.fiatlux.civilization.Settlement(ground);
                 settlement.name = world.name;
                 settlement.founded = ctx.level().getGameTime();

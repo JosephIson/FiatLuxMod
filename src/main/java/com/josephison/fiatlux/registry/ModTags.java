@@ -15,7 +15,9 @@ public final class ModTags {
 
     private ModTags() {}
 
+    /** Mortals are never smitten of themselves: their judgment is their Creator's (and comes at death). */
     public static boolean isCorrupt(LivingEntity e) {
+        if (e instanceof com.josephison.fiatlux.entity.MortalEntity) return false;
         return e.getType().is(CORRUPT) || Divinity.alignment(e).isCorrupt()
                 || e instanceof com.josephison.fiatlux.entity.HeavenlyBeing being && being.isRebel();
     }

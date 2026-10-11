@@ -82,5 +82,23 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> CLOUD_BAND_RUST = BLOCKS.registerSimpleBlock("cloud_band_rust",
             BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.3f).sound(SoundType.WOOL));
 
+    // --- the garden of Eden (Genesis 2:8-17)
+    /** The golden leaves of the tree of life (Gen 2:9, Rev 22:2). */
+    public static final DeferredBlock<net.minecraft.world.level.block.LeavesBlock> LIFE_LEAVES = BLOCKS.register("life_leaves",
+            () -> new net.minecraft.world.level.block.LeavesBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.OAK_LEAVES)
+                    .mapColor(MapColor.GOLD).lightLevel(s -> 9)));
+    /** The dark leaves of the tree of the knowledge of good and evil. */
+    public static final DeferredBlock<net.minecraft.world.level.block.LeavesBlock> KNOWLEDGE_LEAVES = BLOCKS.register("knowledge_leaves",
+            () -> new net.minecraft.world.level.block.LeavesBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.OAK_LEAVES)
+                    .mapColor(MapColor.COLOR_GREEN)));
+    public static final DeferredBlock<com.josephison.fiatlux.eden.HangingFruitBlock> LIFE_FRUIT = BLOCKS.register("life_fruit",
+            () -> new com.josephison.fiatlux.eden.HangingFruitBlock(BlockBehaviour.Properties.of().mapColor(MapColor.GOLD).strength(0.2f)
+                    .noOcclusion().noCollission().sound(SoundType.SWEET_BERRY_BUSH).lightLevel(s -> 12).pushReaction(PushReaction.DESTROY),
+                    () -> ModItems.FRUIT_OF_LIFE.get()));
+    public static final DeferredBlock<com.josephison.fiatlux.eden.HangingFruitBlock> KNOWLEDGE_FRUIT = BLOCKS.register("knowledge_fruit",
+            () -> new com.josephison.fiatlux.eden.HangingFruitBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.2f)
+                    .noOcclusion().noCollission().sound(SoundType.SWEET_BERRY_BUSH).pushReaction(PushReaction.DESTROY),
+                    () -> ModItems.FRUIT_OF_KNOWLEDGE.get()));
+
     private ModBlocks() {}
 }

@@ -16,15 +16,17 @@ public class ModItemModelProvider extends ItemModelProvider {
     protected void registerModels() {
         for (String block : new String[]{"lux_block", "golden_street", "jasper", "cloudstone", "pearl",
                 "sulfur", "brimstone", "abyssal_stone", "neon_crimson", "neon_violet", "soul_engine", "regolith",
-                "cloud_band_amber", "cloud_band_cream", "cloud_band_rust"}) {
+                "cloud_band_amber", "cloud_band_cream", "cloud_band_rust", "life_leaves", "knowledge_leaves"}) {
             withExistingParent(block, modLoc("block/" + block));
         }
         getBuilder("celestial_crystal").parent(new ModelFile.UncheckedModelFile("item/generated"))
                 .texture("layer0", modLoc("block/celestial_crystal"));
         basicItem(com.josephison.fiatlux.registry.ModItems.BOOK_OF_GENERATIONS.get());
+        basicItem(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_LIFE.get());
+        basicItem(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_KNOWLEDGE.get());
         getBuilder("divine_scepter").parent(new ModelFile.UncheckedModelFile("item/handheld"))
                 .texture("layer0", modLoc("item/divine_scepter"));
-        for (String egg : new String[]{"angel", "seraph", "cherub", "ophan", "fallen", "mortal", "dominion", "virtue", "power", "principality", "archangel"}) {
+        for (String egg : new String[]{"angel", "seraph", "cherub", "ophan", "fallen", "mortal", "dominion", "virtue", "power", "principality", "archangel", "serpent"}) {
             withExistingParent(egg + "_spawn_egg", mcLoc("item/template_spawn_egg"));
         }
         // The 3D GeckoLib sword: builtin/entity hands rendering to the GeoItemRenderer. The model is

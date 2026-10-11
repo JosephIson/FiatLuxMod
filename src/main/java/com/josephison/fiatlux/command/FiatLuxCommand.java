@@ -100,6 +100,71 @@ public final class FiatLuxCommand {
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
+                .then(Commands.literal("eden").executes(c -> {
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.eden.EdenEvents.describe(cos)
+                                    + (cos.eden == com.josephison.fiatlux.eden.EdenState.NONE ? "" : " The garden is at " + cos.edenCentre.toShortString()
+                                    + " in " + cos.edenDim + ".")).withStyle(s -> s.withColor(0x9CE38C)), false);
+                            return 1;
+                        })
+                        .then(Commands.literal("plant").requires(FiatLuxCommand::isGod).executes(c -> {
+                            var p = c.getSource().getPlayerOrException();
+                            var ground = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(p.serverLevel(), p.getBlockX(), p.getBlockZ(), 8);
+                            if (ground == null) return 0;
+                            int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(p.level().dimension());
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            java.util.UUID world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).id : null;
+                            com.josephison.fiatlux.eden.EdenGarden.plant(p.serverLevel(), ground, world);
+                            c.getSource().sendSuccess(() -> Component.translatable("message.fiatlux.eden.planted"), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("begin").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // "In the beginning": the garden here, the first pair in it, and mankind not yet fallen
+                            var p = c.getSource().getPlayerOrException();
+                            var level = p.serverLevel();
+                            var ground = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, p.getBlockX(), p.getBlockZ(), 8);
+                            if (ground == null) return 0;
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(level.dimension());
+                            java.util.UUID world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).id : null;
+                            cos.fallOfMan = false;
+                            com.josephison.fiatlux.eden.EdenGarden.plant(level, ground, world);
+                            var era = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).era : com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER;
+                            var faith = com.josephison.fiatlux.civilization.Generations.get(c.getSource().getServer())
+                                    .faithOf(p.getUUID(), p.getGameProfile().getName(), slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).name : "the earth",
+                                            level.getGameTime()).id;
+                            for (String name : new String[]{"Adam", "Eve"}) {
+                                var found = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class, p.getBoundingBox().inflate(512),
+                                        m -> name.equals(m.getName().getString())).stream().findFirst();
+                                var at = ground.offset(name.equals("Adam") ? 3 : 4, 0, name.equals("Adam") ? 4 : 6);
+                                if (found.isPresent()) {
+                                    found.get().teleportTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+                                    found.get().setHome(ground);
+                                } else {
+                                    com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at, ground, era, name, name.equals("Adam"),
+                                            name.equals("Adam") ? 24 : 22, null, null, faith);
+                                }
+                            }
+                            cos.firstPairBorn = true;
+                            cos.setDirty();
+                            c.getSource().sendSuccess(() -> Component.literal("In the beginning... The garden is planted, and the man and the woman are in it, "
+                                    + "and not ashamed. No one is born and no one dies until the fruit is eaten.").withStyle(st -> st.withColor(0x9CE38C)), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("tempt").requires(FiatLuxCommand::isGod).executes(c -> {
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            if (cos.eden != com.josephison.fiatlux.eden.EdenState.INNOCENCE) {
+                                c.getSource().sendFailure(Component.literal("There is no garden in innocence for the serpent to enter."));
+                                return 0;
+                            }
+                            if (cos.fallenAngels <= 0) {
+                                c.getSource().sendFailure(Component.literal("No angel has yet fallen: there is no tempter. (/fiatlux event rebellion)"));
+                                return 0;
+                            }
+                            cos.edenSince = -1_000_000_000L;   // his time has come
+                            cos.setDirty();
+                            return 1;
+                        })))
                 .then(Commands.literal("lineage").executes(c -> {
                             net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(c.getSource().getPlayerOrException(),
                                     com.josephison.fiatlux.network.LineagePayloads.view(c.getSource().getServer(), null));

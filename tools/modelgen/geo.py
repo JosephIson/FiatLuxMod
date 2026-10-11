@@ -24,7 +24,7 @@ from PIL import Image, ImageDraw
 class Material:
     name: str
     color: tuple            # base RGB
-    pattern: str = "plain"  # plain, cloth, gold, feather, skin, hair, crystal, fire, eye, metal, wood, rune, steel
+    pattern: str = "plain"  # plain, cloth, gold, feather, skin, hair, crystal, fire, eye, metal, wood, rune, steel, scale
     emissive: bool = False  # painted into the _glowmask atlas as well
     glow_veins: bool = False  # with emissive: only the vein/glyph texels glow (burning-coal look)
     alpha: int = 255
@@ -108,6 +108,14 @@ def texel(mat: Material, face: str, i, j, w, h, rng: random.Random, vertical: bo
         if root > 0.9 and dist > 0.3:
             a = 0 if (i + j) % 2 == 0 and mat.alpha == 255 and not side else a
             c = _mix(c, (255, 255, 255), 0.3)
+    elif p == "scale":
+        # overlapping scales in offset rows: lit crown, dark rim, and an iridescent sheen shifting along the body
+        row = j // 3
+        col = (i + (row % 2) * 2) // 4
+        si, sj = (i + (row % 2) * 2) % 4, j % 3
+        k = 1.12 if sj == 0 else (0.72 if sj == 2 or si == 3 else 1.0)
+        sheen = 0.5 + 0.5 * math.sin(along * 9.0 + col * 0.9)
+        c = _mix(_shade(c, k + n * 0.03), accent, 0.35 * sheen)
     elif p == "skin":
         c = _shade(c, 1 + n * 0.02 - (0.05 if edge == 0 else 0) + (0.04 if face == "up" else 0))
     elif p == "hair":

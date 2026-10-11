@@ -376,6 +376,8 @@ public final class FiatLuxGameTests {
         long glory0 = CosmosData.get(server).glory();
         cosmos.underworld = new UnderworldState();   // the GameTest world persists between runs
         cosmos.underworld.souls = 50_000;
+        boolean fallen = cosmos.fallOfMan;
+        cosmos.fallOfMan = true;   // peoples multiply only after the Fall of Man (Gen 4:1)
         for (int i = 0; i < 1000; i++) WorldTicker.step(server, 60.0);   // 1000 simulated minutes: some five hundred mortal years
         helper.assertTrue(eden.population > 1000 && eden.population < eden.era.capacity * 2, "population did not grow believably: " + eden.population);
         helper.assertTrue(cosmos.heavenSouls < 1e7 && cosmos.underworld.knowledge < 1e9, "the numbers ran away: heaven " + cosmos.heavenSouls
@@ -385,6 +387,7 @@ public final class FiatLuxGameTests {
         helper.assertTrue(eden.phase != phase0, "the planet did not move along its orbit");
         helper.assertTrue(cosmos.underworld.era.ordinal() > 0, "the Underworld never left the Tribal/Pits era: knowledge " + cosmos.underworld.knowledge);
         cosmos.planets.remove(eden);
+        cosmos.fallOfMan = fallen;
         helper.succeed();
     }
 
@@ -412,6 +415,60 @@ public final class FiatLuxGameTests {
         helper.assertTrue(soul.isRemoved() && "heaven".equals(abel.soul) && abel.redeemed, "the soul was not redeemed into Heaven");
         gens.people.remove(abel.id);
         helper.succeed();
+    }
+
+    /**
+     * Genesis 2-3 played through: the garden is planted with its two trees; the serpent comes once Satan
+     * has fallen; Eve takes of the fruit and gives to Adam; their eyes are opened and mankind falls;
+     * judged, they are clothed and sent out, and cherubim and a flaming sword keep the way.
+     */
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void edenAndTheFall(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
+        var saved = new Object[]{cosmos.eden, cosmos.fallOfMan, cosmos.fallenAngels, cosmos.edenDim, cosmos.edenCentre, cosmos.edenWorld};
+        cosmos.fallOfMan = false;
+        cosmos.fallenAngels = Math.max(1, cosmos.fallenAngels);
+        BlockPos centre = helper.absolutePos(new BlockPos(1, 2, 1)).offset(400, 0, 400);
+        helper.getLevel().getChunk(centre);
+        com.josephison.fiatlux.eden.EdenGarden.plant(helper.getLevel(), centre, null);
+        helper.assertTrue(cosmos.eden == com.josephison.fiatlux.eden.EdenState.INNOCENCE, "the garden was not planted in innocence");
+        int fruit0 = countFruit(helper, cosmos.knowledgeTree);
+        helper.assertTrue(fruit0 > 0 && helper.getLevel().getBlockState(centre.below()).is(net.minecraft.world.level.block.Blocks.WATER),
+                "the tree of knowledge bore no fruit, or no river went out of Eden");
+        var adam = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(helper.getLevel(), centre.offset(4, 0, 0), centre,
+                com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER, "Adam", true, 24, null, null, null);
+        var eve = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(helper.getLevel(), centre.offset(4, 0, 2), centre,
+                com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER, "Eve", false, 22, null, null, null);
+        helper.assertTrue(adam != null && eve != null, "the first pair were not formed");
+        for (int i = 0; i < 40 && cosmos.eden != com.josephison.fiatlux.eden.EdenState.FALLEN; i++) com.josephison.fiatlux.eden.EdenEvents.tick(server, true);
+        helper.assertTrue(cosmos.eden == com.josephison.fiatlux.eden.EdenState.FALLEN && cosmos.fallOfMan, "they did not eat: " + cosmos.eden + " step " + cosmos.edenStep);
+        helper.assertTrue(countFruit(helper, cosmos.knowledgeTree) == fruit0 - 1, "no fruit was taken from the tree of knowledge");
+        for (int i = 0; i < 40 && cosmos.eden != com.josephison.fiatlux.eden.EdenState.EXILED; i++) com.josephison.fiatlux.eden.EdenEvents.tick(server, true);
+        helper.assertTrue(cosmos.eden == com.josephison.fiatlux.eden.EdenState.EXILED, "they were never sent out: " + cosmos.eden);
+        BlockPos gate = com.josephison.fiatlux.eden.EdenGarden.eastGate(centre);
+        helper.assertTrue(!helper.getLevel().getEntitiesOfClass(com.josephison.fiatlux.entity.CherubEntity.class, new net.minecraft.world.phys.AABB(gate).inflate(10)).isEmpty()
+                && !helper.getLevel().getEntitiesOfClass(com.josephison.fiatlux.entity.StationedSwordEntity.class, new net.minecraft.world.phys.AABB(gate).inflate(10)).isEmpty(),
+                "no cherubim and flaming sword keep the way");
+        helper.assertTrue(adam.isLeaving() && eve.isLeaving(), "Adam and Eve did not go out east of Eden");
+        // put the cosmos back as it was
+        for (var e : helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new net.minecraft.world.phys.AABB(centre).inflate(80),
+                e -> !(e instanceof net.minecraft.world.entity.player.Player))) e.discard();
+        cosmos.eden = (com.josephison.fiatlux.eden.EdenState) saved[0];
+        cosmos.fallOfMan = (boolean) saved[1];
+        cosmos.fallenAngels = (double) saved[2];
+        cosmos.edenDim = (String) saved[3];
+        cosmos.edenCentre = (BlockPos) saved[4];
+        cosmos.edenWorld = (java.util.UUID) saved[5];
+        helper.succeed();
+    }
+
+    private static int countFruit(GameTestHelper helper, BlockPos tree) {
+        int n = 0;
+        for (BlockPos p : BlockPos.betweenClosed(tree.offset(-6, 4, -6), tree.offset(7, 14, 7))) {
+            if (helper.getLevel().getBlockState(p).is(com.josephison.fiatlux.registry.ModBlocks.KNOWLEDGE_FRUIT.get())) n++;
+        }
+        return n;
     }
 
     /** Every /fiatlux report runs without error on a living cosmos. */

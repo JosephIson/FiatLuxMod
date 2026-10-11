@@ -46,6 +46,19 @@ public class CosmicExpanseSavedData extends SavedData {
     public final java.util.Map<java.util.UUID, com.mojang.datafixers.util.Pair<java.util.UUID, String>> lifeGivers = new java.util.HashMap<>();
     /** Whether the first man and woman (Adam and Eve) have been brought forth. */
     public boolean firstPairBorn;
+    // --- the garden of Eden and the Fall of Man (Genesis 2-3)
+    public com.josephison.fiatlux.eden.EdenState eden = com.josephison.fiatlux.eden.EdenState.NONE;
+    /** The dimension and place of the garden. */
+    public String edenDim = "";
+    public net.minecraft.core.BlockPos edenCentre = net.minecraft.core.BlockPos.ZERO;
+    public net.minecraft.core.BlockPos lifeTree = net.minecraft.core.BlockPos.ZERO, knowledgeTree = net.minecraft.core.BlockPos.ZERO;
+    /** The world Eden lies on (null for the earth). */
+    @org.jetbrains.annotations.Nullable public java.util.UUID edenWorld;
+    /** When the garden's present state began, and how far its scene has gone. */
+    public long edenSince;
+    public int edenStep;
+    /** Man has eaten of the tree of knowledge: death, labour, birth in sorrow, and sin are in the world (Rom 5:12). */
+    public boolean fallOfMan;
     /** Black holes in the Void; the first, the Abyss, forms with the Big Bang. */
     public final List<com.josephison.fiatlux.world.cosmos.BlackHole> blackHoles = new ArrayList<>();
     public final List<Planet> planets = new ArrayList<>();
@@ -211,6 +224,22 @@ public class CosmicExpanseSavedData extends SavedData {
         GALAXIES.parse(NbtOps.INSTANCE, tag.get("galaxies")).result().ifPresent(d.galaxies::addAll);
         BLACK_HOLES.parse(NbtOps.INSTANCE, tag.get("black_holes")).result().ifPresent(d.blackHoles::addAll);
         d.firstPairBorn = tag.getBoolean("first_pair_born");
+        if (tag.contains("eden_state")) {
+            try {
+                d.eden = com.josephison.fiatlux.eden.EdenState.valueOf(tag.getString("eden_state"));
+            } catch (IllegalArgumentException ignored) {
+            }
+            d.edenDim = tag.getString("eden_dim");
+            d.edenCentre = net.minecraft.core.BlockPos.of(tag.getLong("eden_centre"));
+            d.lifeTree = net.minecraft.core.BlockPos.of(tag.getLong("life_tree"));
+            d.knowledgeTree = net.minecraft.core.BlockPos.of(tag.getLong("knowledge_tree"));
+            if (tag.hasUUID("eden_world")) d.edenWorld = tag.getUUID("eden_world");
+            d.edenSince = tag.getLong("eden_since");
+            d.edenStep = tag.getInt("eden_step");
+            d.fallOfMan = tag.getBoolean("fall_of_man");
+        } else {
+            d.fallOfMan = d.firstPairBorn;   // peoples given life before Eden was planted are fallen already
+        }
         net.minecraft.nbt.CompoundTag lg = tag.getCompound("life_givers");
         for (String k : lg.getAllKeys()) {
             net.minecraft.nbt.CompoundTag e = lg.getCompound(k);
@@ -279,6 +308,15 @@ public class CosmicExpanseSavedData extends SavedData {
         GALAXIES.encodeStart(NbtOps.INSTANCE, galaxies).result().ifPresent(t -> tag.put("galaxies", t));
         BLACK_HOLES.encodeStart(NbtOps.INSTANCE, blackHoles).result().ifPresent(t -> tag.put("black_holes", t));
         tag.putBoolean("first_pair_born", firstPairBorn);
+        tag.putString("eden_state", eden.name());
+        tag.putString("eden_dim", edenDim);
+        tag.putLong("eden_centre", edenCentre.asLong());
+        tag.putLong("life_tree", lifeTree.asLong());
+        tag.putLong("knowledge_tree", knowledgeTree.asLong());
+        if (edenWorld != null) tag.putUUID("eden_world", edenWorld);
+        tag.putLong("eden_since", edenSince);
+        tag.putInt("eden_step", edenStep);
+        tag.putBoolean("fall_of_man", fallOfMan);
         net.minecraft.nbt.CompoundTag lg = new net.minecraft.nbt.CompoundTag();
         lifeGivers.forEach((k, v) -> {
             net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();

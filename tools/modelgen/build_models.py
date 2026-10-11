@@ -32,6 +32,7 @@ MODELS = {
     "power": ("entity", "power", 250, 70),                # Tier 3 - Eph 6:12, Jude 1:6, Rev 20:1
     "principality": ("entity", "principality", 120, 40),  # Tier 2 - Col 1:16, Dan 10:13
     "archangel": ("entity", "archangel", 120, 40),        # Tier 2 - 1 Thess 4:16, Jude 1:9
+    "serpent": ("entity", "serpent", 120, 30),            # Tier 2 - Genesis 3:1, Rev 12:9
 }
 
 

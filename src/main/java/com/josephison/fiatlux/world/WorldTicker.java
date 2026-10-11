@@ -148,6 +148,12 @@ public final class WorldTicker {
         double hab = p.type.habitability * p.type.size;
         if (hab <= 0) return new double[]{0, 0};
         double years = years(f);
+        if (!cosmos.fallOfMan) {   // before the Fall of Man there is neither birth nor death (Gen 4:1, Rom 5:12)
+            p.population = Math.max(p.population, census);
+            p.faith = 1;
+            p.sin = 0;
+            return new double[]{0, p.population};
+        }
         double cap = Math.max(2, p.era.capacity * hab);
         double before = p.population;
         double r = (p.era.growth - p.era.mortality) * c.populationGrowthRate.get();

@@ -39,6 +39,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue mortalYearTicks;
         public final ModConfigSpec.IntValue maxMortalsPerSettlement;
         public final ModConfigSpec.IntValue maxTownsPerWorld;
+        public final ModConfigSpec.IntValue edenTemptationTicks;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -125,6 +126,8 @@ public final class FiatLuxConfig {
             maxMortalsPerSettlement = b.comment("Most mortals that live in one town (children included); beyond it, young families leave to found another.")
                     .defineInRange("maxMortalsPerSettlement", 28, 2, 200);
             maxTownsPerWorld = b.comment("Most towns a people founds on one world.").defineInRange("maxTownsPerWorld", 10, 1, 64);
+            edenTemptationTicks = b.comment("How long Adam and Eve live in innocence before the serpent comes (once Satan has fallen).")
+                    .defineInRange("edenTemptationTicks", 6000, 0, 10_000_000);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

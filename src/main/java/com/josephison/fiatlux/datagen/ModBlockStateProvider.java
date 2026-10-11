@@ -27,6 +27,15 @@ public class ModBlockStateProvider extends BlockStateProvider {
         translucent(ModBlocks.GOLDEN_STREET.get(), "golden_street");
         translucent(ModBlocks.STILLED_WATER.get(), "stilled_water");
         translucent(ModBlocks.VOID_GATE.get(), "void_gate");
+        for (var leaves : java.util.List.of(ModBlocks.LIFE_LEAVES.get(), ModBlocks.KNOWLEDGE_LEAVES.get())) {
+            String n = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(leaves).getPath();
+            simpleBlock(leaves, models().cubeAll(n, modLoc("block/" + n)).renderType("cutout_mipped"));
+        }
+        for (var fruit : java.util.List.of(ModBlocks.LIFE_FRUIT.get(), ModBlocks.KNOWLEDGE_FRUIT.get())) {
+            String n = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(fruit).getPath();
+            simpleBlock(fruit, models().withExistingParent(n, modLoc("block/hanging_fruit")).texture("fruit", modLoc("block/" + n))
+                    .texture("particle", modLoc("block/" + n)).renderType("cutout"));
+        }
         ModelFile crystal = models().cross("celestial_crystal", modLoc("block/celestial_crystal")).renderType("cutout");
         directionalBlock(ModBlocks.CELESTIAL_CRYSTAL.get(), crystal);
     }

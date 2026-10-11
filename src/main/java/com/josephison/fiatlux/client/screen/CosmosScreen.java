@@ -94,6 +94,8 @@ public class CosmosScreen extends Screen {
                         + " · " + plural(u.getInt("worlds"), "world", "worlds") + " (" + u.getInt("living") + " with life)");
                 text("Glory " + num(u.getLong("glory")) + " · Ascension tier " + u.getInt("tier"));
                 text("One mortal year passes every " + timeText(u.getInt("yearSeconds")) + " (simulation speed ×" + num(u.getDouble("speed")) + ").", DIM, 0);
+                heading("The garden of Eden", 0xFF9CE38C);
+                text(u.getString("eden"));
                 heading("The living", GOLD);
                 text(plural(data.getInt("totalLiving"), "mortal is", "mortals are") + " alive, and " + plural(data.getInt("totalWritten"), "life is", "lives are")
                         + " written in the Book of Generations.");

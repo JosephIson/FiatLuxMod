@@ -40,7 +40,8 @@ Model work needs only Python 3 with Pillow.
   turned every way" (Gen 3:24); right-click the guardian to take it back.
 * `/fiatlux heaven | cast <power> | undo | chronicle [n] | mode <unbound|ascension|mortal_pilgrim>
   | glory add <n> | essence <player> <n> | pilgrim <player> <true|false>`
-* `/fiatlux cosmos` shows the universe, every world, the moral climate and the Underworld.
+* `/fiatlux cosmos` opens the Cosmic Expanse screen: the universe, every world with its living people,
+  towns and faiths, Heaven, the Underworld, the hierarchy of the fallen and the Chronicle.
   `/fiatlux planet create <type> [name] | planet life <name>`,
   `/fiatlux planet visit <name>` (walk on a created world), `/fiatlux planet approach <name>` (fly to it in the Void),
   `/fiatlux realm heaven|void|underworld|earth`,
@@ -169,7 +170,30 @@ of the throne and "a rainbow round about the throne, in sight like unto an emera
 ## Mortals: the living peoples of the worlds
 Speak **Breath of Life** on a created world (or on the earth) and "the LORD God formed man of the
 dust of the ground, and breathed into his nostrils the breath of life" (Gen 2:7): the first pair
-rises from the dust, a settlement is founded around a shrine, and their people live on their own.
+rises from the dust, and their people live on their own.
+
+### The garden of Eden and the Fall of Man (Genesis 2-3)
+The very first man and woman, Adam and Eve, are put into a garden planted for them. It is a round
+garden behind a flowering hedge, with a spring at its heart that parts into four rivers: the
+Pison (with gold, bdellium and the onyx stone along its banks), Gihon, Hiddekel and Euphrates.
+There are fruit trees among the flowers and the beasts of the field, two by two. In the midst
+stand the golden **tree of life** and the dark **tree of the knowledge of good and evil**, both
+hung with fruit you can pick.
+* **Innocence**: Adam and Eve do not age, hunger, sin or die, and no one is born. Adam names the
+  beasts (Gen 2:19).
+* **The serpent** comes once Satan has fallen in the war in Heaven (`edenTemptationTicks` after the
+  garden is planted). He speaks with Eve in the words of Genesis 3:1-5. She takes the fruit, eats,
+  and gives it to Adam. Strike the serpent before then to drive him off for a while.
+* **The Fall**: "the eyes of them both were opened" (3:7). From then on, people die, children are
+  born (Cain, Abel and Seth first), sin enters, and peoples grow. Mortals now know good and evil
+  and wonder aloud who they are and why they were made. The pair hide among the trees.
+* **Judgment**: come near them, or say "Where art thou?", and the scene of Genesis 3:9-21 plays out.
+  Adam and Eve answer, the serpent is cursed and loses his legs, and they are clothed in coats of
+  skins. They are then driven out to found the first town east of Eden, and a cherub and a flaming
+  sword are set at the east gate to keep the way of the tree of life. No mortal can go back in.
+* `/fiatlux eden` shows where the story stands. `/fiatlux eden begin` plants the garden where you
+  stand and returns Adam and Eve to innocence (for worlds made before Eden existed).
+  `/fiatlux eden tempt` sends the serpent now, and `/fiatlux eden plant` plants a garden only.
 * **Lives**: every mortal is born, grows from child to adult to elder, and dies of old age (one
   year is `mortalYearTicks`). Each has a name, two traits from ten (pious, proud, curious, greedy,
   kind, lazy, fearful, joyful, brave, industrious), a trade suited to their people's era (gatherer,
@@ -194,9 +218,17 @@ rises from the dust, a settlement is founded around a shrine, and their people l
   the fallen. That faith spreads by conversation, and the shrine is crowned by whatever most of the
   village worships. Miracles win the doubting back; wrath only terrifies them. Sneak-use a mortal
   to bless them; use them normally to hear who they are.
-* **Judgment**: when a mortal dies, its deeds are weighed. The righteous rise to Heaven in a pillar
-  of light and the wicked go down to the Underworld. Every death is written in the Chronicle and in
-  the Book of Generations, and the widowed mourn.
+* **Peoples that spread**: a world's population grows by real births among the mortals you meet, and
+  beyond them at the rates of its age, up to what that age can feed. When a town is full, young
+  families go out and found a new town (Enoch, Nod, Shinar, Ur and on through the cities of
+  Genesis), up to `maxTownsPerWorld`.
+* **Judgment and the souls of the dead**: when a mortal dies, its deeds are weighed. The righteous
+  rise to Heaven and the wicked go down to the Underworld. Their **souls** then walk those realms in
+  their own names and faces: in Heaven made of light, praising and singing; in the Underworld made
+  of ash and embers, labouring and weeping. Souls standing for the unnumbered dead of every world
+  join them. Use a soul to hear who it was and where its kin are now. Sneak-use a soul in the
+  Underworld to **redeem** it into Heaven. Every death is written in the Chronicle and in the Book
+  of Generations, and the widowed mourn.
 
 ## Visual effects
 * **Particles**: additive-blended sparks, an 8-frame animated holy fire, drifting motes,

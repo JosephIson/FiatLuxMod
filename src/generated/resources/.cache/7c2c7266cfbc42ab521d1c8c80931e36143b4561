@@ -1,4 +1,4 @@
-// 1.21.1	2026-10-11T00:16:41.953626698	Block States: fiatlux
+// 1.21.1	2026-10-11T02:28:38.502471363	Block States: fiatlux
 c6e73fb69d55e46466deac05b7713f9e9e0e1c04 assets/fiatlux/blockstates/abyssal_stone.json
 f3030977cdeecdf743b92f6e971e5d1d4b638be7 assets/fiatlux/blockstates/brimstone.json
 c8875b6f0f349b26d5584e365acc71576f651ae1 assets/fiatlux/blockstates/celestial_crystal.json
@@ -8,6 +8,10 @@ f03ab7de3fa3e64cf9b7a887f81f8d613268530c assets/fiatlux/blockstates/cloud_band_a
 7c243282eadc25ff734985777be1b6328a7a6502 assets/fiatlux/blockstates/cloudstone.json
 6a684afb82798f7f64dd6ab3a77cb87f568441e8 assets/fiatlux/blockstates/golden_street.json
 4942063b969e80a9858ccfdc4cb3875826990451 assets/fiatlux/blockstates/jasper.json
+ec60c9a5e90db7cf7601f46aa3b55fce6eee02cd assets/fiatlux/blockstates/knowledge_fruit.json
+516e75915f64e47eb91e64ca9923e346af7f4730 assets/fiatlux/blockstates/knowledge_leaves.json
+95b016832371e7f416c7ec49f1f13a387b5ecd35 assets/fiatlux/blockstates/life_fruit.json
+40fc81f33a2d3ba46a1b214f5a639ecba197d105 assets/fiatlux/blockstates/life_leaves.json
 3a3f4f35e6a1b9ce8ae493305cf5d736f3c21c55 assets/fiatlux/blockstates/lux_block.json
 62a7ad7080fc4123c5b2a1f6236acf0dbf796b86 assets/fiatlux/blockstates/neon_crimson.json
 431cb36b5a528f6dd04f51d2f2aa8b6208288348 assets/fiatlux/blockstates/neon_violet.json
@@ -26,6 +30,10 @@ c688167c69720d3be6605d299cb08c9e58713f38 assets/fiatlux/models/block/cloud_band_
 45faa5bcf5bddeb04912b3e5a94cd357830a1585 assets/fiatlux/models/block/cloudstone.json
 64fcd8e6afb3a7f775c2c3e345e3fa4a37d3cc00 assets/fiatlux/models/block/golden_street.json
 ba289b86b6d41b954ccaea648a968dcdaf612cfe assets/fiatlux/models/block/jasper.json
+e4d5342774f2eea549192a8bc46543770378001f assets/fiatlux/models/block/knowledge_fruit.json
+57aa8cd87a7b9a9c3be02f73d04adf027801b6ea assets/fiatlux/models/block/knowledge_leaves.json
+86a1e89c52648a291e4f6f26434bb9ddfb55ab5d assets/fiatlux/models/block/life_fruit.json
+6a7e19f89d34ca905e7f3777a8ef7b7330f64d65 assets/fiatlux/models/block/life_leaves.json
 8df796bfda2669f06a67b0c7d64df0a5c4a1cce5 assets/fiatlux/models/block/lux_block.json
 27863b04134d4c327999730e376ec3aa9900e441 assets/fiatlux/models/block/neon_crimson.json
 95c868e5f7d399033d32ea84e01f4f1ea7f83f1c assets/fiatlux/models/block/neon_violet.json

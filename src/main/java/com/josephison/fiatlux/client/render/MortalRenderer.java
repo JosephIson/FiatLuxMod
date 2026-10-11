@@ -38,12 +38,13 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
     public void preRender(PoseStack poseStack, MortalEntity mortal, BakedGeoModel model, @Nullable MultiBufferSource bufferSource,
                           @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         int era = mortal.era().ordinal();
+        boolean innocent = mortal.looksInnocent();   // plain linen in the garden: the coats of skins come later (Gen 3:21)
         for (int i = 0; i < ERAS.length; i++) {
-            boolean shown = i == era;
+            boolean shown = i == era && !innocent;
             model.getBone("era_" + ERAS[i]).ifPresent(b -> b.setHidden(!shown));
             model.getBone("tool_" + ERAS[i]).ifPresent(b -> b.setHidden(!shown || mortal.isChild()));
         }
-        boolean helmet = ERAS[Math.min(era, ERAS.length - 1)].equals("spacefaring");
+        boolean helmet = ERAS[Math.min(era, ERAS.length - 1)].equals("spacefaring") && !innocent;
         model.getBone("era_spacefaring_helm").ifPresent(b -> b.setHidden(!helmet));
         model.getBone("beard").ifPresent(b -> b.setHidden(!mortal.isMale() || helmet));
         model.getBone("long_hair").ifPresent(b -> b.setHidden(mortal.isMale() || helmet));

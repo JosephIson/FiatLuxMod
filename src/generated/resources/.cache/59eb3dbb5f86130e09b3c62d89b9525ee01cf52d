@@ -1,4 +1,4 @@
-// 1.21.1	2026-10-10T22:25:15.98677976	Loot Tables
+// 1.21.1	2026-10-11T02:29:18.010953411	Loot Tables
 ad50fd4fd0c664d22adfef40f9751f3646d10a25 data/fiatlux/loot_table/blocks/abyssal_stone.json
 ce1521b900037b87b957a2af6d9a70a39fff6b51 data/fiatlux/loot_table/blocks/brimstone.json
 e84605cb544d4bff5af27d790e6b91dc709047e1 data/fiatlux/loot_table/blocks/celestial_crystal.json
@@ -8,6 +8,10 @@ cb59d88528505a3fa414a04e96ff86319e87b41e data/fiatlux/loot_table/blocks/cloud_ba
 29543be65f7b78bb400efc761e9f18996ef02316 data/fiatlux/loot_table/blocks/cloudstone.json
 3bdfba10d55d6fa9cc637bad0bcf1d7c013c51f9 data/fiatlux/loot_table/blocks/golden_street.json
 95d11145df0f850060915c327562d89d2d4474f6 data/fiatlux/loot_table/blocks/jasper.json
+74fc2ef1d35eacc811e96fc922fa68e37083f7fe data/fiatlux/loot_table/blocks/knowledge_fruit.json
+9275441d0e29b23ccb49727dc4479a3207737684 data/fiatlux/loot_table/blocks/knowledge_leaves.json
+796233c9be47e3e5f9d2cf56e2850cfb939d0813 data/fiatlux/loot_table/blocks/life_fruit.json
+eab21cc55344fb50e7d8de57d49f7e13284f9203 data/fiatlux/loot_table/blocks/life_leaves.json
 fb2c4a1ba478d1e34f8df67b61161ea3a3aee3e5 data/fiatlux/loot_table/blocks/lux_block.json
 1c7c95749cccd773303176316ec160bdd95e52bf data/fiatlux/loot_table/blocks/neon_crimson.json
 57db16455ff33cf6c83ed01d1914cbc542d851c0 data/fiatlux/loot_table/blocks/neon_violet.json

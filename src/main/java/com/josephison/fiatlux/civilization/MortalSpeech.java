@@ -18,7 +18,8 @@ public final class MortalSpeech {
 
     /** What the speaker knows: who they are, where they live, and the news of the cosmos. */
     public record Context(String world, String era, Profession profession, Trait a, Trait b, boolean child, boolean elder,
-                          String other, String spouse, String child_, boolean rebellion, boolean abyss, int worlds, int fallen) {
+                          String other, String spouse, String child_, boolean rebellion, boolean abyss, int worlds, int fallen,
+                          boolean awakened, boolean edenLost) {
         boolean has(Trait t) {
             return a == t || b == t;
         }
@@ -86,6 +87,17 @@ public final class MortalSpeech {
 
     private MortalSpeech() {}
 
+    /** Words of the garden, before the fruit was eaten. */
+    public static String innocentLine(RandomSource random, String name) {
+        String[] common = {"Everything the Creator made is very good.", "The river is cool, and the fruit is sweet.", "Come, walk with me among the trees!",
+                "Not a single thing here is afraid of us.", "The Creator walks with us in the cool of the day.", "Look at the flowers - every colour!"};
+        String[] adam = {"This is now bone of my bones, and flesh of my flesh.", "Eve! Come and see what I have named!", "I shall dress the garden and keep it."};
+        String[] eve = {"Adam, look at the light on the water!", "Every tree here is good for food... every one but one.", "How the birds sing here!"};
+        String[] own = "Adam".equals(name) ? adam : "Eve".equals(name) ? eve : new String[0];
+        int n = random.nextInt(common.length + own.length);
+        return n < common.length ? common[n] : own[n - common.length];
+    }
+
     public static String say(Topic topic, Context c, RandomSource random) {
         List<String> pool = new ArrayList<>();
         if (topic == Topic.WORK) {
@@ -126,6 +138,15 @@ public final class MortalSpeech {
         if (c.abyss()) l.add("The scholars speak of a pit in the sky that swallows light.");
         if (c.worlds() > 1) l.add("Do you think there are people on the other worlds?");
         if (c.has(Trait.CURIOUS)) l.add("Why do you think the sun never falls?");
+        if (c.awakened()) {   // knowing good and evil (Gen 3:22), they wonder who they are
+            l.addAll(List.of("Why were we made, do you think?", "What becomes of us when we die?", "I know good, and I know evil. Which am I?",
+                    "We are dust, and to dust we shall return.", "Do you ever feel... watched over?", "Who made the One who made us?",
+                    "Sometimes I feel I was made for more than this."));
+        }
+        if (c.edenLost()) {
+            l.addAll(List.of("My grandmother told of a garden, before the beginning of sorrows.", "They say a flaming sword guards the way to the tree of life.",
+                    "If our first parents had never eaten of that tree... would we live for ever?"));
+        }
         if (c.has(Trait.GREEDY)) l.add("Your field is bigger than mine. Hardly fair.");
         return l;
     }

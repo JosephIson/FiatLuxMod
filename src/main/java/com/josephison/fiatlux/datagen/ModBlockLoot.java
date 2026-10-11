@@ -23,6 +23,10 @@ public class ModBlockLoot extends BlockLootSubProvider {
         dropSelf(ModBlocks.PEARL.get());
         dropSelf(ModBlocks.CELESTIAL_CRYSTAL.get());
         extra().forEach(b -> dropSelf(b));
+        dropWhenSilkTouch(ModBlocks.LIFE_LEAVES.get());
+        dropWhenSilkTouch(ModBlocks.KNOWLEDGE_LEAVES.get());
+        add(ModBlocks.LIFE_FRUIT.get(), createSingleItemTable(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_LIFE.get()));
+        add(ModBlocks.KNOWLEDGE_FRUIT.get(), createSingleItemTable(com.josephison.fiatlux.registry.ModItems.FRUIT_OF_KNOWLEDGE.get()));
     }
 
     private static List<Block> extra() {
@@ -36,6 +40,7 @@ public class ModBlockLoot extends BlockLootSubProvider {
         List<Block> all = new java.util.ArrayList<>(List.of(ModBlocks.LUX_BLOCK.get(), ModBlocks.GOLDEN_STREET.get(), ModBlocks.JASPER.get(),
                 ModBlocks.CLOUDSTONE.get(), ModBlocks.PEARL.get(), ModBlocks.CELESTIAL_CRYSTAL.get()));
         all.addAll(extra());
+        all.addAll(List.of(ModBlocks.LIFE_LEAVES.get(), ModBlocks.KNOWLEDGE_LEAVES.get(), ModBlocks.LIFE_FRUIT.get(), ModBlocks.KNOWLEDGE_FRUIT.get()));
         return all;
     }
 }

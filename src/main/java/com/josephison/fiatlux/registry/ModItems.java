@@ -57,5 +57,17 @@ public final class ModItems {
     public static final DeferredItem<DeferredSpawnEggItem> OPHAN_SPAWN_EGG = ITEMS.register("ophan_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.OPHAN, 0xD6E296, 0xF6C43C, new Item.Properties()));
 
+    // --- the garden of Eden
+    public static final DeferredItem<com.josephison.fiatlux.eden.EdenFruitItem> FRUIT_OF_LIFE = ITEMS.register("fruit_of_life",
+            () -> new com.josephison.fiatlux.eden.EdenFruitItem(new Item.Properties().rarity(Rarity.EPIC)
+                    .food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(10).saturationModifier(1.2f).alwaysEdible().build()), true));
+    public static final DeferredItem<com.josephison.fiatlux.eden.EdenFruitItem> FRUIT_OF_KNOWLEDGE = ITEMS.register("fruit_of_knowledge",
+            () -> new com.josephison.fiatlux.eden.EdenFruitItem(new Item.Properties().rarity(Rarity.RARE)
+                    .food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(4).saturationModifier(0.6f).alwaysEdible().build()), false));
+    public static final DeferredItem<BlockItem> LIFE_LEAVES = ITEMS.registerSimpleBlockItem(ModBlocks.LIFE_LEAVES);
+    public static final DeferredItem<BlockItem> KNOWLEDGE_LEAVES = ITEMS.registerSimpleBlockItem(ModBlocks.KNOWLEDGE_LEAVES);
+    public static final DeferredItem<DeferredSpawnEggItem> SERPENT_SPAWN_EGG = ITEMS.register("serpent_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.SERPENT, 0x34704A, 0xD6BA46, new Item.Properties()));
+
     private ModItems() {}
 }

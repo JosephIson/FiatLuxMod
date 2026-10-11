@@ -70,6 +70,7 @@ public record CosmosReport(CompoundTag data) implements CustomPacketPayload {
         u.putInt("tier", gov.gloryTier());
         u.putInt("yearSeconds", FiatLuxConfig.COMMON.mortalYearTicks.get() / 20);
         u.putDouble("speed", FiatLuxConfig.COMMON.simulationSpeed.get());
+        u.putString("eden", com.josephison.fiatlux.eden.EdenEvents.describe(c));
         root.put("universe", u);
 
         CompoundTag m = new CompoundTag();

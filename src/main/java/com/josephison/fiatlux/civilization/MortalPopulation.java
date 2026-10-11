@@ -63,7 +63,11 @@ public final class MortalPopulation {
             if (!p.hasLife()) continue;
             ServerLevel level = server.getLevel(RealmPool.dimension(i));
             if (level == null || level.players().isEmpty()) continue;
+            boolean inEden = p.id.equals(cosmos.edenWorld) && !cosmos.fallOfMan;
+            if (inEden) continue;   // the first pair live in the garden; towns come after the expulsion
             if (cosmos.townsOf(p.id).isEmpty()) {
+                if (p.id.equals(cosmos.edenWorld) && cosmos.eden != com.josephison.fiatlux.eden.EdenState.EXILED
+                        && cosmos.eden != com.josephison.fiatlux.eden.EdenState.NONE) continue;   // not until they are sent out
                 Settlement first = found(level, p);
                 if (first == null) continue;
                 first.name = p.name;

@@ -1,0 +1,8 @@
+{
+  "parent": "fiatlux:block/hanging_fruit",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "fruit": "fiatlux:block/life_fruit",
+    "particle": "fiatlux:block/life_fruit"
+  }
+}
