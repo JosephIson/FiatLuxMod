@@ -78,6 +78,15 @@ public final class Prophets {
         return p != null && p.living() ? p : null;
     }
 
+    /** Whether this one is a living prophet or follows one: they leave their trade (Amos 7:15; 1 Kings 19:21). */
+    public static boolean called(@Nullable MinecraftServer server, UUID id) {
+        if (server == null) return false;
+        ProphecyData d = ProphecyData.get(server);
+        if (d.prophets.isEmpty()) return false;
+        Prophet p = d.prophet(id);
+        return p != null && p.living() || d.masterOf(id) != null;
+    }
+
     /** The title a prophet (or a prophet's disciple) carries, or "". */
     public static String titleOf(ServerLevel level, MortalEntity m) {
         ProphecyData d = ProphecyData.get(level.getServer());
@@ -237,6 +246,7 @@ public final class Prophets {
             level.sendParticles(p.false_ ? ParticleTypes.SMOKE : com.josephison.fiatlux.registry.ModParticles.LIGHT_MOTE.get(),
                     m.getX(), m.getY() + 1.8, m.getZ(), 2, 0.25, 0.2, 0.25, 0.01);
         }
+        if (m.act() == MortalEntity.WORK) m.beginAct(MortalEntity.NONE, 1);
         if (m.act() != MortalEntity.NONE || m.sentence() != Justice.Sentence.NONE || m.isPossessed()) return;
         if (busy(m.getUUID())) return;
         Religion faith = Generations.get(level.getServer()).religion(p.faith);
@@ -365,7 +375,7 @@ public final class Prophets {
         List<MortalEntity> hearers = level.getEntitiesOfClass(MortalEntity.class, new AABB(at).inflate(28), x -> x != m && !x.isChild());
         String words;
         if (p.false_) {
-            words = String.format(FALSE_WORD[r.nextInt(FALSE_WORD.length)], g, g);
+            words = fresh(FALSE_WORD, p, r, g);
             for (MortalEntity h : hearers) {
                 Religion hf = Faiths.of(h);
                 if (hf != null && hf.id.equals(faith.id)) continue;
@@ -398,28 +408,28 @@ public final class Prophets {
             String kind;
             if (!idolaters.isEmpty() && r.nextDouble() < 0.6) {
                 Religion other = Faiths.of(idolaters.get(r.nextInt(idolaters.size())));
-                words = String.format(AGAINST_IDOLS[r.nextInt(AGAINST_IDOLS.length)], other != null ? other.deityName : "the idol");
+                words = fresh(AGAINST_IDOLS, p, r, other != null ? other.deityName : "the idol");
                 kind = "idols";
             } else if (shepherdCorrupt && r.nextDouble() < 0.6) {
-                words = AGAINST_SHEPHERDS[r.nextInt(AGAINST_SHEPHERDS.length)];
+                words = fresh(AGAINST_SHEPHERDS, p, r, g);
                 kind = "shepherds";
             } else if (!sinners.isEmpty() && r.nextDouble() < 0.6) {
-                words = String.format(AGAINST_SIN[r.nextInt(AGAINST_SIN.length)], g);
+                words = fresh(AGAINST_SIN, p, r, g);
                 kind = "sin";
             } else if (oppressed && r.nextDouble() < 0.6) {
-                words = FOR_JUSTICE[r.nextInt(FOR_JUSTICE.length)];
+                words = fresh(FOR_JUSTICE, p, r, g);
                 kind = "justice";
             } else if (hungry) {
-                words = FOR_THE_HUNGRY[r.nextInt(FOR_THE_HUNGRY.length)];
+                words = fresh(FOR_THE_HUNGRY, p, r, g);
                 kind = "hungry";
             } else if (doubt > 0.3) {
-                words = String.format(COMFORT[r.nextInt(COMFORT.length)], g);
+                words = fresh(COMFORT, p, r, g);
                 kind = "comfort";
             } else if (r.nextInt(5) == 0 && CosmicExpanseSavedData.get(level.getServer()).fallOfMan) {
                 words = ofTheSon(level, d, p, town);
                 kind = "son";
             } else {
-                words = String.format(WORD[r.nextInt(WORD.length)], g);
+                words = fresh(WORD, p, r, g);
                 kind = "word";
             }
             words = "Thus saith " + g + ": " + words;
@@ -472,6 +482,17 @@ public final class Prophets {
         if (p.oracles.size() < 60 && !p.oracles.contains(words)) p.oracles.add(words);
         p.preached++;
         speak(level, m, p, words);
+    }
+
+    /** A word from `words` the prophet has not yet spoken, if there is one (with the god's name put in). */
+    private static String fresh(String[] words, Prophet p, RandomSource r, String name) {
+        List<String> unsaid = new ArrayList<>();
+        for (String w : words) {
+            String text = w.replace("%s", name);
+            if (p.oracles.stream().noneMatch(o -> o.endsWith(text))) unsaid.add(text);
+        }
+        if (unsaid.isEmpty()) return words[r.nextInt(words.length)].replace("%s", name);
+        return unsaid.get(r.nextInt(unsaid.size()));
     }
 
     /** A word of one who is to come, sometimes naming the town he shall come from. */

@@ -86,20 +86,21 @@ public final class Scripture {
     public static void annal(MinecraftServer server, long time, String actor, String kind, String text) {
         if (!SACRED.contains(kind)) return;
         ProphecyData d = ProphecyData.get(server);
-        seed(server, d);
+        if (seed(server, d)) return;   // the act was just gathered from the Chronicle with the rest
         d.annals.add(new ProphecyData.Annal(time, actor, kind, text));
         while (d.annals.size() > MAX_ANNALS) d.annals.removeFirst();
         d.setDirty();
     }
 
     /** The first time the annals are needed, what the Chronicle still remembers is gathered into them. */
-    private static void seed(MinecraftServer server, ProphecyData d) {
-        if (d.seeded) return;
+    private static boolean seed(MinecraftServer server, ProphecyData d) {
+        if (d.seeded) return false;
         d.seeded = true;
         for (var e : CosmosData.get(server).chronicle()) {
             if (SACRED.contains(e.kind())) d.annals.add(new ProphecyData.Annal(e.gameTime(), e.actor(), e.kind(), e.text()));
         }
         d.setDirty();
+        return true;
     }
 
     /** Whether an act belongs to the story of `world`. */
@@ -209,7 +210,7 @@ public final class Scripture {
             List<ProphecyData.Annal> acts = byChapter.getOrDefault(ch[0], List.of());
             if (acts.isEmpty()) continue;
             if (!ch[0].equals("The Creation")) b.chapter(ch[0]);
-            for (ProphecyData.Annal a : acts.subList(0, Math.min(40, acts.size()))) b.verse(verse(a));
+            for (ProphecyData.Annal a : acts.subList(0, Math.min(40, acts.size()))) if (!b.verses.contains(verse(a))) b.verse(verse(a));
         }
         if (faith.deity.true_) b.verse("These are the generations of the heavens and of " + p.name + ", when they were created.");
         return b;
@@ -258,7 +259,7 @@ public final class Scripture {
                 b.chapter(heading);
                 chapter = heading;
             }
-            b.verse(verse(a));
+            if (!b.verses.contains(verse(a))) b.verse(verse(a));
         }
         return b;
     }

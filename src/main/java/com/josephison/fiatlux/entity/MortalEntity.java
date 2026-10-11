@@ -548,6 +548,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         WorkGoal() { setFlags(EnumSet.of(Flag.MOVE)); }
         @Override public boolean canUse() {
             if (isChild() || isNight() || act() != NONE || isPossessed() || random.nextInt(hasTrait(Trait.LAZY) ? 160 : hasTrait(Trait.INDUSTRIOUS) ? 30 : 70) != 0) return false;
+            if (com.josephison.fiatlux.prophecy.Prophets.called(getServer(), getUUID())) return false;   // they have left their trade (Amos 7:15)
             site = workSite();
             return site != null;
         }

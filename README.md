@@ -308,6 +308,47 @@ hung with fruit you can pick.
   * **Commands**: `/fiatlux faiths` shows the faiths of your world as a family tree of branches,
     each with its followers, its leader and what it split over. `/fiatlux faiths split` splits the
     faith of the mortal nearest you, and the Cosmos screen lists leaders and branches.
+* **Prophets** (Amos 3:7):
+  * **The calling**: when a people goes astray (idols, sin, doubt when heaven is silent, or a
+    corrupt priest), the word of its Creator comes to one of the faithful, often a herdsman or a
+    farmer (Amos 7:14). You can also call one yourself: say **"Whom shall I send?"** among your
+    faithful and the most devout answers "Here am I; send me" (Isaiah 6:8). False faiths raise
+    false prophets of their own.
+  * **Their work**: prophets leave their trade and go from town to town. They preach against idols,
+    against sin, against shepherds who feed themselves, for justice and for the hungry; they bring
+    comfort to the doubting and speak of one who is to come ("But thou, Ararat… out of thee shall he
+    come forth", Micah 5:2). Hearers turn, or do not. You hear every oracle in full in chat.
+  * **Wonders**: where there is need they work wonders. The sick are healed, the bread does not run
+    out (2 Kings 4:42-44) and unclean spirits go out.
+  * **Disciples**: each prophet takes a disciple, who takes up the mantle when the prophet is gone
+    (2 Kings 2:13). An old prophet may be **taken up in a chariot of fire** (2 Kings 2:11).
+  * **Persecution**: rulers of other faiths and corrupt priests have prophets seized, and some are
+    martyred.
+  * **Judgment foretold**: "Yet forty days, and … shall be overthrown". If the town repents it is
+    spared (Jonah 3:10). Strike it with a wrathful power and the word is fulfilled. Otherwise the
+    word fails (Deut 18:22) and the faithful doubt.
+  * **Fire from heaven**: where a town serves another god, the prophet challenges its priest as
+    Elijah did on Carmel (1 Kings 18). Work any wonder at the altar within a minute to answer by
+    fire, or stay silent and watch the prophet flee. If you are not on that world, the fire falls of
+    itself (`prophetsActAlone`). When it falls, the people turn and the altar is crowned for you.
+  * **Commands and config**: `/fiatlux prophets` lists every prophet, their oracles and wonders,
+    and the judgments foretold. `/fiatlux prophet <name>` calls one. `prophetChance` sets how often
+    prophets are raised.
+* **Scripture**: every people writes its own holy books out of what really happened on its world.
+  * **When**: once it farms and has a priest, a scholar or an elder to write.
+  * **The Book of Beginnings**: "In the beginning Dev created the heavens and Eden…", with chapters
+    for the Creation, the War in Heaven, the Garden, Cain and Abel, the Generations, the Watchers
+    and the Flood, drawn from the annals of the great acts.
+  * **The Book of the Law**: the commandments its rulers gave.
+  * **Books of Chronicles**: of its towns, rulers, faiths, spirits and prophets, as the years pass.
+  * **The Psalms and the Proverbs**: sung and spoken by its faithful and its elders. False faiths
+    keep hymns and sayings instead.
+  * **A Book of every prophet**: written by their disciple.
+  * **A Testament**: written for every branch, which keeps the books of the faith it came from.
+
+  The writings lie open on a **lectern at each shrine**. Priests read verses aloud, with chapter and
+  verse. `/fiatlux scripture` gives you each book as a written book, and `/fiatlux scripture write`
+  has the scribes write now.
 * **Marriage**: the first man and the first woman of a world are husband and wife from the moment
   they are made ("This is now bone of my bones", Gen 2:23), however they came to be: by Breath of
   Life, the garden, or `/fiatlux eden begin`. After the Fall they bear often (Cain, Abel, Seth, and
