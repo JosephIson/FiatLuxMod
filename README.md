@@ -141,6 +141,17 @@ no rebel remains.
   form circles it as a real globe: lit by the sun, with its own surface, atmosphere and night-side
   city lights, and rings on gas giants. Flight there is weightless. Fly into a world to descend
   onto it, rise above its sky to return, and fly back into Heaven's Gate to go home.
+  The starfield sparkles: the brightest stars carry halos and diffraction spikes, a faint band of the
+  galaxy crosses the sky, globular clusters gleam and shooting stars streak by. Galaxies show golden
+  bulges around white cores and central black holes, arms of stars shading from gold to young blue,
+  pink star-forming knots and dark dust lanes, all slowly turning.
+* **Black holes, the bottomless pit** (Rev 9:1-2): the first, *the Abyss*, opens with the Big Bang
+  off beyond the sun. Each has a horizon of perfect black, a photon ring, a swirling accretion disk
+  (white-hot within, red without, brighter on the side turning toward you), the far side of the disk
+  bent over and under the shadow, and twin jets. Its pull draws in everything near, and whatever
+  crosses the horizon is gone: players fall through into the Underworld. Creators in creative or
+  spectator mode can study it safely. Open more with the **Open the Bottomless Pit** power or
+  `/fiatlux blackhole create <radius> | remove | list`.
 * **Created worlds**: each planet you form is bound to one of 16 dimensions (`planet_0..15`) with
   its own terrain: Earth-like meadows, seas and snowy peaks; volcanic basalt, lava lakes and crater
   cones; cratered regolith moons; banded gas-giant cloud decks; crystalline plains with crystal

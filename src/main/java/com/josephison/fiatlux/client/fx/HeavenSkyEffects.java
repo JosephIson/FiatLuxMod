@@ -70,7 +70,7 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
 
         drawDome(ps.last().pose());
         float bang = ClientCosmos.secondsSinceBigBang(partialTick);
-        if (bang >= 0) drawGalaxies(ps, bang, time);
+        if (bang >= 0) GalaxyRenderer.draw(ps, bang, time, false);
 
         ps.pushPose();
         ps.mulPose(Axis.YP.rotationDegrees(THRONE_YAW));
@@ -93,58 +93,6 @@ public class HeavenSkyEffects extends DimensionSpecialEffects {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         return true;
-    }
-
-    /** Galaxies born of the Big Bang: spiral arms of tinted star-dust that unfurl as the universe ages. */
-    static void drawGalaxies(PoseStack ps, float secondsSinceBang, float time) {
-        float formation = Mth.clamp((secondsSinceBang - 2f) / 20f, 0f, 1f);
-        if (formation <= 0) return;
-        for (SyncCosmosPayload.GalaxyView g : ClientCosmos.get().galaxies()) {
-            ps.pushPose();
-            ps.mulPose(Axis.YP.rotationDegrees(g.yaw()));
-            ps.mulPose(Axis.XP.rotationDegrees(g.pitch()));   // +x lifts -z above the horizon (see THRONE_PITCH)
-            ps.mulPose(Axis.ZP.rotationDegrees(time * 0.01f + g.yaw()));
-            Matrix4f m = ps.last().pose();
-            // soften toward luminous pastel: reverent rather than neon
-            int r = ((g.hue() >> 16) & 255) * 6 / 10 + 255 * 4 / 10;
-            int gr = ((g.hue() >> 8) & 255) * 6 / 10 + 245 * 4 / 10;
-            int bl = (g.hue() & 255) * 6 / 10 + 235 * 4 / 10;
-            // the nebula: a soft coloured cloud the arms unfurl within
-            BufferBuilder neb = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-            float nr = g.size() * 1.5f * formation + 1f;
-            neb.addVertex(m, 0, 0, -86.2f).setColor(r, gr, bl, (int) (120 * formation));
-            for (int i = 0; i <= 40; i++) {
-                float a = Mth.TWO_PI * i / 40;
-                float wob = 1f + 0.18f * Mth.sin(a * 3 + g.yaw());
-                neb.addVertex(m, Mth.cos(a) * nr * wob, Mth.sin(a) * nr * 0.7f * wob, -86.2f).setColor(r, gr, bl, 0);
-            }
-            BufferUploader.drawWithShader(neb.buildOrThrow());
-            BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            int arms = Math.max(1, g.arms());
-            int points = 90 * arms;
-            for (int i = 0; i < points; i++) {
-                float t = (i / (float) points);
-                int arm = i % arms;
-                float rad = t * g.size() * formation;
-                float ang = t * g.twist() * Mth.TWO_PI + arm * Mth.TWO_PI / arms;
-                if (g.arms() == 0) { ang = i * 2.399f; rad = Mth.sqrt(t) * g.size() * 0.7f * formation; }
-                float x = Mth.cos(ang) * rad, y = Mth.sin(ang) * rad;
-                float s = (0.3f + (1f - t) * 0.6f) * Math.max(1f, g.size() / 6f);
-                int a = (int) ((1f - t * 0.7f) * 210 * formation);
-                b.addVertex(m, x - s, y - s, -86f).setColor(r, gr, bl, a);
-                b.addVertex(m, x + s, y - s, -86f).setColor(r, gr, bl, a);
-                b.addVertex(m, x + s, y + s, -86f).setColor(r, gr, bl, a);
-                b.addVertex(m, x - s, y + s, -86f).setColor(r, gr, bl, a);
-            }
-            // bright core
-            float cs = g.size() * 0.12f * formation + 0.3f;
-            b.addVertex(m, -cs, -cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
-            b.addVertex(m, cs, -cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
-            b.addVertex(m, cs, cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
-            b.addVertex(m, -cs, cs, -85.9f).setColor(255, 250, 235, (int) (200 * formation));
-            BufferUploader.drawWithShader(b.buildOrThrow());
-            ps.popPose();
-        }
     }
 
     /** Created worlds orbiting the throne-light, with orbit paths, lit discs, atmospheres and city lights. */

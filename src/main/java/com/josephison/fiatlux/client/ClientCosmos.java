@@ -7,7 +7,7 @@ import java.util.List;
 
 /** Client copy of the created universe, with orbit extrapolation between server syncs. */
 public final class ClientCosmos {
-    private static SyncCosmosPayload last = new SyncCosmosPayload(-1, 0, 0, List.of(), List.of(), 0f, false, 0);
+    private static SyncCosmosPayload last = new SyncCosmosPayload(-1, 0, 0, List.of(), List.of(), 0f, false, 0, List.of());
     private static long receivedAt;
 
     private ClientCosmos() {}

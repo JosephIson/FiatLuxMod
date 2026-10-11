@@ -48,6 +48,9 @@ public final class PowerRegistry {
     public static final DeferredHolder<AbstractDivinePower, PlanetaryGenesisPower> PLANETARY_GENESIS = POWERS.register("planetary_genesis", PlanetaryGenesisPower::new);
     // Genesis 2:7 - "breathed into his nostrils the breath of life"
     public static final DeferredHolder<AbstractDivinePower, BreathOfLifePower> BREATH_OF_LIFE = POWERS.register("breath_of_life", BreathOfLifePower::new);
+    // Revelation 9:1-2 - "he opened the bottomless pit"
+    public static final DeferredHolder<AbstractDivinePower, com.josephison.fiatlux.power.powers.BottomlessPitPower> BOTTOMLESS_PIT =
+            POWERS.register("bottomless_pit", com.josephison.fiatlux.power.powers.BottomlessPitPower::new);
     // Walk upon a created world
     public static final DeferredHolder<AbstractDivinePower, VisitWorldPower> VISIT_WORLD = POWERS.register("visit_world", VisitWorldPower::new);
     // Revelation 12:9 - "he was cast out into the earth, and his angels were cast out with him"

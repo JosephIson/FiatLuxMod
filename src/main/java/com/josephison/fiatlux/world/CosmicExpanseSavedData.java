@@ -29,6 +29,8 @@ public class CosmicExpanseSavedData extends SavedData {
     private static final String NAME = FiatLux.MODID + "_cosmic_expanse";
     private static final Codec<List<Planet>> PLANETS = Planet.CODEC.listOf();
     private static final Codec<List<Galaxy>> GALAXIES = Galaxy.CODEC.listOf();
+    private static final Codec<List<com.josephison.fiatlux.world.cosmos.BlackHole>> BLACK_HOLES =
+            com.josephison.fiatlux.world.cosmos.BlackHole.CODEC.listOf();
     private static final String[] GALAXY_NAMES = {"Aurora", "Selah", "Hosanna", "Shekinah", "Elohim's Veil", "Bethel", "Zion",
             "Peniel", "Ophir", "Tarshish", "Havilah", "Gihon", "Pishon", "Hiddekel", "Euphrates", "Ararat"};
 
@@ -36,6 +38,8 @@ public class CosmicExpanseSavedData extends SavedData {
     public long bigBangTime = -1;          // overworld game time of the Big Bang, -1 = not yet
     public double cosmicAge;               // simulated days since the Big Bang
     public final List<Galaxy> galaxies = new ArrayList<>();
+    /** Black holes in the Void; the first, the Abyss, forms with the Big Bang. */
+    public final List<com.josephison.fiatlux.world.cosmos.BlackHole> blackHoles = new ArrayList<>();
     public final List<Planet> planets = new ArrayList<>();
     // --- the moral climate of creation
     public double corruption;              // 0..1
@@ -72,6 +76,12 @@ public class CosmicExpanseSavedData extends SavedData {
         if (!hasBigBang()) {
             bigBangTime = gameTime;
             cosmicAge = 0;
+            // the bottomless pit opens in the deep with the first light (Rev 9:1-2)
+            if (blackHoles.isEmpty()) {
+                net.minecraft.world.phys.Vec3 a = com.josephison.fiatlux.world.VoidSpace.ABYSS;
+                blackHoles.add(new com.josephison.fiatlux.world.cosmos.BlackHole("The Abyss", a.x, a.y, a.z,
+                        (float) com.josephison.fiatlux.world.VoidSpace.ABYSS_RADIUS));
+            }
         }
         int start = galaxies.size();
         for (int i = 0; i < galaxyCount; i++) {
@@ -119,6 +129,12 @@ public class CosmicExpanseSavedData extends SavedData {
         d.bigBangTime = tag.contains("big_bang_time") ? tag.getLong("big_bang_time") : -1;
         d.cosmicAge = tag.getDouble("cosmic_age");
         GALAXIES.parse(NbtOps.INSTANCE, tag.get("galaxies")).result().ifPresent(d.galaxies::addAll);
+        BLACK_HOLES.parse(NbtOps.INSTANCE, tag.get("black_holes")).result().ifPresent(d.blackHoles::addAll);
+        if (d.hasBigBang() && !tag.contains("black_holes")) {   // universes born before black holes existed gain their Abyss
+            net.minecraft.world.phys.Vec3 a = com.josephison.fiatlux.world.VoidSpace.ABYSS;
+            d.blackHoles.add(new com.josephison.fiatlux.world.cosmos.BlackHole("The Abyss", a.x, a.y, a.z,
+                    (float) com.josephison.fiatlux.world.VoidSpace.ABYSS_RADIUS));
+        }
         PLANETS.parse(NbtOps.INSTANCE, tag.get("planets")).result().ifPresent(d.planets::addAll);
         d.corruption = tag.getDouble("corruption");
         d.angelicPride = tag.getDouble("angelic_pride");
@@ -150,6 +166,7 @@ public class CosmicExpanseSavedData extends SavedData {
         tag.putLong("big_bang_time", bigBangTime);
         tag.putDouble("cosmic_age", cosmicAge);
         GALAXIES.encodeStart(NbtOps.INSTANCE, galaxies).result().ifPresent(t -> tag.put("galaxies", t));
+        BLACK_HOLES.encodeStart(NbtOps.INSTANCE, blackHoles).result().ifPresent(t -> tag.put("black_holes", t));
         PLANETS.encodeStart(NbtOps.INSTANCE, planets).result().ifPresent(t -> tag.put("planets", t));
         tag.putDouble("corruption", corruption);
         tag.putDouble("angelic_pride", angelicPride);

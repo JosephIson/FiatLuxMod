@@ -65,6 +65,8 @@ public final class VoidBodies {
             sphere(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.type(), p.name().hashCode(), time, p.inhabited() ? 1 : 0);
             if (p.type() == PlanetType.GAS_GIANT.ordinal()) rings(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.color());
         }
+        var holes = ClientCosmos.get().blackHoles();
+        for (var h : holes) horizon(solid, m, cam, new Vec3(h.x(), h.y(), h.z()), h.radius());
         buffers.endBatch(RenderType.debugQuads());
 
         // light: the gate's glory, the sun's corona, atmospheres and orbit paths
@@ -84,6 +86,7 @@ public final class VoidBodies {
             float rr = (float) (r * scale(cam, pos[i]));
             halo(glow, m, c, left, up, rr, 0.97f, 1.22f, p.atmosphere() & 0xFFFFFF, 0.7f);
         }
+        for (var h : holes) blackHoleLight(glow, m, cam, left, up, new Vec3(h.x(), h.y(), h.z()), h.radius(), h.name().hashCode(), time);
         buffers.endBatch(RenderType.lightning());
 
         // names of the worlds, so the Creator can find them
@@ -103,8 +106,137 @@ public final class VoidBodies {
             font.drawInBatch(name, -font.width(name) / 2f, 0, 0xFFF5E6B8, false, ps.last().pose(), buffers, Font.DisplayMode.SEE_THROUGH, 0x40000000, 0xF000F0);
             ps.popPose();
         }
+        for (var h : holes) {
+            Vec3 hc = new Vec3(h.x(), h.y(), h.z());
+            double d = cam.distanceTo(hc);
+            if (d > 420) continue;
+            Vec3 at = impostor(cam, hc.add(0, h.radius() * 4.2, 0), h.radius());
+            ps.pushPose();
+            ps.translate(at.x, at.y, at.z);
+            ps.mulPose(camera.rotation());
+            float s = (float) (0.025 * Math.max(1.0, Math.min(d, IMPOSTOR) / 6.0));
+            ps.scale(s, -s, s);
+            Component name = Component.literal(h.name());
+            font.drawInBatch(name, -font.width(name) / 2f, 0, 0xFFC8A0FF, false, ps.last().pose(), buffers, Font.DisplayMode.SEE_THROUGH, 0x40000000, 0xF000F0);
+            ps.popPose();
+        }
         buffers.endBatch();
         ps.popPose();
+    }
+
+    // ------------------------------------------------------------------ black holes
+
+    /** The event horizon: a sphere of perfect black, from which no light returns. */
+    private static void horizon(VertexConsumer vc, Matrix4f m, Vec3 cam, Vec3 center, double radius) {
+        Vec3 c = impostor(cam, center, radius);
+        double r = radius * scale(cam, center);
+        int lat = 14, lon = 24;
+        for (int i = 0; i < lat; i++) {
+            for (int j = 0; j < lon; j++) {
+                Vec3[] v = new Vec3[4];
+                for (int k = 0; k < 4; k++) {
+                    double th = Math.PI * (i + (k >= 2 ? 1 : 0)) / lat - Math.PI / 2;
+                    double ph = Math.PI * 2 * (j + (k == 1 || k == 2 ? 1 : 0)) / lon;
+                    v[k] = c.add(Math.cos(th) * Math.cos(ph) * r, Math.sin(th) * r, Math.cos(th) * Math.sin(ph) * r);
+                }
+                quad(vc, m, v[0], v[1], v[2], v[3], 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000);
+            }
+        }
+    }
+
+    /** Disk spin axis of a black hole, varied by its name so no two lie alike. */
+    private static Vec3 axis(int seed) {
+        double a = (seed & 1023) / 1023.0 * Math.PI * 2;
+        return new Vec3(Math.cos(a) * 0.6, 1.0, Math.sin(a) * 0.6).normalize();
+    }
+
+    /**
+     * The light around a black hole: the accretion disk (white-hot within, cooling to red without,
+     * turning faster toward the centre, its approaching side brighter), the far side of the disk bent
+     * over and under the shadow, the photon ring hugging the shadow's edge, twin jets along the spin
+     * axis, and a faint violet halo.
+     */
+    private static void blackHoleLight(VertexConsumer vc, Matrix4f m, Vec3 cam, Vector3f left, Vector3f up, Vec3 center, double radius,
+                                       int seed, float time) {
+        Vec3 c = impostor(cam, center, radius);
+        double k = scale(cam, center);
+        double R = radius * k;
+        Vec3 n = axis(seed);
+        Vec3 u = n.cross(new Vec3(0, 0, 1)).normalize(), w = n.cross(u).normalize();
+        Vec3 toCam = cam.subtract(c).normalize();
+        // the accretion disk
+        int rings = 9, seg = 96;
+        double r0 = R * 1.8, r1 = R * 7.0;
+        for (int i = 0; i < rings; i++) {
+            double ra = r0 + (r1 - r0) * i / rings, rb = r0 + (r1 - r0) * (i + 1) / rings;
+            for (int j = 0; j < seg; j++) {
+                double[] ang = {Math.PI * 2 * j / seg, Math.PI * 2 * (j + 1) / seg};
+                Vec3[] v = new Vec3[4];
+                int[] col = new int[4];
+                for (int q = 0; q < 4; q++) {
+                    double rr = q < 2 ? ra : rb;
+                    double a = ang[q == 0 || q == 3 ? 0 : 1];
+                    Vec3 radial = u.scale(Math.cos(a)).add(w.scale(Math.sin(a)));
+                    v[q] = c.add(radial.scale(rr));
+                    double t = (rr - r0) / (r1 - r0);
+                    double spin = time * 0.09 * Math.pow(R / rr, 1.5) * 6;
+                    double swirl = 0.68 + 0.32 * Math.sin(a * 7 - spin + rr * 0.9 / Math.max(0.01, k));
+                    Vec3 vel = n.cross(radial);                                   // orbital direction
+                    double beam = Mth.clamp(1.0 + 0.7 * vel.dot(toCam), 0.35, 1.7);   // Doppler beaming
+                    float rC = (float) Mth.lerp(t, 255, 200), gC = (float) Mth.lerp(t, 245, 60), bC = (float) Mth.lerp(t, 220, 25);
+                    float bright = (float) (swirl * beam * (1.0 - t * 0.55));
+                    int alpha = (int) (255 * Mth.clamp(bright, 0, 1) * Math.min(1.0, (1 - t) * 4) * Math.min(1.0, t * 6 + 0.4));
+                    col[q] = argb(alpha, rC * bright, gC * bright, bC * bright);
+                }
+                quad(vc, m, v[0], v[1], v[2], v[3], col[0], col[1], col[2], col[3]);
+                quad(vc, m, v[3], v[2], v[1], v[0], col[3], col[2], col[1], col[0]);   // seen from either face
+            }
+        }
+        // apparent size of the shadow from here
+        double d = Math.max(R * 1.05, cam.distanceTo(c));
+        double sil = R * d / Math.sqrt(d * d - R * R);
+        // projected disk plane on screen, for the lensed image
+        double nx = n.x * left.x + n.y * left.y + n.z * left.z, ny = n.x * up.x + n.y * up.y + n.z * up.z;
+        double nl = Math.max(1e-4, Math.sqrt(nx * nx + ny * ny));
+        nx /= nl; ny /= nl;
+        int lseg = 72;
+        for (int j = 0; j < lseg; j++) {
+            float a0 = Mth.TWO_PI * j / lseg, a1 = Mth.TWO_PI * (j + 1) / lseg;
+            Vec3 d0 = screen(left, up, a0), d1 = screen(left, up, a1);
+            // the far side of the disk, bent around the shadow: strongest above and below the disk plane
+            double i0 = Math.pow(Math.abs(Math.cos(a0) * nx + Math.sin(a0) * ny), 2.2), i1 = Math.pow(Math.abs(Math.cos(a1) * nx + Math.sin(a1) * ny), 2.2);
+            int l0 = argb((int) (230 * i0), 255, 200, 120), l1 = argb((int) (230 * i1), 255, 200, 120);
+            int o0 = argb(0, 255, 140, 60), o1 = argb(0, 255, 140, 60);
+            quad(vc, m, c.add(d0.scale(sil * 1.18)), c.add(d1.scale(sil * 1.18)), c.add(d1.scale(sil * 2.2)), c.add(d0.scale(sil * 2.2)), l0, l1, o1, o0);
+            // the photon ring
+            int p = argb(255, 255, 244, 220), p0 = argb(0, 255, 230, 190);
+            quad(vc, m, c.add(d0.scale(sil * 1.01)), c.add(d1.scale(sil * 1.01)), c.add(d1.scale(sil * 1.13)), c.add(d0.scale(sil * 1.13)), p, p, p0, p0);
+            // a faint violet halo
+            int h = argb(40, 150, 110, 255), h0 = argb(0, 120, 80, 255);
+            quad(vc, m, c.add(d0.scale(sil * 1.13)), c.add(d1.scale(sil * 1.13)), c.add(d1.scale(sil * 9)), c.add(d0.scale(sil * 9)), h, h, h0, h0);
+        }
+        // twin jets along the spin axis
+        for (int dir = -1; dir <= 1; dir += 2) {
+            Vec3 ax = n.scale(dir);
+            Vec3 side = ax.cross(toCam);
+            side = side.lengthSqr() < 1e-6 ? u : side.normalize();
+            int steps = 12;
+            for (int i = 0; i < steps; i++) {
+                double t0 = i / (double) steps, t1 = (i + 1) / (double) steps;
+                double len = R * 30;
+                Vec3 a = c.add(ax.scale(R * 1.2 + len * t0)), b = c.add(ax.scale(R * 1.2 + len * t1));
+                double w0 = R * (0.25 + 1.3 * t0), w1 = R * (0.25 + 1.3 * t1);
+                float flick = 0.8f + 0.2f * Mth.sin(time * 0.3f + i + dir);
+                int c0 = argb((int) (200 * (1 - t0) * flick), 150, 180, 255), c1 = argb((int) (200 * (1 - t1) * flick), 150, 180, 255);
+                quad(vc, m, a.add(side.scale(w0)), b.add(side.scale(w1)), b.subtract(side.scale(w1)), a.subtract(side.scale(w0)), c0, c1, c1, c0);
+                int k0 = argb((int) (255 * (1 - t0)), 235, 240, 255), k1 = argb((int) (255 * (1 - t1)), 235, 240, 255);
+                quad(vc, m, a.add(side.scale(w0 * 0.2)), b.add(side.scale(w1 * 0.2)), b.subtract(side.scale(w1 * 0.2)), a.subtract(side.scale(w0 * 0.2)), k0, k1, k1, k0);
+            }
+        }
+    }
+
+    private static Vec3 screen(Vector3f left, Vector3f up, float a) {
+        return new Vec3(left.x * Mth.cos(a) + up.x * Mth.sin(a), left.y * Mth.cos(a) + up.y * Mth.sin(a), left.z * Mth.cos(a) + up.z * Mth.sin(a));
     }
 
     // ------------------------------------------------------------------ helpers

@@ -236,6 +236,29 @@ public final class FiatLuxGameTests {
         helper.succeed();
     }
 
+    /**
+     * A black hole draws things toward it, harder the nearer they are, not at all beyond its reach,
+     * and whatever crosses the horizon is past saving.
+     */
+    @GameTest(template = "empty")
+    public static void bottomlessPitsPull(GameTestHelper helper) {
+        var c = com.josephison.fiatlux.world.VoidSpace.ABYSS;
+        double r = com.josephison.fiatlux.world.VoidSpace.ABYSS_RADIUS;
+        var near = c.add(r * 3, 0, 0);
+        var far = c.add(r * 10, 0, 0);
+        var beyond = c.add(r * 20, 0, 0);
+        var pNear = com.josephison.fiatlux.world.VoidSpace.pull(near, c, r);
+        var pFar = com.josephison.fiatlux.world.VoidSpace.pull(far, c, r);
+        helper.assertTrue(pNear.x < 0 && Math.abs(pNear.y) < 1e-9, "the pull does not point at the pit: " + pNear);
+        helper.assertTrue(pNear.length() > pFar.length() * 5, "the pull does not grow nearer the pit: " + pNear.length() + " vs " + pFar.length());
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.pull(beyond, c, r).lengthSqr() == 0, "the pit pulls beyond its reach");
+        helper.assertTrue(com.josephison.fiatlux.world.VoidSpace.beyondHorizon(c.add(r * 0.5, 0, 0), c, r), "inside the horizon is not beyond it");
+        helper.assertTrue(!com.josephison.fiatlux.world.VoidSpace.beyondHorizon(near, c, r), "outside the horizon counts as beyond it");
+        helper.assertTrue(c.distanceTo(com.josephison.fiatlux.world.VoidSpace.GATE) > r * com.josephison.fiatlux.world.VoidSpace.PULL_REACH,
+                "Heaven's Gate lies within the Abyss's pull");
+        helper.succeed();
+    }
+
     /** The creation queue applies a batched edit over ticks, then undoes it exactly. */
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void creationQueueAppliesAndUndoes(GameTestHelper helper) {
@@ -301,6 +324,7 @@ public final class FiatLuxGameTests {
         CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
         CosmicSparkPower.ignite(server, "GameTest");
         helper.assertTrue(cosmos.hasBigBang() && !cosmos.galaxies.isEmpty(), "the Big Bang formed no galaxies");
+        helper.assertTrue(!cosmos.blackHoles.isEmpty(), "the bottomless pit did not open with the first light");
         Planet eden = PlanetaryGenesisPower.create(server, "GameTest", PlanetType.EARTHLIKE, "GameTestEden");
         helper.assertTrue(eden != null && cosmos.breatheLife(eden), "could not breathe life on an Earth-like world");
         double phase0 = eden.phase;

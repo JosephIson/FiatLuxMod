@@ -100,6 +100,38 @@ public final class FiatLuxCommand {
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
+                .then(Commands.literal("blackhole").requires(FiatLuxCommand::isGod)
+                        .then(Commands.literal("create").then(Commands.argument("radius", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(2f, 40f))
+                                .executes(c -> {
+                                    var p = c.getSource().getPlayerOrException();
+                                    if (p.level().dimension() != com.josephison.fiatlux.world.FiatLuxDimensions.VOID) {
+                                        c.getSource().sendFailure(Component.translatable("power.fiatlux.bottomless_pit.only_void"));
+                                        return 0;
+                                    }
+                                    float r = com.mojang.brigadier.arguments.FloatArgumentType.getFloat(c, "radius");
+                                    var at = p.getEyePosition().add(p.getLookAngle().scale(r * 6 + 20));
+                                    var hole = com.josephison.fiatlux.power.powers.BottomlessPitPower.open(c.getSource().getServer(), p.getGameProfile().getName(), at, r);
+                                    if (hole == null) return 0;
+                                    c.getSource().sendSuccess(() -> Component.literal(hole.name() + " opens in the deep."), true);
+                                    return 1;
+                                })))
+                        .then(Commands.literal("remove").executes(c -> {
+                            var p = c.getSource().getPlayerOrException();
+                            var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            var nearest = cosmos.blackHoles.stream().min(java.util.Comparator.comparingDouble(h -> h.center().distanceToSqr(p.position())));
+                            if (nearest.isEmpty()) return 0;
+                            cosmos.blackHoles.remove(nearest.get());
+                            cosmos.setDirty();
+                            WorldTicker.syncAll(c.getSource().getServer());
+                            c.getSource().sendSuccess(() -> Component.literal(nearest.get().name() + " is sealed."), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("list").executes(c -> {
+                            for (var h : CosmicExpanseSavedData.get(c.getSource().getServer()).blackHoles) {
+                                c.getSource().sendSuccess(() -> Component.literal(String.format("%s at %.0f %.0f %.0f, horizon %.1f", h.name(), h.x(), h.y(), h.z(), h.radius())), false);
+                            }
+                            return 1;
+                        })))
                 .then(Commands.literal("realm")
                         .then(Commands.literal("heaven").executes(c -> HeavenTravel.toHeaven(c.getSource().getPlayerOrException()) ? 1 : 0))
                         .then(Commands.literal("void").executes(c -> com.josephison.fiatlux.realm.RealmTravel.toVoid(c.getSource().getPlayerOrException()) ? 1 : 0))

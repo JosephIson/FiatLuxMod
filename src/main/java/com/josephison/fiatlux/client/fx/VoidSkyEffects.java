@@ -99,8 +99,11 @@ public class VoidSkyEffects extends DimensionSpecialEffects {
 
         float stars = Mth.clamp((bang - 1.5f) / 12f, 0f, 1f);
         drawNebulae(ps.last().pose(), Mth.clamp((bang - 3f) / 15f, 0f, 1f), time);
+        drawBand(ps.last().pose(), stars);
         drawStars(ps.last().pose(), stars, time);
-        HeavenSkyEffects.drawGalaxies(ps, bang, time);
+        drawClusters(ps.last().pose(), Mth.clamp((bang - 6f) / 10f, 0f, 1f));
+        if (bang > 25f) drawShootingStar(ps.last().pose(), time);
+        GalaxyRenderer.draw(ps, bang, time, true);
         if (bang < 14f) {
             ps.pushPose();
             ps.mulPose(Axis.YP.rotationDegrees(180f));   // the light bursts out ahead of Heaven's Gate, toward the greater light
@@ -115,7 +118,10 @@ public class VoidSkyEffects extends DimensionSpecialEffects {
         return true;
     }
 
-    /** Stars appear one after another as the universe forms; each twinkles on its own rhythm. */
+    /**
+     * Stars appear one after another as the universe forms. Each is a soft diamond that twinkles on
+     * its own rhythm; the brightest carry a halo and four-pointed diffraction spikes.
+     */
     private static void drawStars(Matrix4f m, float formation, float time) {
         if (formation <= 0) return;
         int shown = (int) (STARS * formation);
@@ -127,18 +133,101 @@ public class VoidSkyEffects extends DimensionSpecialEffects {
             right.set(Math.abs(d.y) > 0.9f ? 1 : 0, Math.abs(d.y) > 0.9f ? 0 : 1, 0).cross(d).normalize();
             up.set(d).cross(right).normalize();
             float s = SIZE[i];
-            float tw = 0.65f + 0.35f * Mth.sin(time * (0.04f + (i % 7) * 0.013f) + i * 1.7f);
+            float tw = 0.6f + 0.4f * Mth.sin(time * (0.04f + (i % 7) * 0.013f) + i * 1.7f);
             int c = COLOR[i];
             int a = (int) (255 * tw * Math.min(1f, formation * 3f - i / (float) STARS * 2f + 0.3f));
             if (a <= 0) continue;
             a = Math.min(255, a);
             int r = (c >> 16) & 255, g = (c >> 8) & 255, bl = c & 255;
-            b.addVertex(m, x - right.x * s - up.x * s, y - right.y * s - up.y * s, z - right.z * s - up.z * s).setColor(r, g, bl, a);
-            b.addVertex(m, x + right.x * s - up.x * s, y + right.y * s - up.y * s, z + right.z * s - up.z * s).setColor(r, g, bl, a);
-            b.addVertex(m, x + right.x * s + up.x * s, y + right.y * s + up.y * s, z + right.z * s + up.z * s).setColor(r, g, bl, a);
-            b.addVertex(m, x - right.x * s + up.x * s, y - right.y * s + up.y * s, z - right.z * s + up.z * s).setColor(r, g, bl, a);
+            diamond(b, m, x, y, z, right, up, s, s, r, g, bl, a);
+            if (s > 0.2f) {   // the brightest: a soft halo and diffraction spikes
+                diamond(b, m, x, y, z, right, up, s * 3.2f, s * 3.2f, r, g, bl, a / 6);
+                float spike = s * (7f + 3f * tw);
+                diamond(b, m, x, y, z, right, up, spike, s * 0.18f, r, g, bl, a / 2);
+                diamond(b, m, x, y, z, right, up, s * 0.18f, spike, r, g, bl, a / 2);
+            }
         }
-        BufferUploader.drawWithShader(b.buildOrThrow());
+        draw(b);
+    }
+
+    private static void diamond(BufferBuilder b, Matrix4f m, float x, float y, float z, Vector3f right, Vector3f up, float w, float h,
+                                int r, int g, int bl, int a) {
+        b.addVertex(m, x - up.x * h, y - up.y * h, z - up.z * h).setColor(r, g, bl, a);
+        b.addVertex(m, x + right.x * w, y + right.y * w, z + right.z * w).setColor(r, g, bl, a);
+        b.addVertex(m, x + up.x * h, y + up.y * h, z + up.z * h).setColor(r, g, bl, a);
+        b.addVertex(m, x - right.x * w, y - right.y * w, z - right.z * w).setColor(r, g, bl, a);
+    }
+
+    /** The diffuse glow of the galaxy's band across the sky, faint and uneven. */
+    private static void drawBand(Matrix4f m, float formation) {
+        if (formation <= 0) return;
+        Vector3f n = new Vector3f(0.3f, 0.85f, 0.42f).normalize();
+        Vector3f u = new Vector3f(1, 0, 0).cross(n).normalize(), v = new Vector3f(n).cross(u).normalize();
+        BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int seg = 90;
+        for (int i = 0; i < seg; i++) {
+            float a0 = Mth.TWO_PI * i / seg, a1 = Mth.TWO_PI * (i + 1) / seg;
+            float bright = 0.5f + 0.5f * Mth.sin(a0 * 3.3f) * Mth.sin(a0 * 1.7f + 1f);
+            for (int layer = -1; layer <= 1; layer += 2) {
+                float w = 0.16f * layer;
+                Vector3f p0 = point(u, v, n, a0, 0), p1 = point(u, v, n, a1, 0), q1 = point(u, v, n, a1, w), q0 = point(u, v, n, a0, w);
+                int al = (int) (26 * formation * (0.4f + bright));
+                b.addVertex(m, p0.x * 99, p0.y * 99, p0.z * 99).setColor(205, 215, 255, al);
+                b.addVertex(m, p1.x * 99, p1.y * 99, p1.z * 99).setColor(205, 215, 255, al);
+                b.addVertex(m, q1.x * 99, q1.y * 99, q1.z * 99).setColor(205, 215, 255, 0);
+                b.addVertex(m, q0.x * 99, q0.y * 99, q0.z * 99).setColor(205, 215, 255, 0);
+            }
+        }
+        draw(b);
+    }
+
+    private static Vector3f point(Vector3f u, Vector3f v, Vector3f n, float a, float lift) {
+        return new Vector3f(u).mul(Mth.cos(a)).add(new Vector3f(v).mul(Mth.sin(a))).add(new Vector3f(n).mul(lift)).normalize();
+    }
+
+    /** Globular clusters: tight swarms of old golden stars around a glowing heart. */
+    private static void drawClusters(Matrix4f m, float formation) {
+        if (formation <= 0) return;
+        BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        RandomSource r = RandomSource.create(0xC1057E5L);
+        Vector3f up = new Vector3f(), right = new Vector3f();
+        for (int c = 0; c < 6; c++) {
+            Vector3f d = new Vector3f((float) r.nextGaussian(), (float) r.nextGaussian() * 0.6f + 0.2f, (float) r.nextGaussian()).normalize();
+            right.set(Math.abs(d.y) > 0.9f ? 1 : 0, Math.abs(d.y) > 0.9f ? 0 : 1, 0).cross(d).normalize();
+            up.set(d).cross(right).normalize();
+            float cx = d.x * 98, cy = d.y * 98, cz = d.z * 98;
+            diamond(b, m, cx, cy, cz, right, up, 1.6f, 1.6f, 255, 226, 180, (int) (60 * formation));
+            for (int i = 0; i < 70; i++) {
+                float rr = (float) Math.abs(r.nextGaussian()) * 1.1f, a = r.nextFloat() * Mth.TWO_PI;
+                float x = cx + (right.x * Mth.cos(a) + up.x * Mth.sin(a)) * rr;
+                float y = cy + (right.y * Mth.cos(a) + up.y * Mth.sin(a)) * rr;
+                float z = cz + (right.z * Mth.cos(a) + up.z * Mth.sin(a)) * rr;
+                diamond(b, m, x, y, z, right, up, 0.07f, 0.07f, 255, 236, 200, (int) (220 * formation));
+            }
+        }
+        draw(b);
+    }
+
+    /** Now and then a shooting star streaks across the expanse and fades. */
+    private static void drawShootingStar(Matrix4f m, float time) {
+        int period = 170;
+        int n = (int) (time / period);
+        float t = (time - n * period) / 28f;
+        if (t > 1f) return;
+        RandomSource r = RandomSource.create(n * 9781L + 13);
+        Vector3f a = new Vector3f((float) r.nextGaussian(), Math.abs((float) r.nextGaussian()) * 0.7f + 0.2f, (float) r.nextGaussian()).normalize();
+        Vector3f dir = new Vector3f((float) r.nextGaussian(), -0.4f, (float) r.nextGaussian()).normalize();
+        dir.sub(new Vector3f(a).mul(dir.dot(a))).normalize();
+        Vector3f head = new Vector3f(a).add(new Vector3f(dir).mul(t * 0.5f)).normalize().mul(97);
+        Vector3f tail = new Vector3f(a).add(new Vector3f(dir).mul(Math.max(0, t * 0.5f - 0.18f))).normalize().mul(97);
+        Vector3f side = new Vector3f(head).cross(dir).normalize().mul(0.12f);
+        float fade = t < 0.8f ? 1f : (1f - t) * 5f;
+        BufferBuilder b = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        b.addVertex(m, tail.x, tail.y, tail.z).setColor(200, 220, 255, 0);
+        b.addVertex(m, head.x + side.x, head.y + side.y, head.z + side.z).setColor(255, 255, 255, (int) (230 * fade));
+        b.addVertex(m, head.x - side.x, head.y - side.y, head.z - side.z).setColor(255, 255, 255, (int) (230 * fade));
+        b.addVertex(m, tail.x, tail.y, tail.z).setColor(200, 220, 255, 0);
+        draw(b);
     }
 
     /** Great soft clouds of coloured gas, each with brighter knots, drifting very slowly. */
@@ -164,9 +253,15 @@ public class VoidSkyEffects extends DimensionSpecialEffects {
                     float wob = 1f + 0.3f * Mth.sin(a * 3 + k + layer) + 0.15f * Mth.sin(a * 7 + k * 2);
                     f.addVertex(m, ox + Mth.cos(a) * rad * wob, oy + Mth.sin(a) * rad * 0.62f * wob, -96f + layer * 0.1f).setColor(r, g, bl, 0);
                 }
-                BufferUploader.drawWithShader(f.buildOrThrow());
+                draw(f);
             }
             ps.popPose();
         }
+    }
+
+    /** Draws a buffer if anything was added to it (a buffer can be empty, e.g. at the first frame of formation). */
+    private static void draw(BufferBuilder b) {
+        com.mojang.blaze3d.vertex.MeshData mesh = b.build();
+        if (mesh != null) BufferUploader.drawWithShader(mesh);
     }
 }

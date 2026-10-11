@@ -25,7 +25,30 @@ public final class VoidSpace {
     /** Blocks per astronomical unit of orbit. */
     public static final double AU = 110.0;
 
+    /** Where the Abyss, the first black hole, opens at the Big Bang: off to the left beyond the greater light. */
+    public static final Vec3 ABYSS = new Vec3(-259.5, 175.0, 520.5);
+    public static final double ABYSS_RADIUS = 9.0;
+    /** Reach of a black hole's pull, in horizon radii. */
+    public static final double PULL_REACH = 14.0;
+
     private VoidSpace() {}
+
+    /**
+     * The pull of a black hole on something at pos, as a velocity change per tick: inverse-square in
+     * the distance, scaled by the square of the horizon radius, capped near the horizon; zero beyond reach.
+     */
+    public static Vec3 pull(Vec3 pos, Vec3 center, double radius) {
+        Vec3 d = center.subtract(pos);
+        double dist = d.length();
+        if (dist < 1e-3 || dist > radius * PULL_REACH) return Vec3.ZERO;
+        double a = Math.min(0.25, 0.25 * radius * radius / (dist * dist));
+        return d.scale(a / dist);
+    }
+
+    /** Has pos crossed the event horizon of a black hole? */
+    public static boolean beyondHorizon(Vec3 pos, Vec3 center, double radius) {
+        return pos.distanceToSqr(center) < radius * radius;
+    }
 
     /** Where a soul arrives in the Void: before the gate, facing out toward the greater light. */
     public static Vec3 arrival() {

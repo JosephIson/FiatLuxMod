@@ -112,6 +112,9 @@ public class ModLanguageProvider extends LanguageProvider {
         power("summon_power", "Summon a Power", "Ephesians 6:12; Jude 1:6. An armoured warrior who strikes with the sword and binds the corrupt in chains; doubly fearsome to the fallen.");
         power("send_principality", "Send a Principality", "Daniel 10:21. A prince over a people: it guards mortals from every hostile creature and shields them.");
         power("send_archangel", "Send an Archangel", "1 Thessalonians 4:16. A captain of the Host whose trumpet strikes down and hurls back every enemy around it.");
+        power("bottomless_pit", "Open the Bottomless Pit", "Revelation 9:1-2. In the Void, collapses the place you gaze into a black hole: its pull draws in all that strays near, and its horizon opens on the Underworld.");
+        add("power.fiatlux.bottomless_pit.only_void", "The bottomless pit can be opened only in the Void, after the Big Bang.");
+        add("message.fiatlux.fell_into_abyss", "You fall through %s, the bottomless pit, into the Underworld. (Revelation 9:1-2)");
         power("cast_out", "Cast Out", "Revelation 12:9: strikes down the rebel angels in your gaze and around it. Lightning breaks their radiance; they fall through a fracture in the sky into the Underworld.");
         add("power.fiatlux.cast_out.none_near", "No rebel angels are near your gaze. The rebels gather in Heaven: /fiatlux heaven");
         add("power.fiatlux.cast_out.no_war", "There is no war in heaven. (Begin one with /fiatlux event rebellion.)");

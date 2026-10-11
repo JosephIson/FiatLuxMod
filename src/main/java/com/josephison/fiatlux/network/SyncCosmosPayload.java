@@ -20,7 +20,8 @@ import java.util.List;
  * timestamp and the moral climate (tints and omens).
  */
 public record SyncCosmosPayload(long bigBangTime, long serverTime, double orbitDaysPerTick, List<GalaxyView> galaxies,
-                                List<PlanetView> planets, float corruption, boolean rebellion, int underworldEra)
+                                List<PlanetView> planets, float corruption, boolean rebellion, int underworldEra,
+                                List<BlackHoleView> blackHoles)
         implements CustomPacketPayload {
     public static final Type<SyncCosmosPayload> TYPE = new Type<>(FiatLux.id("sync_cosmos"));
 
@@ -28,6 +29,8 @@ public record SyncCosmosPayload(long bigBangTime, long serverTime, double orbitD
 
     public record PlanetView(String name, int type, float orbitRadius, float periodDays, float phase, float inclination,
                              int color, int atmosphere, float size, boolean inhabited) {}
+
+    public record BlackHoleView(String name, double x, double y, double z, float radius) {}
 
     public static SyncCosmosPayload of(CosmicExpanseSavedData c, MinecraftServer server) {
         List<GalaxyView> g = new ArrayList<>();
@@ -39,8 +42,10 @@ public record SyncCosmosPayload(long bigBangTime, long serverTime, double orbitD
         }
         var cfg = FiatLuxConfig.COMMON;
         double perTick = cfg.simulationEnabled.get() ? cfg.simulationSpeed.get() * cfg.orbitSpeedMultiplier.get() / 24000.0 : 0;
+        List<BlackHoleView> h = new ArrayList<>();
+        for (var x : c.blackHoles) h.add(new BlackHoleView(x.name(), x.x(), x.y(), x.z(), x.radius()));
         return new SyncCosmosPayload(c.bigBangTime, server.overworld().getGameTime(), perTick, g, p,
-                (float) c.corruption, c.rebellionActive, c.underworld.era.ordinal());
+                (float) c.corruption, c.rebellionActive, c.underworld.era.ordinal(), h);
     }
 
     public static final StreamCodec<ByteBuf, SyncCosmosPayload> STREAM_CODEC = new StreamCodec<>() {
@@ -57,7 +62,15 @@ public record SyncCosmosPayload(long bigBangTime, long serverTime, double orbitD
                 p.add(new PlanetView(ByteBufCodecs.STRING_UTF8.decode(b), b.readByte(), b.readFloat(), b.readFloat(), b.readFloat(),
                         b.readFloat(), b.readInt(), b.readInt(), b.readFloat(), b.readBoolean()));
             }
-            return new SyncCosmosPayload(bang, now, perTick, g, p, b.readFloat(), b.readBoolean(), b.readByte());
+            float corruption = b.readFloat();
+            boolean rebellion = b.readBoolean();
+            int era = b.readByte();
+            int nh = ByteBufCodecs.VAR_INT.decode(b);
+            List<BlackHoleView> h = new ArrayList<>(nh);
+            for (int i = 0; i < nh; i++) {
+                h.add(new BlackHoleView(ByteBufCodecs.STRING_UTF8.decode(b), b.readDouble(), b.readDouble(), b.readDouble(), b.readFloat()));
+            }
+            return new SyncCosmosPayload(bang, now, perTick, g, p, corruption, rebellion, era, h);
         }
 
         @Override
@@ -78,6 +91,11 @@ public record SyncCosmosPayload(long bigBangTime, long serverTime, double orbitD
             b.writeFloat(s.corruption);
             b.writeBoolean(s.rebellion);
             b.writeByte(s.underworldEra);
+            ByteBufCodecs.VAR_INT.encode(b, s.blackHoles.size());
+            for (BlackHoleView h : s.blackHoles) {
+                ByteBufCodecs.STRING_UTF8.encode(b, h.name());
+                b.writeDouble(h.x()); b.writeDouble(h.y()); b.writeDouble(h.z()); b.writeFloat(h.radius());
+            }
         }
     };
 

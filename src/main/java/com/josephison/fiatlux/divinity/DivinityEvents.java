@@ -20,6 +20,7 @@ public final class DivinityEvents {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         EditQueue.tick(event.getServer());
+        com.josephison.fiatlux.realm.AbyssPhysics.tick(event.getServer());   // the pull of the bottomless pits
     }
 
     @SubscribeEvent
