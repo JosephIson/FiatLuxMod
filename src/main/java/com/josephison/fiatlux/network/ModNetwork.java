@@ -37,5 +37,7 @@ public final class ModNetwork {
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onCosmos(p));
         r.playToClient(FxPayload.TYPE, FxPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onFx(p));
+        r.playToClient(FloodPayload.TYPE, FloodPayload.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.fx.FloodSea.update(p));
     }
 }

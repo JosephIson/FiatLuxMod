@@ -195,7 +195,8 @@ public final class Deluge {
     @Nullable
     public static MortalEntity righteous(ServerLevel level, BlockPos near) {
         List<MortalEntity> all = level.getEntitiesOfClass(MortalEntity.class, new AABB(near).inflate(160),
-                m -> m.isAlive() && !m.isChild() && !m.isNephil() && m.watcherHusband() == null);
+                m -> m.isAlive() && !m.isChild() && !m.isNephil() && m.watcherHusband() == null && !m.isMarked()
+                        && m.sentence() == com.josephison.fiatlux.civilization.Justice.Sentence.NONE);
         Generations g = Generations.get(level.getServer());
         for (MortalEntity m : all) {
             Person p = g.person(m.getUUID());
@@ -456,6 +457,7 @@ public final class Deluge {
         };
         work(level, d, target, force);
         if (now % 40 == 0 || force) keepAboard(level, d);
+        if (now % 20 == 0 || force) sea(level, d);
         switch (d.stage) {
             case RAIN -> {
                 if (now % 10 == 0) storm(level, d, now);
@@ -717,6 +719,7 @@ public final class Deluge {
         d.radii.clear();
         d.resetWaters();
         next(d, FloodData.Stage.NONE, now);
+        sea(level, d);
         CosmosData.get(server).record(server, d.noahName, "covenant", "went forth of the ark with all his house and every living thing, built an "
                 + "altar unto the LORD, and received the covenant of the bow: the waters shall no more become a flood to destroy all flesh.");
     }
@@ -773,6 +776,15 @@ public final class Deluge {
                 }
             }
         }
+    }
+
+    /** Tells those on the world where the waters stand, so their surface reaches the horizon beyond the real water. */
+    private static void sea(ServerLevel level, FloodData d) {
+        boolean wet = d.active() && d.waterY >= d.startY && !d.centres.isEmpty();
+        com.josephison.fiatlux.network.FloodPayload p = wet ? new com.josephison.fiatlux.network.FloodPayload(d.dim, d.waterY,
+                d.centres.stream().mapToLong(BlockPos::asLong).toArray(), d.radii.stream().mapToInt(Integer::intValue).toArray())
+                : com.josephison.fiatlux.network.FloodPayload.NONE;
+        for (ServerPlayer pl : level.players()) net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(pl, p);
     }
 
     /** The rain from heaven is restrained (8:2): the sky goes back to its own weather. */
