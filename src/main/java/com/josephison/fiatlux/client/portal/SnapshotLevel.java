@@ -30,10 +30,13 @@ final class SnapshotLevel implements BlockAndTintGetter {
     private final LevelLightEngine light;
     @Nullable private final Biome biome;
     private final int minLight;
+    private final boolean daylight;
 
-    SnapshotLevel(RegionSnapshot s, @Nullable String biomeId, int minLight) {
+    /** `daylight`: the far side lies open under the sun (a living world), not in the gloom of the deep. */
+    SnapshotLevel(RegionSnapshot s, @Nullable String biomeId, int minLight, boolean daylight) {
         this.s = s;
         this.minLight = minLight;
+        this.daylight = daylight;
         this.light = new LevelLightEngine(new LightChunkGetter() {
             @Override
             public LightChunk getChunkForLighting(int x, int z) {
@@ -102,7 +105,7 @@ final class SnapshotLevel implements BlockAndTintGetter {
 
     @Override
     public int getBrightness(LightLayer layer, BlockPos p) {
-        if (layer == LightLayer.SKY) return 0;
+        if (layer == LightLayer.SKY) return daylight ? 15 : 0;
         int l = s.inside(p.getX(), p.getY(), p.getZ()) ? s.light[s.index(p.getX(), p.getY(), p.getZ())] : 0;
         return Math.max(minLight, l);
     }
