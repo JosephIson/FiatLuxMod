@@ -100,6 +100,10 @@ public class CosmosScreen extends Screen {
                     heading("The days of Noah", 0xFF9AB8E8);
                     text(u.getString("flood"));
                 }
+                if (u.contains("spirits")) {
+                    heading("Unclean spirits and the guardians", 0xFFD08070);
+                    text(u.getString("spirits"));
+                }
                 heading("The living", GOLD);
                 text(plural(data.getInt("totalLiving"), "mortal is", "mortals are") + " alive, and " + plural(data.getInt("totalWritten"), "life is", "lives are")
                         + " written in the Book of Generations.");

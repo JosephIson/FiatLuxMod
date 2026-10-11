@@ -80,6 +80,13 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
         poseStack.popPose();
     }
 
+    /** One with an unclean spirit in it is drawn as if a shadow lay on it. */
+    @Override
+    public software.bernie.geckolib.util.Color getRenderColor(MortalEntity mortal, float partialTick, int packedLight) {
+        if (mortal.isPossessed()) return software.bernie.geckolib.util.Color.ofRGBA(0.62f, 0.5f, 0.5f, 1f);
+        return super.getRenderColor(mortal, partialTick, packedLight);
+    }
+
     @Override
     public RenderType getRenderType(MortalEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
         return RenderType.entityTranslucent(texture);

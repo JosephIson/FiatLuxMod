@@ -279,6 +279,39 @@ hung with fruit you can pick.
   * **Timing and commands**: the year of the Flood runs at `floodDayTicks` per day. `/fiatlux flood`
     shows where it stands, `/fiatlux flood next` hastens it to its next stage, and
     `/fiatlux flood bow` sets a rainbow in the sky to the south of you.
+* **Unclean spirits and possession** (Eph 6:12): once angels have fallen, **rifts** from the
+  Underworld tear open now and then near the towns of fallen worlds. They come more often by night
+  and on sinful worlds. Each is a jagged burning tear standing on the ground, and unclean spirits
+  come up through it one by one. Some are nameless spirits of the legions, some are of the legions of
+  a lord of the Ars Goetia (Paimon, Asmodeus, Bael and the rest), and rarely one is Legion itself
+  (Mark 5:9). The spirits of dead giants also rise by night (1 Enoch 15).
+  * **Who they enter**: a spirit looks for someone of weak faith (an idolater, a doubter, or one
+    with more sin than virtue) and enters them. Finding no one, it "walketh through dry places,
+    seeking rest" (Matt 12:43).
+  * **What it does**: the possessed writhe in fits, are shadowed, cry out and cannot pray or work.
+    Each spirit does what its lord's office gives it: stealing from the store, sowing quarrels,
+    striking out (Acts 19:16), infirmity (Luke 13:11), casting its host into fire and water
+    (Mark 9:22), soothsaying (Acts 16:16), dumbness (Mark 9:17) or despair. When you come near, the
+    spirit knows you: "What have we to do with thee? ... I know thee who thou art" (Mark 1:24).
+  * **False exorcists**: a priest of a false god who tries to cast it out is beaten: "Jesus I know,
+    and Paul I know; but who are ye?" (Acts 19:15).
+* **"Go forth and watch over the planets"**: say it (or `/fiatlux watch`) and a **guardian angel**
+  goes down to every town of every living world (Ps 91:11, Heb 1:14). Towns that no one is near get
+  theirs when someone comes.
+  * **What the guardian does**: no spirit can enter those close to it, it seals rifts within sight,
+    and the holy angels cast the spirits they meet into the deep (Luke 8:31).
+  * **The anointed**: it **anoints** up to two of the town's faithful to cast out devils (Mark 16:17).
+    They go to the possessed and command the spirit to come out in their Creator's name (Acts 16:18).
+  * **Casting out**: the spirit tears its host and goes (Mark 1:26). The lords of the Goetia and
+    Legion hold on harder: "This kind goeth not out but by prayer and fasting" (Mark 9:29), so the
+    anointed one prays and tries again. Legion may beg to go into the swine and drive the herd into
+    the water (Mark 5:13).
+  * **The empty house**: a spirit cast out of someone whose faith stays weak may come back with seven
+    worse (Matt 12:45).
+  * **Your part**: sneak-use a possessed mortal, or say "Come out of him", to cast the spirit out
+    yourself. Strike a spirit or a rift to cast it into the deep or seal it.
+  * **Commands**: `/fiatlux spirits` gives the tally, `/fiatlux rift` opens a rift near you, and
+    `/fiatlux possess <name>` lets a spirit enter someone.
 * **Judgment and the souls of the dead**: when a mortal dies, its deeds are weighed. The righteous
   rise to Heaven and the wicked go down to the Underworld. Their **souls** then walk those realms in
   their own names and faces: in Heaven made of light, praising and singing; in the Underworld made

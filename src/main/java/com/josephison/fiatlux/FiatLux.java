@@ -83,6 +83,8 @@ public class FiatLux {
         event.put(ModEntities.FALLEN.get(), com.josephison.fiatlux.entity.FallenEntity.createAttributes().build());
         event.put(ModEntities.WATCHER.get(), AngelEntity.createAttributes().build());
         event.put(ModEntities.BIRD.get(), com.josephison.fiatlux.flood.BirdEntity.createAttributes().build());
+        event.put(ModEntities.SPIRIT.get(), com.josephison.fiatlux.infernal.SpiritEntity.createAttributes().build());
+        event.put(ModEntities.GUARDIAN.get(), AngelEntity.createAttributes().build());
     }
 
     public static ResourceLocation id(String path) {

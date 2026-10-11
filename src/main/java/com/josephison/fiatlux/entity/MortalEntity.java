@@ -93,9 +93,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<String> DATA_TITLE = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.STRING);
     /** One of the Nephilim, a Watcher's son: "there were giants in the earth in those days" (Gen 6:4). */
     private static final EntityDataAccessor<Boolean> DATA_NEPHIL = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
+    /** An unclean spirit is in this one (Mark 1:23). */
+    private static final EntityDataAccessor<Boolean> DATA_POSSESSED = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
     public static final int VARIANTS = 8;
     public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7,
-            CRUCIFIED = 8, STOCKS = 9, EXORCISE = 10, IMPRISONED = 11;
+            CRUCIFIED = 8, STOCKS = 9, EXORCISE = 10, IMPRISONED = 11, POSSESSED = 12, TORN = 13;
     public static final int ADULT_AGE = 16, ELDER_AGE = 62;
 
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.mortal.idle");
@@ -110,6 +112,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final RawAnimation A_CRUCIFIED = RawAnimation.begin().thenLoop("animation.mortal.crucified");
     private static final RawAnimation A_STOCKS = RawAnimation.begin().thenLoop("animation.mortal.stocks");
     private static final RawAnimation A_EXORCISE = RawAnimation.begin().thenLoop("animation.mortal.exorcise");
+    private static final RawAnimation A_POSSESSED = RawAnimation.begin().thenLoop("animation.mortal.possessed");
+    private static final RawAnimation A_TORN = RawAnimation.begin().thenLoop("animation.mortal.torn");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     // ---- life (server)
@@ -145,6 +149,12 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     @Nullable private UUID watcherHusband;
     private String watcherHusbandName = "";
     private int giants;
+    // ---- unclean spirits, and those who cast them out
+    private String spirit = "", spiritLord = "", castOutBy = "", anointedBy = "";
+    private com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction affliction = com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction.DISCORD;
+    private boolean sevenfold, beingCastOut, exorcist;
+    @Nullable private UUID casting;
+    private double prayerAndFasting;
 
     public MortalEntity(EntityType<? extends MortalEntity> type, Level level) {
         super(type, level);
@@ -167,6 +177,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         builder.define(DATA_INNOCENT, false);
         builder.define(DATA_TITLE, "");
         builder.define(DATA_NEPHIL, false);
+        builder.define(DATA_POSSESSED, false);
     }
 
     // ================================================================== identity
@@ -377,6 +388,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     }
 
     public void say(String words) {
+        if (isPossessed() && affliction == com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction.MUTENESS && !beingCastOut) {
+            words = "...";   // "a dumb spirit" (Mark 9:17)
+        }
         entityData.set(DATA_SPEECH, words);
         speechTicks = 50 + words.length() * 2;
     }
@@ -504,7 +518,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         EveningPrayerGoal() { setFlags(EnumSet.of(Flag.MOVE)); }
         @Override public boolean canUse() {
             long day = level().getDayTime() / 24000L;
-            if (!isDusk() || act() != NONE || prayedDay == day) return false;
+            if (!isDusk() || act() != NONE || prayedDay == day || isPossessed()) return false;
             Settlement s = settlement();
             shrine = s != null ? s.shrine : null;
             return shrine != null;
@@ -528,7 +542,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         private BlockPos site;
         WorkGoal() { setFlags(EnumSet.of(Flag.MOVE)); }
         @Override public boolean canUse() {
-            if (isChild() || isNight() || act() != NONE || random.nextInt(hasTrait(Trait.LAZY) ? 160 : hasTrait(Trait.INDUSTRIOUS) ? 30 : 70) != 0) return false;
+            if (isChild() || isNight() || act() != NONE || isPossessed() || random.nextInt(hasTrait(Trait.LAZY) ? 160 : hasTrait(Trait.INDUSTRIOUS) ? 30 : 70) != 0) return false;
             site = workSite();
             return site != null;
         }
@@ -712,11 +726,15 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     private void finishAct(ServerLevel level) {
         int a = act();
+        int then = NONE;
         if (a == PRAY) finishPrayer(level);
         else if (a == WORK) finishWork(level);
         else if (a == EAT) hunger = 1;
         else if (a == TALK) partner = null;
+        else if (a == TORN) release(level);
+        else if (a == EXORCISE) then = finishExorcism(level);
         endAct();
+        if (then != NONE) beginAct(then, 300);
     }
 
     private void finishPrayer(ServerLevel level) {
@@ -797,6 +815,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         travelTick(level);
         reactToSurroundings(level);
         nephilTick(level, year);
+        possessionTick(level, year);
+        exorcistTick(level);
         faithTick(level, year);
         familyTick(level, year);
         viceTick(level, year);
@@ -838,6 +858,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             Religion faith = Faiths.of(this);
             boolean theirGod = faith != null && p.getUUID().equals(faith.creator);
             String name = p.getGameProfile().getName();
+            if (isPossessed() && !beingCastOut) {   // "I know thee who thou art, the Holy One" (Mark 1:24)
+                say("Let us alone! What have we to do with thee, " + name + "? Art thou come to destroy us? I know thee who thou art!");
+                beginAct(POSSESSED, 80);
+                return;
+            }
             if (theirGod) {
                 String[] lines = hasTrait(Trait.PROUD) && doubt > 0.4
                         ? new String[]{"So, " + name + ", You come at last. Where were You?", "Our prayers went unanswered, " + name + "."}
@@ -971,6 +996,249 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "birth",
                 "and " + dad.getName().getString() + " welcomed a " + (child.isMale() ? "son" : "daughter") + ", " + child.getName().getString()
                         + ", on " + worldName() + ".");
+    }
+
+    // ================================================================== unclean spirits
+
+    public boolean isPossessed() { return entityData.get(DATA_POSSESSED); }
+    public boolean isExorcist() { return exorcist; }
+    public String spiritName() { return spirit; }
+    public String spiritLord() { return spiritLord; }
+    public boolean beingCastOut() { return beingCastOut; }
+
+    /**
+     * An unclean spirit enters this one. `lord` is the lord of the Ars Goetia whose legions it is of ("" if
+     * none); `sevenfold` if it has come back with seven others worse than itself (Matt 12:45).
+     */
+    public void possess(String name, String lord, com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction does, boolean sevenfold) {
+        if (!(level() instanceof ServerLevel sl)) return;
+        spirit = name;
+        spiritLord = lord;
+        affliction = does;
+        this.sevenfold = sevenfold;
+        beingCastOut = false;
+        entityData.set(DATA_POSSESSED, true);
+        endAct();
+        beginAct(POSSESSED, 100);
+        say(sevenfold ? "We have come home... and we have brought seven more." : name.equals("Legion") ? "My name is Legion: for we are many."
+                : "This house is ours now.");
+        Person p = person();
+        if (p != null) {
+            p.possessed = name + (lord.isEmpty() ? "" : " (of " + lord + ")");
+            Generations.get(sl.getServer()).setDirty();
+        }
+        var d = com.josephison.fiatlux.infernal.InfernalData.get(sl.getServer());
+        d.possessions++;
+        d.setDirty();
+        CosmosData.get(sl.getServer()).record(sl.getServer(), getName().getString(), "possessed",
+                (sevenfold ? "was entered again by the spirit that had been cast out, and seven others more wicked: the last state was worse than the first"
+                        : "was entered by an unclean spirit, " + name + (lord.isEmpty() ? "" : ", of the legions of " + lord)) + ", on " + worldName() + ".");
+    }
+
+    /** "And Jesus rebuked him, saying, Hold thy peace, and come out of him" (Mark 1:25): the spirit tears its host, and goes. */
+    public void exorcise(String by) {
+        if (!isPossessed() || beingCastOut) return;
+        beingCastOut = true;
+        castOutBy = by;
+        endAct();
+        beginAct(TORN, 60);
+        say(spirit.equals("Legion") ? "I adjure thee, torment me not! Send us into the swine!" : "Torment us not! Where shall we go?");
+    }
+
+    /** "And when the unclean spirit had torn him, and cried with a loud voice, he came out of him" (Mark 1:26). */
+    private void release(ServerLevel level) {
+        if (!isPossessed()) return;
+        boolean swine = (spirit.equals("Legion") || random.nextInt(4) == 0)
+                && !level.getEntitiesOfClass(net.minecraft.world.entity.animal.Pig.class, getBoundingBox().inflate(40)).isEmpty();
+        var s = com.josephison.fiatlux.registry.ModEntities.SPIRIT.get().create(level);
+        if (s != null) {
+            s.moveTo(getX(), getY() + 1.2, getZ(), getYRot(), 0);
+            s.become(spirit, spiritLord, affliction);
+            s.expelled(this, swine);
+            level.addFreshEntity(s);
+        }
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 1, getZ(), 40, 0.3, 0.8, 0.3, 0.04);
+        level.sendParticles(com.josephison.fiatlux.registry.ModParticles.HOLY_SPARK.get(), getX(), getY() + 1, getZ(), 30, 0.4, 0.8, 0.4, 0.1);
+        level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.SOUL_ESCAPE.value(), net.minecraft.sounds.SoundSource.HOSTILE, 2f, 0.6f);
+        String was = spirit;
+        entityData.set(DATA_POSSESSED, false);
+        spirit = "";
+        spiritLord = "";
+        sevenfold = false;
+        beingCastOut = false;
+        heal(getMaxHealth());
+        setDoubt(doubt - 0.3);
+        say("I... I am myself again. Thank you.");   // "sitting, and clothed, and in his right mind" (Mark 5:15)
+        Person p = person();
+        if (p != null) {
+            p.possessed = "";
+            Generations.get(level.getServer()).setDirty();
+        }
+        var d = com.josephison.fiatlux.infernal.InfernalData.get(level.getServer());
+        d.exorcisms++;
+        d.setDirty();
+        com.josephison.fiatlux.infernal.Infernal.narrate(level, blockPosition(), "And when the unclean spirit had torn him, and cried with a loud "
+                + "voice, he came out of him. And they were all amazed.", "Mark 1:26-27");
+        CosmosData.get(level.getServer()).record(level.getServer(), castOutBy.isEmpty() ? "The faithful" : castOutBy, "exorcism",
+                "cast the unclean spirit " + was + " out of " + getName().getString() + " on " + worldName() + ".");
+    }
+
+    /** "In my name shall they cast out devils" (Mark 16:17): a guardian angel anoints this one (Mark 6:13). */
+    public void anoint(com.josephison.fiatlux.infernal.GuardianEntity angel) {
+        if (!(level() instanceof ServerLevel sl) || exorcist) return;
+        exorcist = true;
+        anointedBy = angel.getName().getString();
+        Religion faith = Faiths.of(this);
+        say("Me? I will go in the name of " + (faith != null ? faith.deityName : "the Creator") + ".");
+        beginAct(BOW, 60);
+        Fx.send(sl, FxKind.CELESTIAL_PILLAR, position(), 12f, 0xFFFFF0C0, 30);
+        Fx.send(sl, FxKind.BLESSING, position(), getBbHeight(), 0xFFFFE8A0, 30);
+        Person p = person();
+        if (p != null) {
+            p.exorcist = true;
+            Generations.get(sl.getServer()).setDirty();
+        }
+        var d = com.josephison.fiatlux.infernal.InfernalData.get(sl.getServer());
+        d.anointed++;
+        d.setDirty();
+        CosmosData.get(sl.getServer()).record(sl.getServer(), getName().getString(), "anointed", "was anointed by the " + anointedBy
+                + " to cast out unclean spirits in the name of " + (faith != null ? faith.deityName : "the Creator") + ", on " + worldName() + ".");
+    }
+
+    /** What the spirit in this one does to it and to those around it, and the fits it throws it into. */
+    private void possessionTick(ServerLevel level, int year) {
+        if (!isPossessed() || beingCastOut) return;
+        double perYear = 20.0 / year * (sevenfold ? 2 : 1);
+        if (tickCount % 60 == 3) level.sendParticles(ParticleTypes.SMOKE, getX(), getY() + getBbHeight() + 0.2, getZ(), 4, 0.15, 0.1, 0.15, 0.01);
+        if (act() == NONE && random.nextInt(sevenfold ? 12 : 25) == 0) {
+            beginAct(POSSESSED, 60 + random.nextInt(60));
+            String[] cries = {"We are many, and we are hungry.", "Do not look at us!", "This one is ours. Ours!", "Leave us alone!",
+                    "Ha! Ha! Your prayers are dust.", "Burn... let it all burn..."};
+            say(cries[random.nextInt(cries.length)]);
+        }
+        if (tickCount % 200 == 3) addSin(1);
+        if (random.nextDouble() < 6 * perYear) afflict(level);
+        // "Jesus I know, and Paul I know; but who are ye?" (Acts 19:13-16)
+        if (random.nextDouble() < 2 * perYear) {
+            MortalEntity priest = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(8),
+                    m -> m != this && m.profession == Profession.PRIEST && !m.exorcist && !m.isChild() && m.act() == NONE).stream().findAny().orElse(null);
+            if (priest != null) {
+                Religion f = Faiths.of(priest);
+                priest.say("I adjure you by " + (f != null ? f.deityName : "the gods") + ": come out!");
+                say("Your god I know, and the anointed I know; but who are ye?");
+                swing(InteractionHand.MAIN_HAND);
+                priest.hurt(damageSources().mobAttack(this), 4f);
+                priest.moveTo(priest.home != null ? priest.home : priest.blockPosition(), 1.2);
+            }
+        }
+    }
+
+    private void afflict(ServerLevel level) {
+        Settlement s = settlement();
+        MortalEntity near = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(10), m -> m != this && m.isAlive() && !m.isPossessed())
+                .stream().findAny().orElse(null);
+        switch (affliction) {
+            case THEFT -> {
+                if (s != null && s.food > 0) s.food = Math.max(0, s.food - 3);
+                say("Ours. All of it is ours.");
+            }
+            case DISCORD -> {
+                if (near != null) {
+                    near.say(MortalSpeech.Topic.QUARREL);
+                    near.addSin(1);
+                    near.emote(ParticleTypes.ANGRY_VILLAGER, 3);
+                }
+                say("Did you hear what they say of you?");
+            }
+            case VIOLENCE -> {   // "the man in whom the evil spirit was leaped on them" (Acts 19:16)
+                if (near != null) {
+                    swing(InteractionHand.MAIN_HAND);
+                    near.hurt(damageSources().mobAttack(this), 3f);
+                    near.say("He is not himself! Bind him!");
+                }
+            }
+            case SICKNESS -> {   // "a spirit of infirmity ... bowed together, and could in no wise lift up herself" (Luke 13:11)
+                if (getHealth() > 8) hurt(damageSources().generic(), 2f);
+                say("I cannot lift myself up...");
+            }
+            case SLOTH -> {
+                energy = 0;
+                say("Leave us lie. There is no use in anything.");
+            }
+            case FIRE -> {   // "ofttimes it hath cast him into the fire" (Mark 9:22)
+                if (s != null) moveTo(s.centre, 1.0);
+                if (getHealth() > 8) igniteForSeconds(2);
+                say("Into the fire! Into the fire!");
+            }
+            case DECEIT -> {   // "a spirit of divination ... which brought her masters much gain by soothsaying" (Acts 16:16)
+                say(new String[]{"I see your fortune: gold, and then a grave.", "The stars say your god has forgotten you.",
+                        "Pay me, and I will tell you who you will marry."}[random.nextInt(3)]);
+                if (near != null) near.setDoubt(near.doubt + 0.15);
+            }
+            case MUTENESS -> emote(ParticleTypes.SMOKE, 6);
+            case DROWNING -> {   // "and into the waters, to destroy him" (Mark 9:22)
+                if (s != null && s.field != null) moveTo(s.field, 1.0);
+                entityData.set(DATA_SPEECH, "The water... it calls us.");
+                speechTicks = 80;
+            }
+            case DESPAIR -> {
+                say("No one is listening. No one ever was.");
+                if (near != null) near.setDoubt(near.doubt + 0.1);
+            }
+        }
+    }
+
+    /** One anointed by an angel goes to the possessed near them and casts the spirit out in their Creator's name. */
+    private void exorcistTick(ServerLevel level) {
+        if (!exorcist || isChild() || isPossessed() || act() != NONE) return;
+        if (tickCount % 80 == 3) {
+            level.sendParticles(com.josephison.fiatlux.registry.ModParticles.LIGHT_MOTE.get(), getX(), getY() + 1.6, getZ(), 2, 0.3, 0.3, 0.3, 0.01);
+        }
+        MortalEntity t = casting != null && level.getEntity(casting) instanceof MortalEntity m && m.isPossessed() && !m.beingCastOut ? m : null;
+        if (t == null) {
+            t = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(40), m -> m.isPossessed() && !m.beingCastOut).stream()
+                    .min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+            casting = t == null ? null : t.getUUID();
+        }
+        if (t == null) return;
+        if (distanceToSqr(t) > 9) {
+            moveTo(t.blockPosition(), 0.85);
+            return;
+        }
+        getLookControl().setLookAt(t, 30f, 30f);
+        t.getLookControl().setLookAt(this, 30f, 30f);
+        Religion faith = Faiths.of(this);
+        beginAct(EXORCISE, 120);
+        t.endAct();
+        t.beginAct(POSSESSED, 120);
+        say("In the name of " + (faith != null ? faith.deityName : "the Creator") + ", I command thee to come out of " + (t.isMale() ? "him!" : "her!"));
+        t.say(t.affliction == com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction.MUTENESS ? "..." : "What have we to do with thee? Torment us not!");
+    }
+
+    /**
+     * The spirit goes out, or it does not: the lords of the Ars Goetia and those come back sevenfold hold
+     * on hard - "This kind can come forth by nothing, but by prayer and fasting" (Mark 9:29) - and the
+     * anointed one goes to pray before trying again. Returns the act to take up next.
+     */
+    private int finishExorcism(ServerLevel level) {
+        MortalEntity t = casting != null && level.getEntity(casting) instanceof MortalEntity m && m.isPossessed() && !m.beingCastOut ? m : null;
+        if (t == null || distanceToSqr(t) > 25) return NONE;
+        String lord = t.spiritLord;
+        double hold = lord.isEmpty() ? 0 : lord.contains("Prince of Hell") || lord.contains("the Devil") || lord.contains("Bottomless") ? 0.45
+                : lord.startsWith("King") || lord.startsWith("Prince") ? 0.3 : lord.startsWith("Duke") || lord.startsWith("Marquis") ? 0.2 : 0.1;
+        if (t.sevenfold) hold += 0.2;
+        if (t.spirit.equals("Legion")) hold += 0.15;
+        Alignment a = Divinity.alignment(this);
+        double chance = 0.6 + prayerAndFasting + Math.min(0.2, (a.virtue() - a.sin()) / 100.0) - hold;
+        if (random.nextDouble() < chance) {
+            prayerAndFasting = 0;
+            t.exorcise(getName().getString());
+            addVirtue(2);
+            return NONE;
+        }
+        prayerAndFasting += 0.25;
+        say("This kind goeth not out but by prayer and fasting.");
+        return PRAY;
     }
 
     /**
@@ -1133,6 +1401,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (level().isClientSide) return InteractionResult.SUCCESS;
         getLookControl().setLookAt(player, 30f, 30f);
+        if (player.isShiftKeyDown() && player instanceof ServerPlayer sp && !Divinity.get(sp).pilgrim() && isPossessed()) {
+            exorcise(sp.getGameProfile().getName());   // "Hold thy peace, and come out of him" (Mark 1:25)
+            return InteractionResult.CONSUME;
+        }
         if (player.isShiftKeyDown() && player instanceof ServerPlayer sp && !Divinity.get(sp).pilgrim()
                 && sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE && sentence != com.josephison.fiatlux.civilization.Justice.Sentence.EXILE) {
             com.josephison.fiatlux.civilization.Justice.deliver(sp, this);   // "the angel of the Lord by night opened the prison doors" (Acts 5:19)
@@ -1162,6 +1434,13 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (!title().isEmpty()) {
             var polity = com.josephison.fiatlux.civilization.Justice.polityOf((ServerLevel) level(), this);
             stage = title() + (polity != null ? " of the " + polity.name : "");
+        }
+        if (isPossessed()) {
+            player.sendSystemMessage(Component.literal("An unclean spirit is in " + (isMale() ? "him" : "her") + ": " + spirit
+                    + (spiritLord.isEmpty() ? "" : ", of the legions of " + spiritLord) + " - " + affliction.does + (sevenfold ? " (returned sevenfold)" : "")
+                    + ". Sneak-use to cast it out.").withStyle(st -> st.withColor(0xC04040)));
+        } else if (exorcist) {
+            player.sendSystemMessage(Component.literal("Anointed by the " + anointedBy + " to cast out unclean spirits.").withStyle(st -> st.withColor(0xF5D77A)));
         }
         if (sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE) {
             player.sendSystemMessage(com.josephison.fiatlux.civilization.Justice.describe(this).copy().withStyle(st -> st.withColor(0xE08060)));
@@ -1218,6 +1497,14 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (watcherHusband != null) tag.putUUID("WatcherHusband", watcherHusband);
         tag.putString("WatcherHusbandName", watcherHusbandName);
         tag.putInt("Giants", giants);
+        tag.putBoolean("Possessed", isPossessed());
+        tag.putString("Spirit", spirit);
+        tag.putString("SpiritLord", spiritLord);
+        tag.putString("Affliction", affliction.name());
+        tag.putBoolean("Sevenfold", sevenfold);
+        tag.putBoolean("Exorcist", exorcist);
+        tag.putString("AnointedBy", anointedBy);
+        tag.putDouble("PrayerAndFasting", prayerAndFasting);
         tag.putString("Sentence", sentence.name());
         tag.putString("SentenceCrime", sentenceCrime.name());
         tag.putLong("SentenceUntil", sentenceUntil);
@@ -1260,6 +1547,17 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         watcherHusband = tag.hasUUID("WatcherHusband") ? tag.getUUID("WatcherHusband") : null;
         watcherHusbandName = tag.getString("WatcherHusbandName");
         giants = tag.getInt("Giants");
+        entityData.set(DATA_POSSESSED, tag.getBoolean("Possessed"));
+        spirit = tag.getString("Spirit");
+        spiritLord = tag.getString("SpiritLord");
+        try {
+            affliction = com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction.valueOf(tag.getString("Affliction"));
+        } catch (IllegalArgumentException ignored) {
+        }
+        sevenfold = tag.getBoolean("Sevenfold");
+        exorcist = tag.getBoolean("Exorcist");
+        anointedBy = tag.getString("AnointedBy");
+        prayerAndFasting = tag.getDouble("PrayerAndFasting");
         try {
             sentence = com.josephison.fiatlux.civilization.Justice.Sentence.valueOf(tag.getString("Sentence"));
             sentenceCrime = com.josephison.fiatlux.civilization.Polity.Crime.valueOf(tag.getString("SentenceCrime"));
@@ -1293,6 +1591,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             case CRUCIFIED -> A_CRUCIFIED;
             case STOCKS -> A_STOCKS;
             case EXORCISE -> A_EXORCISE;
+            case POSSESSED -> A_POSSESSED;
+            case TORN -> A_TORN;
             default -> state.isMoving() ? WALK : IDLE;
         })));
     }

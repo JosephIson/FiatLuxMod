@@ -35,6 +35,9 @@ public final class Person {
     public boolean nephil;
     /** Taken up living, without death (Enoch, Gen 5:24). */
     public boolean translated;
+    /** The unclean spirit in this one now ("" if none), and whether an angel has anointed it to cast them out (Mark 16:17). */
+    public String possessed = "";
+    public boolean exorcist;
 
     public Person(UUID id, String name, boolean male, String world, long born, @Nullable UUID father, @Nullable UUID mother) {
         this.id = id;
@@ -71,6 +74,8 @@ public final class Person {
         if (!line.isEmpty()) t.putString("line", line);
         if (nephil) t.putBoolean("nephil", true);
         if (translated) t.putBoolean("translated", true);
+        if (!possessed.isEmpty()) t.putString("possessed", possessed);
+        if (exorcist) t.putBoolean("exorcist", true);
         return t;
     }
 
@@ -89,6 +94,8 @@ public final class Person {
         p.line = t.getString("line");
         p.nephil = t.getBoolean("nephil");
         p.translated = t.getBoolean("translated");
+        p.possessed = t.getString("possessed");
+        p.exorcist = t.getBoolean("exorcist");
         return p;
     }
 }

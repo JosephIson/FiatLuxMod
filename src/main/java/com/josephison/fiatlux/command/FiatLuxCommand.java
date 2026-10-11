@@ -152,6 +152,42 @@ public final class FiatLuxCommand {
                     }
                     return all.size();
                 }))
+                .then(Commands.literal("spirits").executes(c -> {
+                    c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.infernal.Infernal.describe(c.getSource().getServer()))
+                            .withStyle(s -> s.withColor(0xD08070)), false);
+                    return 1;
+                }))
+                .then(Commands.literal("watch").requires(FiatLuxCommand::isGod).executes(c -> {
+                    // "Go forth and watch over the planets": a guardian angel to every town (Ps 91:11)
+                    com.josephison.fiatlux.infernal.Infernal.decree(c.getSource().getServer(), c.getSource().getTextName());
+                    return 1;
+                }))
+                .then(Commands.literal("rift").requires(FiatLuxCommand::isGod).executes(c -> {
+                    // a rift from the Underworld opens near you now
+                    var rift = com.josephison.fiatlux.infernal.Infernal.openRift(c.getSource().getLevel(), BlockPos.containing(c.getSource().getPosition()), null);
+                    if (rift == null) {
+                        c.getSource().sendFailure(Component.literal("There is no ground here for a rift."));
+                        return 0;
+                    }
+                    return 1;
+                }))
+                .then(Commands.literal("possess").requires(FiatLuxCommand::isGod).then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                    // let an unclean spirit of the legions enter a mortal near you
+                    String name = StringArgumentType.getString(c, "name");
+                    var level = c.getSource().getLevel();
+                    var m = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class,
+                            new net.minecraft.world.phys.AABB(BlockPos.containing(c.getSource().getPosition())).inflate(128),
+                            x -> x.getName().getString().equalsIgnoreCase(name)).stream().findFirst().orElse(null);
+                    if (m == null || m.isPossessed()) {
+                        c.getSource().sendFailure(Component.literal(m == null ? "No one named " + name + " is near." : name + " is possessed already."));
+                        return 0;
+                    }
+                    var lord = com.josephison.fiatlux.infernal.InfernalHierarchy.sender(Math.max(2,
+                            CosmicExpanseSavedData.get(c.getSource().getServer()).underworld.overlords), level.random);
+                    var affliction = lord != null ? lord.affliction() : com.josephison.fiatlux.infernal.InfernalHierarchy.Affliction.DISCORD;
+                    m.possess(com.josephison.fiatlux.infernal.InfernalHierarchy.spiritName(level.random), lord == null ? "" : lord.title(), affliction, false);
+                    return 1;
+                })))
                 .then(Commands.literal("judge").requires(FiatLuxCommand::isGod).then(Commands.argument("name", StringArgumentType.word())
                         .then(Commands.argument("crime", StringArgumentType.word())
                                 .suggests((c, b) -> SharedSuggestionProvider.suggest(java.util.Arrays.stream(com.josephison.fiatlux.civilization.Polity.Crime.values())

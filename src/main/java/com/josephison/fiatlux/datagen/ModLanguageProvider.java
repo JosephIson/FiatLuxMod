@@ -107,6 +107,11 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.eden.planted", "And the LORD God planted a garden eastward in Eden; and there he put the man whom he had formed. (Genesis 2:8)");
         add("message.fiatlux.cain.warning", "Sin lies at Cain's door. Sneak and use Cain to bless him before it masters him - or let it be.");
         add("message.fiatlux.eden.serpent_driven_off", "The serpent slips away into the grass. The tempter will return.");
+        add(com.josephison.fiatlux.registry.ModEntities.RIFT.get(), "Rift from the Underworld");
+        add(com.josephison.fiatlux.registry.ModEntities.SPIRIT.get(), "Unclean Spirit");
+        add(com.josephison.fiatlux.registry.ModEntities.GUARDIAN.get(), "Guardian Angel");
+        add("message.fiatlux.rift.opened", "A rift tears open in the earth: %s come up out of the pit, seeking those of weak faith.");
+        add("message.fiatlux.watch.sent", "Guardian angels go down to the %s living worlds: %s towns are kept now, and the rest will be as soon as anyone is near them.");
         add(com.josephison.fiatlux.registry.ModEntities.WATCHER.get(), "Watcher");
         add(com.josephison.fiatlux.registry.ModEntities.BIRD.get(), "Bird of the Ark");
         add("message.fiatlux.flood.grieved", "The earth is filled with violence. Say \"Make thee an ark\" on this world to set its most righteous man building, or let the age run on.");

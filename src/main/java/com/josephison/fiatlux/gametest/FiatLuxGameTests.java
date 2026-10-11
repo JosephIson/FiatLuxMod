@@ -734,6 +734,59 @@ public final class FiatLuxGameTests {
         });
     }
 
+    /**
+     * A rift opens and an unclean spirit comes up and enters one of weak faith; a guardian angel comes
+     * down to the town and anoints one of the faithful; the spirit is cast out, and cast into the deep.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void possessionAndExorcism(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2)).offset(-1200, 0, -1200);
+        forceAround(level, at, true);
+        helper.runAfterDelay(10, () -> {
+            var d = com.josephison.fiatlux.infernal.InfernalData.get(server);
+            int rifts = d.rifts, freed = d.exorcisms, deep = d.castIntoTheDeep;
+            BlockPos here = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 4);
+            var era = com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL;
+            var host = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here, here, era, "Mary", false, 30, null, null, null);
+            var peter = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here.east(3), here, era, "Peter", true, 40, null, null, null);
+            var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+            peter.setReligion(gens.faithOf(java.util.UUID.randomUUID(), "Tester", peter.worldName(), level.getGameTime()).id);
+            peter.addVirtue(5);
+            helper.assertTrue(com.josephison.fiatlux.infernal.SpiritEntity.open(host) && !com.josephison.fiatlux.infernal.SpiritEntity.open(peter),
+                    "faith did not decide who is open to a spirit");
+            var rift = com.josephison.fiatlux.infernal.Infernal.openRift(level, here, com.josephison.fiatlux.infernal.InfernalHierarchy.byName("Paimon"));
+            helper.assertTrue(rift != null && d.rifts == rifts + 1, "no rift opened");
+            var spirit = rift.release(level);
+            helper.assertTrue(spirit != null && spirit.lord().contains("Paimon"), "nothing came up out of the pit: " + (spirit == null ? "none" : spirit.lord()));
+            spirit.moveTo(host.getX() + 2, host.getY() + 1, host.getZ(), 0, 0);
+            for (int i = 0; i < 40 && !host.isPossessed(); i++) spirit.tick();
+            helper.assertTrue(host.isPossessed() && !gens.person(host.getUUID()).possessed.isEmpty(), "the spirit did not enter the one of weak faith");
+            var town = new com.josephison.fiatlux.civilization.Settlement(here);
+            town.name = "Capernaum";
+            helper.assertTrue(com.josephison.fiatlux.infernal.Infernal.guard(level, town), "no guardian came down to the town");
+            var guardian = level.getEntitiesOfClass(com.josephison.fiatlux.infernal.GuardianEntity.class, new net.minecraft.world.phys.AABB(here).inflate(40))
+                    .stream().findFirst().orElse(null);
+            helper.assertTrue(guardian != null && com.josephison.fiatlux.infernal.GuardianEntity.worthy(peter), "the faithful one is not fit to be anointed");
+            peter.anoint(guardian);
+            helper.assertTrue(peter.isExorcist() && gens.person(peter.getUUID()).exorcist && !com.josephison.fiatlux.infernal.Infernal.guard(level, town),
+                    "the angel did not anoint the faithful, or a second guardian came");
+            host.exorcise("Peter");
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(!host.isPossessed() && d.exorcisms == freed + 1, "the spirit was not cast out");
+                var out = level.getEntitiesOfClass(com.josephison.fiatlux.infernal.SpiritEntity.class, host.getBoundingBox().inflate(20)).stream().findFirst().orElse(null);
+                helper.assertTrue(out != null, "nothing came out of her");
+                out.castIntoTheDeep(level);
+                helper.assertTrue(out.isRemoved() && d.castIntoTheDeep == deep + 1, "the spirit was not cast into the deep");
+                for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new net.minecraft.world.phys.AABB(here).inflate(80),
+                        e -> !(e instanceof net.minecraft.world.entity.player.Player))) e.discard();
+                forceAround(level, at, false);
+                helper.succeed();
+            });
+        });
+    }
+
     /** Keeps the chunks around a place loaded with their entities, as they are around a watching player. */
     private static void forceAround(net.minecraft.server.level.ServerLevel level, BlockPos at, boolean on) {
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, on);

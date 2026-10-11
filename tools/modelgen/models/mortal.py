@@ -311,6 +311,26 @@ def animations():
         "arm_l": {"rotation": [-30, 0, 20]}, "head": {"rotation": [-5, 0, 0]},
         "torso": {"rotation": [-4, 0, 0]},
     }}
+    # possessed by an unclean spirit: jerking head, twisting body, arms clawing at nothing (Mark 5:5, 9:18)
+    anims["animation.mortal.possessed"] = {"loop": True, "animation_length": 3.0, "bones": {
+        "head": {"rotation": [f"-18 + {sin(410, 0, 14)}", sin(530, 60, 26), sin(370, 20, 12)]},
+        "neck": {"rotation": [sin(290, 0, 8), 0, sin(330, 40, 6)]},
+        "torso": {"rotation": [f"10 + {sin(250, 0, 8)}", sin(190, 30, 14), sin(220, 0, 5)]},
+        "arm_l": {"rotation": [f"-40 + {sin(470, 0, 35)}", sin(300, 0, 20), f"-25 + {sin(390, 50, 15)}"]},
+        "arm_r": {"rotation": [f"-40 + {sin(430, 80, 35)}", sin(310, 20, 20), f"25 + {sin(350, 10, 15)}"]},
+        "forearm_l": {"rotation": [f"-50 + {sin(600, 0, 25)}", 0, 0]},
+        "forearm_r": {"rotation": [f"{HOLD} - 50 + {sin(560, 90, 25)}", 0, 0]},
+        "body": {"position": [sin(170, 0, 0.6), f"math.abs({sin(240, 0, 0.8)})", 0]},
+    }}
+    # torn by the spirit as it comes out: thrown down, wallowing (Mark 1:26, 9:20, 9:26)
+    anims["animation.mortal.torn"] = {"loop": True, "animation_length": 2.0, "bones": {
+        "root": {"rotation": [-90, 0, sin(500, 0, 10)], "position": [0, 2, -14]},
+        "torso": {"rotation": [sin(700, 0, 10), sin(560, 40, 12), 0]},
+        "head": {"rotation": [sin(820, 0, 20), sin(640, 30, 25), 0]},
+        "arm_l": {"rotation": [sin(760, 0, 40), 0, f"-30 + {sin(690, 20, 30)}"]},
+        "arm_r": {"rotation": [sin(720, 60, 40), 0, f"30 + {sin(650, 80, 30)}"]},
+        "leg_l": {"rotation": [sin(680, 0, 25), 0, 0]}, "leg_r": {"rotation": [sin(640, 90, 25), 0, 0]},
+    }}
     anims["animation.mortal.work"] = anims.pop("animation.mortal.judge")
     anims["animation.mortal.work"]["loop"] = True
     for a in anims.values():

@@ -47,6 +47,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue arkBuildTicks;
         public final ModConfigSpec.BooleanValue watchersDescend;
         public final ModConfigSpec.IntValue watchersMinPeople;
+        public final ModConfigSpec.DoubleValue riftChance;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -150,6 +151,11 @@ public final class FiatLuxConfig {
             watchersDescend = b.comment("Whether the Watchers come down to take wives of the daughters of men (Gen 6:1-4).").define("watchersDescend", true);
             watchersMinPeople = b.comment("How many living people a world needs before \"men began to multiply\" and the Watchers come down.")
                     .defineInRange("watchersMinPeople", 14, 2, 10_000);
+            b.pop();
+
+            b.comment("Unclean spirits, rifts and possession").push("possession");
+            riftChance = b.comment("Base chance each second that a rift from the Underworld opens near a town of a fallen world (more by night and on sinful worlds).")
+                    .defineInRange("riftChance", 0.0008, 0.0, 1.0);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

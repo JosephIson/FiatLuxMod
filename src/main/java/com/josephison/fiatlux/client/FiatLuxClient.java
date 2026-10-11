@@ -77,6 +77,9 @@ public class FiatLuxClient {
             }
         });
         e.registerEntityRenderer(ModEntities.BIRD.get(), com.josephison.fiatlux.client.render.BirdRenderer::new);
+        e.registerEntityRenderer(ModEntities.GUARDIAN.get(), ctx -> new HostRenderer<>(ctx, "angel", 1.0f, 0.5f, true));
+        e.registerEntityRenderer(ModEntities.SPIRIT.get(), com.josephison.fiatlux.client.render.SpiritRenderer::new);
+        e.registerEntityRenderer(ModEntities.RIFT.get(), com.josephison.fiatlux.client.render.RiftRenderer::new);
     }
 
     private static void particles(RegisterParticleProvidersEvent e) {

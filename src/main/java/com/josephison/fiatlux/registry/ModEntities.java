@@ -73,6 +73,15 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.flood.BirdEntity>> BIRD = ENTITIES.register("ark_bird",
             () -> EntityType.Builder.of(com.josephison.fiatlux.flood.BirdEntity::new, MobCategory.MISC).sized(0.5f, 0.5f).fireImmune()
                     .clientTrackingRange(12).updateInterval(2).build(FiatLux.id("ark_bird").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.infernal.RiftEntity>> RIFT = ENTITIES.register("rift",
+            () -> EntityType.Builder.<com.josephison.fiatlux.infernal.RiftEntity>of(com.josephison.fiatlux.infernal.RiftEntity::new, MobCategory.MISC)
+                    .sized(1.2f, 4.8f).fireImmune().clientTrackingRange(12).updateInterval(20).build(FiatLux.id("rift").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.infernal.SpiritEntity>> SPIRIT = ENTITIES.register("unclean_spirit",
+            () -> EntityType.Builder.of(com.josephison.fiatlux.infernal.SpiritEntity::new, MobCategory.MISC).sized(0.7f, 2.0f).fireImmune()
+                    .clientTrackingRange(10).updateInterval(2).build(FiatLux.id("unclean_spirit").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.infernal.GuardianEntity>> GUARDIAN = ENTITIES.register("guardian_angel",
+            () -> EntityType.Builder.of(com.josephison.fiatlux.infernal.GuardianEntity::new, MobCategory.MISC).sized(0.7f, 2.2f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("guardian_angel").toString()));
 
     private ModEntities() {}
 }
