@@ -107,6 +107,16 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.eden.planted", "And the LORD God planted a garden eastward in Eden; and there he put the man whom he had formed. (Genesis 2:8)");
         add("message.fiatlux.cain.warning", "Sin lies at Cain's door. Sneak and use Cain to bless him before it masters him - or let it be.");
         add("message.fiatlux.eden.serpent_driven_off", "The serpent slips away into the grass. The tempter will return.");
+        add(com.josephison.fiatlux.registry.ModEntities.WATCHER.get(), "Watcher");
+        add(com.josephison.fiatlux.registry.ModEntities.BIRD.get(), "Bird of the Ark");
+        add("message.fiatlux.flood.grieved", "The earth is filled with violence. Say \"Make thee an ark\" on this world to set its most righteous man building, or let the age run on.");
+        add("message.fiatlux.flood.begun", "%s has found grace in your eyes, and goes to build the ark on %s.");
+        add("message.fiatlux.flood.already", "%s is already in the days of the ark on %s.");
+        add("message.fiatlux.flood.none_righteous", "There is no one here to build an ark. Go to a world where mortals live.");
+        add("message.fiatlux.flood.no_ground", "There is no ground here level enough for an ark three hundred cubits long.");
+        add("message.fiatlux.flood.covenant", "\"I will not again smite any more every thing living, as I have done\" (Genesis 8:21). The bow is in the cloud: there is no second Flood.");
+        add("message.fiatlux.nephilim.descended", "%s Watchers come down upon %s.");
+        add("message.fiatlux.nephilim.none", "There is no town here for the Watchers to come down upon.");
         add("message.fiatlux.soul.arrives_heaven", "The soul of %s of %s is taken up into Heaven.");
         add("message.fiatlux.soul.arrives_underworld", "The soul of %s of %s falls into the Underworld.");
         add("message.fiatlux.soul.redeemed", "You redeem the soul of %s: it rises into Heaven.");

@@ -40,6 +40,13 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue maxMortalsPerSettlement;
         public final ModConfigSpec.IntValue maxTownsPerWorld;
         public final ModConfigSpec.IntValue edenTemptationTicks;
+        public final ModConfigSpec.IntValue floodDayTicks;
+        public final ModConfigSpec.IntValue floodRadius;
+        public final ModConfigSpec.IntValue floodMaxRise;
+        public final ModConfigSpec.IntValue floodBlocksPerTick;
+        public final ModConfigSpec.IntValue arkBuildTicks;
+        public final ModConfigSpec.BooleanValue watchersDescend;
+        public final ModConfigSpec.IntValue watchersMinPeople;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -128,6 +135,21 @@ public final class FiatLuxConfig {
             maxTownsPerWorld = b.comment("Most towns a people founds on one world.").defineInRange("maxTownsPerWorld", 10, 1, 64);
             edenTemptationTicks = b.comment("How long Adam and Eve live in innocence before the serpent comes (once Satan has fallen).")
                     .defineInRange("edenTemptationTicks", 6000, 0, 10_000_000);
+            b.pop();
+
+            b.comment("The Nephilim and the Flood (Genesis 6-9)").push("flood");
+            floodDayTicks = b.comment("Game ticks for one day of the Flood (it lasts a year and ten days: Gen 7:11, 8:14).")
+                    .defineInRange("floodDayTicks", 40, 1, 24000);
+            floodRadius = b.comment("How far around each town (and the ark) the waters cover the land.").defineInRange("floodRadius", 64, 8, 256);
+            floodMaxRise = b.comment("Highest the waters rise above the lowest ground they cover (\"fifteen cubits upward\" over the mountains, Gen 7:20).")
+                    .defineInRange("floodMaxRise", 64, 4, 200);
+            floodBlocksPerTick = b.comment("Columns of water raised or lowered per tick (spreads the work over time).")
+                    .defineInRange("floodBlocksPerTick", 6000, 100, 1_000_000);
+            arkBuildTicks = b.comment("How long the righteous take to build the ark (300 by 50 by 30 cubits, Gen 6:15).")
+                    .defineInRange("arkBuildTicks", 4800, 1, 10_000_000);
+            watchersDescend = b.comment("Whether the Watchers come down to take wives of the daughters of men (Gen 6:1-4).").define("watchersDescend", true);
+            watchersMinPeople = b.comment("How many living people a world needs before \"men began to multiply\" and the Watchers come down.")
+                    .defineInRange("watchersMinPeople", 14, 2, 10_000);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

@@ -71,6 +71,7 @@ public record CosmosReport(CompoundTag data) implements CustomPacketPayload {
         u.putInt("yearSeconds", FiatLuxConfig.COMMON.mortalYearTicks.get() / 20);
         u.putDouble("speed", FiatLuxConfig.COMMON.simulationSpeed.get());
         u.putString("eden", com.josephison.fiatlux.eden.EdenEvents.describe(c));
+        u.putString("flood", com.josephison.fiatlux.flood.Deluge.describe(server));
         root.put("universe", u);
 
         CompoundTag m = new CompoundTag();

@@ -91,6 +91,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Boolean> DATA_INNOCENT = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
     /** The office this mortal holds in its people's government ("King", "Judge", ...), or "". */
     private static final EntityDataAccessor<String> DATA_TITLE = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.STRING);
+    /** One of the Nephilim, a Watcher's son: "there were giants in the earth in those days" (Gen 6:4). */
+    private static final EntityDataAccessor<Boolean> DATA_NEPHIL = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
     public static final int VARIANTS = 8;
     public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7,
             CRUCIFIED = 8, STOCKS = 9, EXORCISE = 10, IMPRISONED = 11;
@@ -139,6 +141,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     /** "And the LORD set a mark upon Cain, lest any finding him should kill him" (Gen 4:15). */
     private boolean marked;
     private int roadTicks;
+    /** Taken to wife by a Watcher (Gen 6:2), and the giants she has borne him. */
+    @Nullable private UUID watcherHusband;
+    private String watcherHusbandName = "";
+    private int giants;
 
     public MortalEntity(EntityType<? extends MortalEntity> type, Level level) {
         super(type, level);
@@ -160,6 +166,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         builder.define(DATA_SPEECH, "");
         builder.define(DATA_INNOCENT, false);
         builder.define(DATA_TITLE, "");
+        builder.define(DATA_NEPHIL, false);
     }
 
     // ================================================================== identity
@@ -192,6 +199,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         p.religion = religion;
         p.spouse = spouse;
         p.variant = variant();
+        p.nephil = isNephil();
         Generations.get(sl.getServer()).add(p);
     }
 
@@ -249,6 +257,36 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public void setHome(BlockPos home) { this.home = home; }
     public boolean isLeaving() { return leaving; }
     public boolean isMarked() { return marked; }
+    public boolean isNephil() { return entityData.get(DATA_NEPHIL); }
+    @Nullable public UUID watcherHusband() { return watcherHusband; }
+    public String fatherName() { return fatherName; }
+
+    /** "The sons of God ... took them wives of all which they chose" (Gen 6:2). */
+    public void takenBy(UUID watcher, String name) {
+        watcherHusband = watcher;
+        watcherHusbandName = name;
+        say(spouse != null ? "He is no man... and he has chosen me." : "He shines like the morning. He has chosen me.");
+        emote(ParticleTypes.ENCHANT, 12);
+    }
+
+    /** Walks somewhere (or, if the way is barred, waits). */
+    public void walkTo(BlockPos p, double speed) {
+        if (act() == NONE) moveTo(p, speed);
+    }
+
+    /** A giant grows to more than twice the height of a man as it comes of age, and is as strong. */
+    private void growAsGiant() {
+        double grown = Math.min(1, age / ADULT_AGE);
+        var scale = getAttribute(Attributes.SCALE);
+        double want = 1.0 + 1.3 * grown;
+        if (scale != null && Math.abs(scale.getBaseValue() - want) > 0.02) scale.setBaseValue(want);
+        var health = getAttribute(Attributes.MAX_HEALTH);
+        double hp = 20 + 60 * grown;
+        if (health != null && Math.abs(health.getBaseValue() - hp) > 1) {
+            health.setBaseValue(hp);
+            setHealth(Math.min(getHealth() + 10, getMaxHealth()));
+        }
+    }
     public void markAsCain() { marked = true; }
 
     /** The living spouse, if near enough to be loaded. */
@@ -728,7 +766,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             return;
         }
         double before = age;
-        age += 20.0 / year;
+        age += 20.0 / year * (isNephil() && age < ADULT_AGE ? 3 : 1);   // the giants grow up fast
         if ((int) before < ADULT_AGE && (int) age >= ADULT_AGE) {
             // "Abel was a keeper of sheep, but Cain was a tiller of the ground" (Gen 4:2)
             profession = "Abel".equals(getName().getString()) ? Profession.SHEPHERD : "Cain".equals(getName().getString()) ? Profession.FARMER
@@ -754,8 +792,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale()) : "";
             if (!t.equals(title())) entityData.set(DATA_TITLE, t);
         }
+        if (isNephil() && tickCount % 100 == 3) growAsGiant();
+        if (tickCount % 200 == 7 && com.josephison.fiatlux.civilization.Genealogy.walkWithGod(level, this)) return;
         travelTick(level);
         reactToSurroundings(level);
+        nephilTick(level, year);
         faithTick(level, year);
         familyTick(level, year);
         viceTick(level, year);
@@ -813,6 +854,17 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             return;
         }
         if (now - lastWitness < 2400) return;
+        if (!isNephil()) {
+            MortalEntity giant = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(9), m -> m.isNephil() && !m.isChild()).stream()
+                    .findAny().orElse(null);
+            if (giant != null) {
+                lastWitness = now;
+                String[] fear = {"Hush... one of the giants is near.", "Hide the bread before " + giant.getName().getString() + " sees it.",
+                        "They are the sons of the shining ones. Who can stand before them?", "Keep the children inside."};
+                say(fear[random.nextInt(fear.length)]);
+                return;
+            }
+        }
         for (HeavenlyBeing b : level.getEntitiesOfClass(HeavenlyBeing.class, getBoundingBox().inflate(12))) {
             lastWitness = now;
             if (b.isRebel()) {
@@ -878,6 +930,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     /** Married women of age may bear children; answered prayers for a child are kept. */
     private void familyTick(ServerLevel level, int year) {
+        if (watcherHusband != null && !isMale() && age >= 16 && age <= 45 && giants < 2 && random.nextDouble() < 20.0 / (year * 0.8)
+                && !com.josephison.fiatlux.flood.FloodData.get(level.getServer()).active()) {
+            bearGiant(level);
+            return;
+        }
         if (isMale() || spouse == null || age < 18 || age > 45) return;
         Entity husband = level.getEntity(spouse);
         if (!(husband instanceof MortalEntity dad) || distanceToSqr(dad) > 48 * 48) return;
@@ -896,8 +953,15 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             name = new String[]{"Cain", "Abel", "Seth"}[children];
             male = true;
         }
+        // the generations of Genesis 4, 5 and 11: the eldest son of each line bears the next name in it
+        com.josephison.fiatlux.civilization.Genealogy.Heir heir = name == null ? com.josephison.fiatlux.civilization.Genealogy.nextSon(level.getServer(), dad) : null;
+        if (heir != null) {
+            name = heir.name();
+            male = true;
+        }
         MortalEntity child = MortalPopulation.bringForth(level, blockPosition(), home, era(), name, male, 0, dad, this, religion);
         if (child == null) return;
+        com.josephison.fiatlux.civilization.Genealogy.enter(level.getServer(), child, dad, heir);
         children++;
         dad.children++;
         lastChildName = dad.lastChildName = child.getName().getString();
@@ -907,6 +971,70 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "birth",
                 "and " + dad.getName().getString() + " welcomed a " + (child.isMale() ? "son" : "daughter") + ", " + child.getName().getString()
                         + ", on " + worldName() + ".");
+    }
+
+    /**
+     * "When the sons of God came in unto the daughters of men, and they bare children to them, the same
+     * became mighty men which were of old, men of renown" (Gen 6:4).
+     */
+    public void bearGiant(ServerLevel level) {
+        MortalEntity child = com.josephison.fiatlux.registry.ModEntities.MORTAL.get().create(level);
+        if (child == null) return;
+        String name = com.josephison.fiatlux.flood.Nephilim.giantName(watcherHusbandName, giants, random);
+        child.moveTo(getX(), getY(), getZ(), random.nextFloat() * 360f, 0);
+        child.setEra(era());
+        child.setOrigin(0, null, this, religion);
+        child.father = watcherHusband;
+        child.fatherName = watcherHusbandName;
+        child.entityData.set(DATA_NEPHIL, true);
+        child.becomeLivingSoul(name, true);
+        child.setHome(home != null ? home : blockPosition());
+        level.addFreshEntity(child);
+        giants++;
+        children++;
+        lastChildName = name;
+        say("My son... how he grows! He is not like other children.");
+        level.sendParticles(ParticleTypes.ENCHANT, getX(), getY() + 1, getZ(), 30, 0.4, 0.6, 0.4, 0.3);
+        var flood = com.josephison.fiatlux.flood.FloodData.get(level.getServer());
+        flood.giantsBorn++;
+        flood.setDirty();
+        CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "nephilim",
+                "bare to " + watcherHusbandName + " the Watcher a son, " + name + ", on " + worldName() + ". There were giants in the earth in those days.");
+    }
+
+    /**
+     * The giants' violence: "they consumed all the acquisitions of men. And when men could no longer
+     * sustain them, the giants turned against them" (1 Enoch 7:3-4); "the earth was filled with
+     * violence" (Gen 6:11). They boast, devour the town's store, and strike whoever is near.
+     */
+    private void nephilTick(ServerLevel level, int year) {
+        if (!isNephil() || isChild() || act() != NONE) return;
+        double perYear = 20.0 / year;
+        Settlement s = settlement();
+        if (s != null && s.food > 0 && random.nextDouble() < 4 * perYear) {
+            s.food = Math.max(0, s.food - 6);
+            hunger = 1;
+            addSin(1);
+            say(random.nextBoolean() ? "More bread, little ones. It is never enough." : "Your store is ours. Bring more.");
+            CosmicExpanseSavedData.get(level.getServer()).setDirty();
+        }
+        if (random.nextDouble() < 3 * perYear) {
+            MortalEntity victim = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(10),
+                    m -> m != this && !m.isNephil() && m.isAlive() && m.act() != SLEEP).stream().findAny().orElse(null);
+            if (victim != null) {
+                getLookControl().setLookAt(victim, 30f, 30f);
+                swing(InteractionHand.MAIN_HAND);
+                victim.hurt(damageSources().mobAttack(this), 5f);
+                victim.say(victim.isChild() ? "Mother! The giant!" : "Mercy! We have nothing left!");
+                victim.emote(ParticleTypes.DAMAGE_INDICATOR, 3);
+                addSin(2);
+            }
+        }
+        if (speechTicks == 0 && random.nextInt(30) == 0) {
+            String[] boasts = {"We are the mighty men, men of renown.", "Our fathers came down from the heights of Hermon.",
+                    "Who is like us in all the earth?", "The little ones tremble when we pass.", "What god do we need? We are as gods."};
+            say(boasts[random.nextInt(boasts.length)]);
+        }
     }
 
     /** Small sins of temperament: quarrels, and taking from the common store. */
@@ -940,6 +1068,25 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public void die(DamageSource source) {
         if (level() instanceof ServerLevel sl && !isRemoved() && !dead && source.getEntity() instanceof MortalEntity killer && killer != this) {
             com.josephison.fiatlux.civilization.Justice.report(sl, killer, com.josephison.fiatlux.civilization.Polity.Crime.MURDER, this);
+        }
+        if (level() instanceof ServerLevel sl && !isRemoved() && !dead && isNephil()) {
+            // "the spirits of the giants ... shall be evil spirits on the earth, and on the earth shall be their dwelling" (1 Enoch 15:8-10)
+            var flood = com.josephison.fiatlux.flood.FloodData.get(sl.getServer());
+            flood.giantSpirits++;
+            flood.setDirty();
+            Person p = person();
+            if (p != null) {
+                p.died = sl.getGameTime();
+                p.soul = "spirit";
+                p.ageAtDeath = (int) age;
+                Generations.get(sl.getServer()).setDirty();
+            }
+            sl.sendParticles(ParticleTypes.SOUL, getX(), getY() + 1.5, getZ(), 30, 0.6, 1.2, 0.6, 0.03);
+            sl.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 1, getZ(), 30, 0.6, 1.0, 0.6, 0.02);
+            CosmosData.get(sl.getServer()).record(sl.getServer(), getName().getString() + " the giant, son of " + fatherName, "giant_death",
+                    "died on " + worldName() + ". His spirit went not down to the Underworld, but wanders the earth, an evil spirit.");
+            super.die(source);
+            return;
         }
         if (level() instanceof ServerLevel sl && !isRemoved() && !dead) {
             Alignment a = Divinity.alignment(this);
@@ -1067,6 +1214,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         tag.putLong("PrayedDay", prayedDay);
         tag.putBoolean("Leaving", leaving);
         tag.putBoolean("Marked", marked);
+        tag.putBoolean("Nephil", isNephil());
+        if (watcherHusband != null) tag.putUUID("WatcherHusband", watcherHusband);
+        tag.putString("WatcherHusbandName", watcherHusbandName);
+        tag.putInt("Giants", giants);
         tag.putString("Sentence", sentence.name());
         tag.putString("SentenceCrime", sentenceCrime.name());
         tag.putLong("SentenceUntil", sentenceUntil);
@@ -1105,6 +1256,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         prayedDay = tag.contains("PrayedDay") ? tag.getLong("PrayedDay") : -1;
         leaving = tag.getBoolean("Leaving");
         marked = tag.getBoolean("Marked");
+        entityData.set(DATA_NEPHIL, tag.getBoolean("Nephil"));
+        watcherHusband = tag.hasUUID("WatcherHusband") ? tag.getUUID("WatcherHusband") : null;
+        watcherHusbandName = tag.getString("WatcherHusbandName");
+        giants = tag.getInt("Giants");
         try {
             sentence = com.josephison.fiatlux.civilization.Justice.Sentence.valueOf(tag.getString("Sentence"));
             sentenceCrime = com.josephison.fiatlux.civilization.Polity.Crime.valueOf(tag.getString("SentenceCrime"));

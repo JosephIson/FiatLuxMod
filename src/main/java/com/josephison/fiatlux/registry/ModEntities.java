@@ -67,6 +67,12 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<StationedSwordEntity>> STATIONED_SWORD = ENTITIES.register("stationed_flaming_sword",
             () -> EntityType.Builder.<StationedSwordEntity>of(StationedSwordEntity::new, MobCategory.MISC).sized(0.8f, 2.6f).fireImmune()
                     .clientTrackingRange(10).updateInterval(20).build(FiatLux.id("stationed_flaming_sword").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.flood.WatcherEntity>> WATCHER = ENTITIES.register("watcher",
+            () -> EntityType.Builder.of(com.josephison.fiatlux.flood.WatcherEntity::new, MobCategory.MISC).sized(0.7f, 2.2f).fireImmune()
+                    .clientTrackingRange(12).build(FiatLux.id("watcher").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.flood.BirdEntity>> BIRD = ENTITIES.register("ark_bird",
+            () -> EntityType.Builder.of(com.josephison.fiatlux.flood.BirdEntity::new, MobCategory.MISC).sized(0.5f, 0.5f).fireImmune()
+                    .clientTrackingRange(12).updateInterval(2).build(FiatLux.id("ark_bird").toString()));
 
     private ModEntities() {}
 }

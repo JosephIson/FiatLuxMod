@@ -35,6 +35,7 @@ MODELS = {
     "serpent": ("entity", "serpent", 120, 30),            # Tier 2 - Genesis 3:1, Rev 12:9
     "cross": ("entity", "cross", 20, 1),                  # prop - John 19:17-19, built to the crucified pose
     "stocks": ("entity", "stocks", 15, 1),                # prop - Jer 20:2, built to the stocks pose
+    "bird": ("entity", "bird", 20, 8),                    # Tier 1 - Genesis 8:7-12, the raven and the dove
 }
 
 

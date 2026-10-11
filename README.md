@@ -243,6 +243,41 @@ hung with fruit you can pick.
   it, the name and the crime (John 19:19). The faithful who die for refusing a pagan state's gods
   are martyrs and go up into Heaven. Sneak-use a condemned mortal to **deliver** them (Acts 5:19).
   `/fiatlux judge <name> <crime>` brings someone before their people's law.
+* **The generations** (Genesis 4, 5 and 11): the eldest son of each line is given the next name in
+  it. Seth begets Enos, then Cainan, Mahalaleel, Jared, Enoch, Methuselah, Lamech and Noah, whose
+  sons are Shem, Ham and Japheth. From Shem come Arphaxad and on down to Terah and Abram. Cain begets
+  Enoch, Irad, Mehujael, Methusael and Lamech, whose sons are Jabal, Jubal and Tubal-cain. Enoch of
+  the line of Seth "walked with God: and he was not; for God took him" (5:24): once he has a son he
+  may be taken up into Heaven alive.
+* **The Watchers and the Nephilim** (Genesis 6:1-4): once a fallen world's people number
+  `watchersMinPeople`, the Watchers come down on it. They are the "sons of God", read here as the Book
+  of Enoch tells it: two hundred angels under Shemihazah who swore an oath on Mount Hermon. Their
+  chiefs (Shemihazah, Azazel, Armaros, Baraqel and others) take wives in the town, and each teaches
+  the arts 1 Enoch 8 gives him, which hastens the age and corrupts it. Their wives bear the
+  **Nephilim**, giants who grow up fast to more than twice a man's height. They boast, devour the
+  town's bread and strike those near them, no human court dares judge them, and they fill the
+  earth with violence (Gen 6:11). When a giant dies, his spirit does not go down to the Underworld
+  but wanders the earth as an evil spirit (1 Enoch 15:8-10). Strike a Watcher to bind it in chains
+  of darkness (Jude 1:6). `/fiatlux nephilim` brings them down on the town nearest you.
+* **The Flood** (Genesis 6:5-9:17): when a world with giants is steeped in sin, its Creator is
+  told that "the wickedness of man was great". Say **"Make thee an ark"** (or `/fiatlux flood ark`)
+  on that world. Its most righteous man (Noah himself, if the line of Seth has reached him) builds
+  the ark beside his town to its true measure: 300 by 50 by 30 cubits, which is 137 by 23 by 14
+  blocks of pitch-dark timber. It has three decks of stalls and quarters, a window a cubit high
+  under the eaves, and a door in the side. While he builds he preaches, and his neighbours mock.
+  * **Boarding**: his house goes in, and the beasts come two and two, the clean by sevens, each kind
+    to its stall. After seven days the LORD shuts the door.
+  * **The rain**: it rains for forty days, the fountains of the deep break up, and real water rises
+    over every town until it stands fifteen cubits above the highest mountain. The ark floats up
+    with everyone aboard. All flesh outside dies, and the Watchers are bound.
+  * **The waters abate**: they prevail for 150 days while the ark drifts to the highest mountain,
+    then go down, and the ark rests "upon the mountains of Ararat". Noah sends out the raven, then
+    the dove three times; she brings back an olive leaf.
+  * **Going forth**: they come out of the ark, Noah builds an altar, and a rainbow is set in the
+    cloud. The world begins again from the eight in a new town, Ararat. The covenant holds: there
+    is never a second Flood.
+  * **Timing and commands**: the year of the Flood runs at `floodDayTicks` per day. `/fiatlux flood`
+    shows where it stands, and `/fiatlux flood next` hastens it to its next stage.
 * **Judgment and the souls of the dead**: when a mortal dies, its deeds are weighed. The righteous
   rise to Heaven and the wicked go down to the Underworld. Their **souls** then walk those realms in
   their own names and faces: in Heaven made of light, praising and singing; in the Underworld made

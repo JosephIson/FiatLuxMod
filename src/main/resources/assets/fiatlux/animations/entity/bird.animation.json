@@ -1,0 +1,79 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.bird.fly": {
+   "loop": true,
+   "animation_length": 2.0,
+   "bones": {
+    "wing_r": {
+     "rotation": [
+      0,
+      0,
+      "20 + math.sin(query.anim_time * 1100 + 0) * 48"
+     ]
+    },
+    "wing_l": {
+     "rotation": [
+      0,
+      0,
+      "-20 - math.sin(query.anim_time * 1100 + 0) * 48"
+     ]
+    },
+    "wing_r_tip": {
+     "rotation": [
+      0,
+      0,
+      "math.sin(query.anim_time * 1100 + -40) * 22"
+     ]
+    },
+    "wing_l_tip": {
+     "rotation": [
+      0,
+      0,
+      "-math.sin(query.anim_time * 1100 + -40) * 22"
+     ]
+    },
+    "body": {
+     "position": [
+      0,
+      "math.sin(query.anim_time * 1100 + 90) * 0.4",
+      0
+     ],
+     "rotation": [
+      "math.sin(query.anim_time * 1100 + 90) * 3",
+      0,
+      0
+     ]
+    },
+    "tail": {
+     "rotation": [
+      "math.sin(query.anim_time * 1100 + 120) * 6",
+      0,
+      0
+     ]
+    },
+    "head": {
+     "rotation": [
+      "math.sin(query.anim_time * 1100 + 200) * -3",
+      "math.sin(query.anim_time * 90 + 0) * 6",
+      0
+     ]
+    },
+    "leg_r": {
+     "rotation": [
+      40,
+      0,
+      0
+     ]
+    },
+    "leg_l": {
+     "rotation": [
+      40,
+      0,
+      0
+     ]
+    }
+   }
+  }
+ }
+}

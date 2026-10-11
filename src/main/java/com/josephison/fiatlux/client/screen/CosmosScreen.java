@@ -96,6 +96,10 @@ public class CosmosScreen extends Screen {
                 text("One mortal year passes every " + timeText(u.getInt("yearSeconds")) + " (simulation speed ×" + num(u.getDouble("speed")) + ").", DIM, 0);
                 heading("The garden of Eden", 0xFF9CE38C);
                 text(u.getString("eden"));
+                if (u.contains("flood")) {
+                    heading("The days of Noah", 0xFF9AB8E8);
+                    text(u.getString("flood"));
+                }
                 heading("The living", GOLD);
                 text(plural(data.getInt("totalLiving"), "mortal is", "mortals are") + " alive, and " + plural(data.getInt("totalWritten"), "life is", "lives are")
                         + " written in the Book of Generations.");

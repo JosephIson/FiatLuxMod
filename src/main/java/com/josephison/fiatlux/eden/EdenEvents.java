@@ -304,6 +304,7 @@ public final class EdenEvents {
         String said = event.getRawText().toLowerCase().replaceAll("[^a-z ]", " ").replaceAll("\\s+", " ").trim();
         ServerPlayer player = event.getPlayer();
         CainAndAbel.onAsked(player, said);
+        com.josephison.fiatlux.flood.Deluge.onChat(player, said);
         if (!said.contains("where art thou") && !said.contains("where are you")) return;
         player.server.execute(() -> {
             CosmicExpanseSavedData c = CosmicExpanseSavedData.get(player.server);

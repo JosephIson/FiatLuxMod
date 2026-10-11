@@ -101,6 +101,40 @@ public final class FiatLuxCommand {
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
+                .then(Commands.literal("flood").executes(c -> {
+                            c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.flood.Deluge.describe(c.getSource().getServer()))
+                                    .withStyle(s -> s.withColor(0x9AB8E8)), false);
+                            return 1;
+                        })
+                        .then(Commands.literal("ark").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // "Make thee an ark of gopher wood" (Gen 6:14): the most righteous man near you begins to build
+                            var p = c.getSource().getPlayerOrException();
+                            c.getSource().sendSuccess(() -> com.josephison.fiatlux.flood.Deluge.begin(p.serverLevel(), p.blockPosition()), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("next").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // hasten the story to its next stage
+                            com.josephison.fiatlux.flood.Deluge.tick(c.getSource().getServer(), true);
+                            c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.flood.Deluge.describe(c.getSource().getServer()))
+                                    .withStyle(s -> s.withColor(0x9AB8E8)), true);
+                            return 1;
+                        })))
+                .then(Commands.literal("nephilim").requires(FiatLuxCommand::isGod).executes(c -> {
+                    // the Watchers come down on the town nearest you now (Gen 6:1-4)
+                    var p = c.getSource().getPlayerOrException();
+                    var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(p.level().dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    var town = world == null ? null : cos.townNear(world.id, p.blockPosition());
+                    if (town == null) {
+                        c.getSource().sendFailure(Component.translatable("message.fiatlux.nephilim.none"));
+                        return 0;
+                    }
+                    int n = com.josephison.fiatlux.flood.Nephilim.descend(p.serverLevel(), com.josephison.fiatlux.flood.FloodData.get(c.getSource().getServer()),
+                            world.id, world.name, town.centre);
+                    c.getSource().sendSuccess(() -> Component.translatable("message.fiatlux.nephilim.descended", n, world.name), true);
+                    return n;
+                }))
                 .then(Commands.literal("polity").executes(c -> {
                     var src = c.getSource();
                     var all = com.josephison.fiatlux.civilization.Polities.get(src.getServer()).byWorld.values();

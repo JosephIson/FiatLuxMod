@@ -64,6 +64,7 @@ public final class MortalPopulation {
             ServerLevel level = server.getLevel(RealmPool.dimension(i));
             if (level == null || level.players().isEmpty()) continue;
             boolean inEden = p.id.equals(cosmos.edenWorld) && !cosmos.fallOfMan;
+            if (com.josephison.fiatlux.flood.FloodData.get(server).upon(p.id)) continue;   // the waters are upon the earth: no town is kept
             if (inEden) continue;   // the first pair live in the garden; towns come after the expulsion
             if (cosmos.townsOf(p.id).isEmpty()) {
                 if (p.id.equals(cosmos.edenWorld) && cosmos.eden != com.josephison.fiatlux.eden.EdenState.EXILED

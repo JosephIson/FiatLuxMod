@@ -29,6 +29,12 @@ public final class Person {
     public boolean redeemed;
     /** The look the mortal had in life, kept by its soul. */
     public int variant = -1;
+    /** The line this one carries on, if any (see {@link Genealogy}): "seth", "shem", "cain". */
+    public String line = "";
+    /** One of the Nephilim, son of a Watcher (Gen 6:4): at death its spirit wanders the earth. */
+    public boolean nephil;
+    /** Taken up living, without death (Enoch, Gen 5:24). */
+    public boolean translated;
 
     public Person(UUID id, String name, boolean male, String world, long born, @Nullable UUID father, @Nullable UUID mother) {
         this.id = id;
@@ -62,6 +68,9 @@ public final class Person {
         t.putBoolean("embodied", embodied);
         t.putBoolean("redeemed", redeemed);
         t.putInt("variant", variant);
+        if (!line.isEmpty()) t.putString("line", line);
+        if (nephil) t.putBoolean("nephil", true);
+        if (translated) t.putBoolean("translated", true);
         return t;
     }
 
@@ -77,6 +86,9 @@ public final class Person {
         p.embodied = t.getBoolean("embodied");
         p.redeemed = t.getBoolean("redeemed");
         p.variant = t.contains("variant") ? t.getInt("variant") : -1;
+        p.line = t.getString("line");
+        p.nephil = t.getBoolean("nephil");
+        p.translated = t.getBoolean("translated");
         return p;
     }
 }

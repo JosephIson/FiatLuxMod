@@ -71,6 +71,7 @@ public final class Justice {
         Polity g = Polities.get(level.getServer()).of(world.id);
         if (g == null || g.laws.stream().noneMatch(l -> l.crime == crime)) return;
         if (offender.getUUID().equals(g.ruler)) return;   // the king is above his own law (and the people murmur)
+        if (offender.isNephil()) return;   // none dare lay hands on the mighty men (Gen 6:4)
         List<MortalEntity> witnesses = level.getEntitiesOfClass(MortalEntity.class, offender.getBoundingBox().inflate(12),
                 m -> m != offender && m != victim && !m.isChild() && m.isAlive());
         if (witnesses.isEmpty() && level.random.nextBoolean()) return;   // no one saw

@@ -154,6 +154,7 @@ public final class WorldTicker {
             p.sin = 0;
             return new double[]{0, p.population};
         }
+        if (com.josephison.fiatlux.flood.FloodData.get(server).upon(p.id)) return new double[]{0, p.population};   // eight souls in the ark
         double cap = Math.max(2, p.era.capacity * hab);
         double before = p.population;
         double r = (p.era.growth - p.era.mortality) * c.populationGrowthRate.get();
@@ -161,7 +162,9 @@ public final class WorldTicker {
         p.population = Math.max(p.population, census);
         // faith and sin are shares of the people, drifting toward what their age and the climate of creation make them
         double faithTarget = clamp01(p.era.piety * (1 - cosmos.corruption * 0.6));
-        double sinTarget = clamp01((0.08 + (1 - p.era.piety) * 0.35 + cosmos.corruption * 0.5) * c.sinRate.get());
+        // the giants fill the earth with violence (Gen 6:11)
+        double giants = Math.min(0.4, com.josephison.fiatlux.flood.Nephilim.giants(server, p.name) * 0.08);
+        double sinTarget = clamp01((0.08 + (1 - p.era.piety) * 0.35 + cosmos.corruption * 0.5 + giants) * c.sinRate.get());
         double k = Math.min(1, years * 0.15);
         p.faith = clamp01(p.faith + (faithTarget - p.faith) * k);
         p.sin = clamp01(p.sin + (sinTarget - p.sin) * k);

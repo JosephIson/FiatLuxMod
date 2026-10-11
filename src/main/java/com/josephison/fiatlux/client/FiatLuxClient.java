@@ -66,6 +66,14 @@ public class FiatLuxClient {
         e.registerEntityRenderer(ModEntities.PUNISHMENT_PROP.get(), com.josephison.fiatlux.client.render.PunishmentPropRenderer::new);
         e.registerEntityRenderer(ModEntities.SOUL.get(), com.josephison.fiatlux.client.render.SoulRenderer::new);
         e.registerEntityRenderer(ModEntities.FALLEN.get(), com.josephison.fiatlux.client.render.FallenRenderer::new);
+        // the Watchers are angels whose glory is going out
+        e.registerEntityRenderer(ModEntities.WATCHER.get(), ctx -> new HostRenderer<com.josephison.fiatlux.flood.WatcherEntity>(ctx, "angel", 1.05f, 0.5f, true) {
+            @Override
+            public software.bernie.geckolib.util.Color getRenderColor(com.josephison.fiatlux.flood.WatcherEntity w, float partialTick, int packedLight) {
+                return software.bernie.geckolib.util.Color.ofRGBA(0.78f, 0.74f, 0.82f, 1f);
+            }
+        });
+        e.registerEntityRenderer(ModEntities.BIRD.get(), com.josephison.fiatlux.client.render.BirdRenderer::new);
     }
 
     private static void particles(RegisterParticleProvidersEvent e) {

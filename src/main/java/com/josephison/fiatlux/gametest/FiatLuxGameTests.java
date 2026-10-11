@@ -622,4 +622,120 @@ public final class FiatLuxGameTests {
         wielder.discard();
         helper.succeed();
     }
+
+    /** The Watchers take wives, a giant is born whose spirit wanders when he dies, and the lines of Seth and Cain are named. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void watchersAndGiants(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+        var flood = com.josephison.fiatlux.flood.FloodData.get(server);
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2)).offset(-600, 0, 600);
+        forceAround(level, at, true);
+        helper.runAfterDelay(10, () -> {
+            var era = com.josephison.fiatlux.world.cosmos.MortalEra.AGRARIAN;
+            var woman = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at, at, era, "Naamah", false, 20, null, null, null);
+            helper.assertTrue(woman != null, "no daughter of men was born");
+            int came = com.josephison.fiatlux.flood.Nephilim.descend(level, flood, null, "TestWorld", at);
+            var watchers = level.getEntitiesOfClass(com.josephison.fiatlux.flood.WatcherEntity.class, new net.minecraft.world.phys.AABB(at).inflate(60));
+            helper.assertTrue(came >= 1 && !watchers.isEmpty() && woman.watcherHusband() != null, "the sons of God took no wives");
+            int born = flood.giantsBorn, spirits = flood.giantSpirits, bound = flood.watchersBound;
+            woman.bearGiant(level);
+            var giant = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class, new net.minecraft.world.phys.AABB(at).inflate(6),
+                    com.josephison.fiatlux.entity.MortalEntity::isNephil).stream().findFirst().orElse(null);
+            helper.assertTrue(giant != null && flood.giantsBorn == born + 1 && giant.fatherName().startsWith("Shemihazah")
+                    && gens.person(giant.getUUID()) != null && gens.person(giant.getUUID()).nephil, "no giant was born of the Watcher");
+            giant.hurt(level.damageSources().generic(), Float.MAX_VALUE);
+            helper.assertTrue("spirit".equals(gens.person(giant.getUUID()).soul) && flood.giantSpirits == spirits + 1,
+                    "the giant's spirit did not go out to wander the earth");
+            for (var w : watchers) com.josephison.fiatlux.flood.Nephilim.bind(level, w, "");
+            helper.assertTrue(watchers.stream().allMatch(net.minecraft.world.entity.Entity::isRemoved) && flood.watchersBound == bound + watchers.size(),
+                    "the Watchers were not bound");
+            // the generations: Jared begets Enoch; Noah begets Shem, Ham and Japheth; Cain begets Enoch
+            var jared = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at.east(3), at, era, "Jared", true, 60, null, null, null);
+            var noah = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at.east(4), at, era, "Noah", true, 60, null, null, null);
+            var cain = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at.east(5), at, era, "Cain", true, 60, null, null, null);
+            gens.person(jared.getUUID()).line = "seth";
+            gens.person(noah.getUUID()).line = "seth";
+            gens.person(cain.getUUID()).line = "cain";
+            var a = com.josephison.fiatlux.civilization.Genealogy.nextSon(server, jared);
+            var b = com.josephison.fiatlux.civilization.Genealogy.nextSon(server, noah);
+            var c = com.josephison.fiatlux.civilization.Genealogy.nextSon(server, cain);
+            helper.assertTrue(a != null && a.name().equals("Enoch") && b != null && b.name().equals("Shem") && b.line().equals("shem")
+                    && c != null && c.name().equals("Enoch") && c.line().equals("cain"), "the generations were not named: " + a + " " + b + " " + c);
+            for (var m : new net.minecraft.world.entity.Entity[]{woman, jared, noah, cain}) m.discard();
+            forceAround(level, at, false);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The Flood from the word to the bow: the righteous man builds the ark to its measure, his house and
+     * the beasts go in, the waters rise over the land and bear the ark up, all flesh outside dies, the
+     * waters abate, they go forth, and the covenant forbids a second Flood.
+     */
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void theFloodAndTheArk(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        var flood = com.josephison.fiatlux.flood.FloodData.get(server);
+        boolean covenant = flood.covenant;
+        flood.covenant = false;
+        flood.stage = com.josephison.fiatlux.flood.FloodData.Stage.NONE;   // the test world outlives a failed run
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2)).offset(1500, 0, 1500);
+        forceAround(level, at, true);
+        helper.runAfterDelay(10, () -> {
+            BlockPos here = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 4);
+            var era = com.josephison.fiatlux.world.cosmos.MortalEra.AGRARIAN;
+            var noah = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here, here, era, "Noah", true, 50, null, null, null);
+            var wife = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here.east(), here, era, "Naamah", false, 48, null, null, null);
+            var shem = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here.south(), here, era, "Shem", true, 20, noah, wife, null);
+            var wicked = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, here.north(2), here, era, "Lamech", true, 30, null, null, null);
+            noah.addVirtue(20);
+            var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+            // Noah and his wife are married
+            gens.person(noah.getUUID()).spouse = wife.getUUID();
+            var said = com.josephison.fiatlux.flood.Deluge.begin(level, here);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.BUILDING && noah.getUUID().equals(flood.noah)
+                    && flood.family.contains(shem.getUUID()) && !flood.family.contains(wicked.getUUID()), "no one was set to build the ark: " + said.getString());
+            BlockPos home = flood.ark;
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.BOARDING
+                    && level.getBlockState(home.offset(30, 0, 5)).is(net.minecraft.world.level.block.Blocks.DARK_OAK_PLANKS)
+                    && level.getBlockState(home.offset(30, 5, 5)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS), "the ark was not built to its measure");
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            var ark = com.josephison.fiatlux.flood.Ark.bounds(flood.ark);
+            int beasts = level.getEntitiesOfClass(net.minecraft.world.entity.animal.Animal.class, ark).size();
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.RAIN && flood.doorShut && ark.contains(noah.position())
+                    && ark.contains(shem.position()) && beasts >= 70, "the house and the beasts did not go in, or the door was not shut: " + beasts);
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            BlockPos field = here.north(12);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.PREVAIL && flood.waterY == flood.peakY
+                    && level.getFluidState(field.atY(flood.waterY)).is(net.minecraft.tags.FluidTags.WATER), "the waters did not prevail over the land");
+            helper.assertTrue(flood.ark.getY() > home.getY() && noah.isAlive() && !wicked.isAlive(),
+                    "the ark was not borne up, or all flesh did not die: ark " + flood.ark.getY() + " home " + home.getY() + " wicked " + wicked.isAlive());
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.ABATE, "the waters did not begin to abate");
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.DRY && flood.rested
+                    && level.getBlockState(field.atY(flood.peakY)).isAir() && !flood.doorShut, "the waters were not dried up, or the ark did not rest");
+            com.josephison.fiatlux.flood.Deluge.tick(server, true);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.NONE && flood.covenant && noah.isAlive()
+                    && !com.josephison.fiatlux.flood.Ark.bounds(flood.ark).contains(noah.position()) && flood.forced.isEmpty(), "they did not go forth of the ark");
+            var again = com.josephison.fiatlux.flood.Deluge.begin(level, here);
+            helper.assertTrue(flood.stage == com.josephison.fiatlux.flood.FloodData.Stage.NONE && again.getString().contains("bow"), "the covenant did not hold");
+            // put things back
+            for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new net.minecraft.world.phys.AABB(here).inflate(200),
+                    e -> !(e instanceof net.minecraft.world.entity.player.Player))) e.discard();
+            flood.covenant = covenant;
+            flood.rainbowUntil = 0;
+            forceAround(level, at, false);
+            helper.succeed();
+        });
+    }
+
+    /** Keeps the chunks around a place loaded with their entities, as they are around a watching player. */
+    private static void forceAround(net.minecraft.server.level.ServerLevel level, BlockPos at, boolean on) {
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, on);
+    }
 }

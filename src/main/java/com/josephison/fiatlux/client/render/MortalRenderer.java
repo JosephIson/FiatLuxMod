@@ -68,7 +68,7 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
         net.minecraft.client.gui.Font font = getFont();
         var lines = font.split(net.minecraft.network.chat.Component.literal(words), 150);
         poseStack.pushPose();
-        poseStack.translate(0, 1.95 * scale / 0.95 + 0.35 + lines.size() * 0.22, 0);
+        poseStack.translate(0, 1.95 * scale / 0.95 * mortal.getScale() + 0.35 + lines.size() * 0.22, 0);
         poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
         poseStack.scale(0.028f, -0.028f, 0.028f);
         org.joml.Matrix4f m = poseStack.last().pose();
