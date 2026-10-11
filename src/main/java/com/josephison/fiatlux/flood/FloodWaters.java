@@ -126,6 +126,13 @@ public final class FloodWaters {
     public int raise(ServerLevel level, int y, int from, int budget, @Nullable BlockPos ark) {
         int end = Math.min(xs.length, from + budget);
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
+        for (int i = from; i < end; i++) {
+            minX = Math.min(minX, xs[i]);
+            maxX = Math.max(maxX, xs[i]);
+            minZ = Math.min(minZ, zs[i]);
+            maxZ = Math.max(maxZ, zs[i]);
+        }
         for (int i = from; i < end; i++) {
             int x = xs[i], z = zs[i];
             if (!level.hasChunk(x >> 4, z >> 4)) continue;
@@ -141,6 +148,8 @@ public final class FloodWaters {
             }
             if (y < first[i]) first[i] = (short) y;
         }
+        // the waters stand where they are laid: none spills over the edge to spring up where they will not be taken away
+        if (end > from) level.getFluidTicks().clearArea(new net.minecraft.world.level.levelgen.structure.BoundingBox(minX, y, minZ, maxX, y, maxZ));
         return end;
     }
 

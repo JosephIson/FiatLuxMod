@@ -112,6 +112,12 @@ public final class FiatLuxCommand {
                             c.getSource().sendSuccess(() -> com.josephison.fiatlux.flood.Deluge.begin(p.serverLevel(), p.blockPosition()), true);
                             return 1;
                         }))
+                        .then(Commands.literal("bow").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // "I do set my bow in the cloud" (Gen 9:13): a rainbow in the sky ahead of you, to the south
+                            var p = c.getSource().getPlayerOrException();
+                            com.josephison.fiatlux.flood.Deluge.setBow(p.serverLevel(), p.blockPosition().offset(0, 0, -20), 1200);
+                            return 1;
+                        }))
                         .then(Commands.literal("next").requires(FiatLuxCommand::isGod).executes(c -> {
                             // hasten the story to its next stage
                             com.josephison.fiatlux.flood.Deluge.tick(c.getSource().getServer(), true);

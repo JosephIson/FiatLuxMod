@@ -21,7 +21,6 @@ import com.josephison.fiatlux.world.CosmicExpanseSavedData;
 import com.josephison.fiatlux.world.CosmosData;
 import com.josephison.fiatlux.world.cosmos.Planet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -53,7 +52,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -107,7 +105,7 @@ public final class Deluge {
         if (server.getTickCount() % 20 == 13) Nephilim.tick(server, false);
         FloodData d = FloodData.get(server);
         if (d.active()) tick(server, false);
-        else if (d.rainbowUntil > 0 && server.getTickCount() % 10 == 0) rainbow(server, d);
+        else if (d.rainbowUntil > 0 && server.getTickCount() % 40 == 0) rainbow(server, d);
     }
 
     @Nullable
@@ -778,12 +776,13 @@ public final class Deluge {
         }
     }
 
-    /** Tells those on the world where the waters stand, so their surface reaches the horizon beyond the real water. */
+    /** Tells those on the world where the waters stand (so their surface reaches the horizon), and where the bow is. */
     private static void sea(ServerLevel level, FloodData d) {
         boolean wet = d.active() && d.waterY >= d.startY && !d.centres.isEmpty();
-        com.josephison.fiatlux.network.FloodPayload p = wet ? new com.josephison.fiatlux.network.FloodPayload(d.dim, d.waterY,
-                d.centres.stream().mapToLong(BlockPos::asLong).toArray(), d.radii.stream().mapToInt(Integer::intValue).toArray())
-                : com.josephison.fiatlux.network.FloodPayload.NONE;
+        int bow = (int) Math.max(0, d.rainbowUntil - level.getGameTime());
+        com.josephison.fiatlux.network.FloodPayload p = wet || bow > 0 ? new com.josephison.fiatlux.network.FloodPayload(d.dim, wet, d.waterY,
+                d.centres.stream().mapToLong(BlockPos::asLong).toArray(), d.radii.stream().mapToInt(Integer::intValue).toArray(),
+                d.rainbow.asLong(), bow) : com.josephison.fiatlux.network.FloodPayload.NONE;
         for (ServerPlayer pl : level.players()) net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(pl, p);
     }
 
@@ -795,29 +794,25 @@ public final class Deluge {
         }
     }
 
-    /** "I do set my bow in the cloud" (9:13): a rainbow arching over the land beyond the ark. */
+    /** Sets a rainbow in the cloud over a world for a while (the bow stands 90 blocks south of `at`). */
+    public static void setBow(ServerLevel level, BlockPos at, int ticks) {
+        FloodData d = FloodData.get(level.getServer());
+        if (!d.active()) d.dim = level.dimension().location().toString();
+        d.rainbow = at;
+        d.rainbowUntil = level.getGameTime() + ticks;
+        d.setDirty();
+        sea(level, d);
+    }
+
+    /** "I do set my bow in the cloud" (9:13): a rainbow arching over the land beyond the ark, drawn by those who see it. */
     private static void rainbow(MinecraftServer server, FloodData d) {
         ServerLevel level = level(server, d);
         if (level == null) return;
         if (level.getGameTime() > d.rainbowUntil) {
             d.rainbowUntil = 0;
             d.setDirty();
-            return;
         }
-        float[][] colours = {{0.9f, 0.1f, 0.1f}, {1f, 0.5f, 0.05f}, {1f, 0.92f, 0.1f}, {0.15f, 0.8f, 0.2f}, {0.15f, 0.45f, 1f}, {0.3f, 0.15f, 0.75f},
-                {0.6f, 0.2f, 0.85f}};
-        Vec3 c = Vec3.atCenterOf(d.rainbow).add(0, -6, 80);
-        for (ServerPlayer p : level.players()) {
-            if (p.position().distanceToSqr(c) > 400 * 400) continue;
-            for (int band = 0; band < colours.length; band++) {
-                DustParticleOptions dust = new DustParticleOptions(new Vector3f(colours[band][0], colours[band][1], colours[band][2]), 4f);
-                double r = 82 - band * 2.4;
-                for (int k = 0; k <= 72; k++) {
-                    double a = Math.PI * k / 72;
-                    level.sendParticles(p, dust, true, c.x + Math.cos(a) * r, c.y + Math.sin(a) * r, c.z, 1, 0.2, 0.2, 0.2, 0);
-                }
-            }
-        }
+        sea(level, d);
     }
 
     // ================================================================== the Creator's part, and reports

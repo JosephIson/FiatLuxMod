@@ -277,7 +277,8 @@ hung with fruit you can pick.
     cloud. The world begins again from the eight in a new town, Ararat. The covenant holds: there
     is never a second Flood.
   * **Timing and commands**: the year of the Flood runs at `floodDayTicks` per day. `/fiatlux flood`
-    shows where it stands, and `/fiatlux flood next` hastens it to its next stage.
+    shows where it stands, `/fiatlux flood next` hastens it to its next stage, and
+    `/fiatlux flood bow` sets a rainbow in the sky to the south of you.
 * **Judgment and the souls of the dead**: when a mortal dies, its deeds are weighed. The righteous
   rise to Heaven and the wicked go down to the Underworld. Their **souls** then walk those realms in
   their own names and faces: in Heaven made of light, praising and singing; in the Underworld made
