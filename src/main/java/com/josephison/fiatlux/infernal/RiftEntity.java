@@ -33,7 +33,7 @@ import net.minecraft.world.level.Level;
  */
 public class RiftEntity extends Entity {
     /** Ticks a rift stands open, and the ticks it takes to close. */
-    public static final int OPEN = 900, CLOSING = 40;
+    public static final int OPEN = 2400, CLOSING = 40;
     private static final EntityDataAccessor<Integer> AGE = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> CLOSED_AT = SynchedEntityData.defineId(RiftEntity.class, EntityDataSerializers.INT);
     private int spirits = 3;
