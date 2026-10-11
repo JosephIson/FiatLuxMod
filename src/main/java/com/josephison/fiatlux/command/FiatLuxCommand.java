@@ -184,6 +184,25 @@ public final class FiatLuxCommand {
                                     .withStyle(s -> s.withColor(0xE0A060)), true);
                             return 1;
                         })))
+                .then(Commands.literal("wed").requires(FiatLuxCommand::isGod).then(Commands.argument("man", StringArgumentType.word())
+                        .then(Commands.argument("woman", StringArgumentType.word()).executes(c -> {
+                            // betroth two mortals near you; they are wed at the shrine of their town by day
+                            var level = c.getSource().getLevel();
+                            var box = new net.minecraft.world.phys.AABB(BlockPos.containing(c.getSource().getPosition())).inflate(128);
+                            String a = StringArgumentType.getString(c, "man"), b = StringArgumentType.getString(c, "woman");
+                            var man = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class, box,
+                                    x -> x.getName().getString().equalsIgnoreCase(a) && x.spouseId() == null).stream().findFirst().orElse(null);
+                            var woman = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class, box,
+                                    x -> x.getName().getString().equalsIgnoreCase(b) && x.spouseId() == null && x != man).stream().findFirst().orElse(null);
+                            if (man == null || woman == null || man.isMale() == woman.isMale()) {
+                                c.getSource().sendFailure(Component.literal("There are no two unwed of " + a + " and " + b + " near you to be wed."));
+                                return 0;
+                            }
+                            com.josephison.fiatlux.civilization.Weddings.betroth(level, man, woman);
+                            c.getSource().sendSuccess(() -> Component.literal(a + " and " + b + " are betrothed; they will be wed at the shrine.")
+                                    .withStyle(st -> st.withColor(0xF5C8D8)), true);
+                            return 1;
+                        }))))
                 .then(Commands.literal("build").requires(FiatLuxCommand::isGod).executes(c -> {
                     // the builders of the town nearest you build anew for their age, all at once
                     var level = c.getSource().getLevel();

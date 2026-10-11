@@ -321,6 +321,7 @@ hung with fruit you can pick.
     fallen, a contract under the law for the school of reason, an oath to the divine emperor;
   * then the bell rings, petals fall and the guests cheer, and everyone goes down to the hearth to
     **feast** (John 2:1-10). The Chronicle records who was wed, where and before whom.
+  * `/fiatlux wed <man> <woman>` betroths two unwed mortals near you.
 * **Buildings of every age**: each age builds in its own manner, and every house turns its door
   toward the hearth:
   * **hunter-gatherer**: hide tents;
