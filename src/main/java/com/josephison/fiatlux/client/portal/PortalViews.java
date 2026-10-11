@@ -274,7 +274,8 @@ public final class PortalViews {
         private Map<RenderType, VertexBuffer> build(int side) {
             Minecraft mc = Minecraft.getInstance();
             BlockRenderDispatcher blocks = mc.getBlockRenderer();
-            SnapshotLevel level = new SnapshotLevel(snapshot, fog == 0x3A0E0A ? "fiatlux:underworld" : null, 3);
+            SnapshotLevel level = new SnapshotLevel(snapshot, fog == 0x3A0E0A ? "fiatlux:underworld" : null, 10);
+            int drawn = 0;
             Vec3 f = Portals.facing(destYaw);
             // the anchor in snapshot coordinates
             double cx = ax - snapshot.min.getX(), cz = az - snapshot.min.getZ();
@@ -292,6 +293,7 @@ public final class PortalViews {
                 if (along * side > -0.4) continue;
                 BlockState state = snapshot.palette[idx];
                 p.set(x, y, z);
+                drawn++;
                 FluidState fluid = state.getFluidState();
                 if (!fluid.isEmpty()) {
                     RenderType t = ItemBlockRenderTypes.getRenderLayer(fluid);
@@ -313,6 +315,8 @@ public final class PortalViews {
                 }
             }
             ModelBlockRenderer.clearCache();
+            com.josephison.fiatlux.FiatLux.LOGGER.info("Portal view ({} side {}): {} of {} places drawn, layers {}", shape, side, drawn,
+                    snapshot.states.length, builders.keySet());
             Map<RenderType, VertexBuffer> out = new HashMap<>();
             for (var e : builders.entrySet()) {
                 MeshData data = e.getValue().build();
