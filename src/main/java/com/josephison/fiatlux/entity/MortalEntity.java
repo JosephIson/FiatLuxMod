@@ -1501,6 +1501,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
                 Generations.get(sl.getServer()).setDirty();
                 com.josephison.fiatlux.civilization.SoulRealms.onDeath(sl.getServer(), p, saved);   // the soul arrives in its realm
             }
+            // the body is laid in the earth (not those the Flood swept away, nor the Son)
+            if (!com.josephison.fiatlux.son.TheSon.isSon(this) && !(com.josephison.fiatlux.flood.FloodData.get(sl.getServer()).active()
+                    && source.is(net.minecraft.world.damagesource.DamageTypes.DROWN))) {
+                com.josephison.fiatlux.civilization.Graves.bury(sl, this, p, saved);
+            }
             String lineage = fatherName.isEmpty() && motherName.isEmpty() ? "" : ", " + (isMale() ? "son" : "daughter") + " of "
                     + (fatherName.isEmpty() ? motherName : motherName.isEmpty() ? fatherName : fatherName + " and " + motherName);
             CosmosData.get(sl.getServer()).record(sl.getServer(), getName().getString() + lineage, "death",

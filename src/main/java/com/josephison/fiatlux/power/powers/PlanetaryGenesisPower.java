@@ -39,6 +39,9 @@ public class PlanetaryGenesisPower extends AbstractDivinePower {
         Planet p = create(server, ctx.caster().getGameProfile().getName(), type, null);
         if (p == null) return false;
         Fx.send(ctx.level(), FxKind.PLANET_GENESIS, ctx.caster().position().add(0, 1, 0), 10f, p.type.accentColor, 40);
+        if (ctx.level().dimension() == com.josephison.fiatlux.world.FiatLuxDimensions.VOID) {
+            com.josephison.fiatlux.cinema.Films.genesis(ctx.level(), ctx.caster(), p);
+        }
         ctx.caster().displayClientMessage(Component.translatable("message.fiatlux.planet_formed", p.name,
                 Component.translatable("planet_type.fiatlux." + p.type.getSerializedName())), true);
         return true;

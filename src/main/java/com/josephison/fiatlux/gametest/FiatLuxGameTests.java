@@ -898,6 +898,40 @@ public final class FiatLuxGameTests {
     }
 
     /**
+     * The dead are buried: the town gets a walled burying place outside it, and each grave a marker of
+     * its age with the name of the one who lies there; the next grave is dug beside the first.
+     */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void theDeadAreBuried(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1)).offset(-900, 0, -900);
+        forceAround(level, at, true);
+        level.getChunk(at);
+        BlockPos g = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 8);
+        helper.assertTrue(g != null, "no ground");
+        var town = new com.josephison.fiatlux.civilization.Settlement(g);
+        town.name = "Bethany";
+        town.shrine = g.offset(0, 0, -12);
+        var era = com.josephison.fiatlux.world.cosmos.MortalEra.MEDIEVAL;
+        var lazarus = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(2, 0, 2), g, era, "Lazarus", true, 40, null, null, null);
+        var martha = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(-2, 0, 2), g, era, "Martha", false, 38, null, null, null);
+        helper.assertTrue(lazarus != null && martha != null, "no mortals");
+        BlockPos head = com.josephison.fiatlux.civilization.Graves.layToRest(level, lazarus, null, true, era, town, "the earth");
+        BlockPos next = com.josephison.fiatlux.civilization.Graves.layToRest(level, martha, null, true, era, town, "the earth");
+        lazarus.discard();
+        martha.discard();
+        forceAround(level, at, false);
+        helper.assertTrue(town.graveyard != null, "the town has no burying place");
+        helper.assertTrue(head != null && next != null && !head.equals(next), "the dead were not laid in two graves");
+        helper.assertTrue(head.distSqr(town.graveyard) < 12 * 12, "the grave is not in the burying place");
+        helper.assertTrue(level.getBlockState(head).is(net.minecraft.world.level.block.Blocks.MOSSY_STONE_BRICKS), "no headstone at the grave");
+        helper.assertTrue(level.getBlockEntity(head.north()) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign
+                && sign.getFrontText().getMessage(0, false).getString().contains("Lazarus"), "the headstone does not bear his name");
+        helper.assertTrue(town.graves == 2, "the town counted " + town.graves + " graves");
+        helper.succeed();
+    }
+
+    /**
      * A prophet is called and speaks the word; challenges the priest of an idol at an altar, and with no
      * Creator by, the fire falls of itself and the altar is crowned for the true God (1 Kings 18). When
      * the prophet's words are written down they make a written book of several pages.

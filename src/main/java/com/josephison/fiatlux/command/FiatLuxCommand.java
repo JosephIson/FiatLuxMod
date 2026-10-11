@@ -184,6 +184,57 @@ public final class FiatLuxCommand {
                                     .withStyle(s -> s.withColor(0xE0A060)), true);
                             return 1;
                         })))
+                .then(Commands.literal("graves").executes(c -> {
+                    // where the nearest town buries its dead, and who lies there
+                    var p = c.getSource().getPlayerOrException();
+                    var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(p.level().dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    var town = world == null ? null : cos.townNear(world.id, p.blockPosition());
+                    if (town == null) {
+                        c.getSource().sendFailure(Component.literal("There is no town here."));
+                        return 0;
+                    }
+                    String name = town.name.isEmpty() ? world.name : town.name;
+                    if (town.graveyard == null) {
+                        c.getSource().sendSuccess(() -> Component.literal("No one has yet been buried in " + name + ".").withStyle(st -> st.withColor(0xC8C0B0)), false);
+                        return 0;
+                    }
+                    var g = town.graveyard;
+                    c.getSource().sendSuccess(() -> Component.literal("The burying place of " + name + " is at " + g.getX() + " " + g.getY() + " " + g.getZ()
+                            + ": " + town.graves + " graves.").withStyle(st -> st.withColor(0xC8C0B0)), false);
+                    var gens = com.josephison.fiatlux.civilization.Generations.get(c.getSource().getServer());
+                    gens.people.values().stream().filter(x -> x.grave != null && x.grave.distSqr(g) < 80 * 80)
+                            .sorted(java.util.Comparator.comparingLong((com.josephison.fiatlux.civilization.Person x) -> x.died).reversed()).limit(6)
+                            .forEach(x -> c.getSource().sendSuccess(() -> Component.literal("  " + x.name + ", aged " + x.ageAtDeath + " - "
+                                    + x.grave.getX() + " " + x.grave.getY() + " " + x.grave.getZ()).withStyle(st -> st.withColor(0xA89A80)), false));
+                    return town.graves;
+                }))
+                .then(Commands.literal("film").requires(FiatLuxCommand::isGod)
+                        // see the films: a short test of the toolkit, the beginning, or the forming of the newest world
+                        .then(Commands.literal("test").executes(c -> {
+                            com.josephison.fiatlux.cinema.Films.test(c.getSource().getPlayerOrException());
+                            return 1;
+                        }))
+                        .then(Commands.literal("beginning").executes(c -> {
+                            var v = c.getSource().getServer().getLevel(com.josephison.fiatlux.world.FiatLuxDimensions.VOID);
+                            if (v == null || !c.getSource().getPlayerOrException().level().dimension().equals(com.josephison.fiatlux.world.FiatLuxDimensions.VOID)) {
+                                c.getSource().sendFailure(Component.literal("The beginning is seen from the Void."));
+                                return 0;
+                            }
+                            com.josephison.fiatlux.cinema.Films.beginning(v, c.getSource().getTextName());
+                            return 1;
+                        }))
+                        .then(Commands.literal("genesis").executes(c -> {
+                            var player = c.getSource().getPlayerOrException();
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            if (cos.planets.isEmpty() || !player.level().dimension().equals(com.josephison.fiatlux.world.FiatLuxDimensions.VOID)) {
+                                c.getSource().sendFailure(Component.literal("Stand in the Void, where a world has been made."));
+                                return 0;
+                            }
+                            com.josephison.fiatlux.cinema.Films.genesis(player.serverLevel(), player, cos.planets.getLast());
+                            return 1;
+                        })))
                 .then(Commands.literal("son").requires(FiatLuxCommand::isGod).executes(c -> {
                     // "in the fulness of the time": choose the Son's name, his likeness, his town and his mother
                     var player = c.getSource().getPlayerOrException();

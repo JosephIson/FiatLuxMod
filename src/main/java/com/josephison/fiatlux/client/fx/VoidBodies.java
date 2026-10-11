@@ -59,13 +59,16 @@ public final class VoidBodies {
         if (sunGrowth > 0) sphere(solid, m, cam, VoidSpace.SUN, VoidSpace.SUN_RADIUS * sunGrowth, -1, 0, time, 0);
         var planets = ClientCosmos.get().planets();
         Vec3[] pos = new Vec3[planets.size()];
+        float[] grow = new float[planets.size()];
         for (int i = 0; i < planets.size(); i++) {
             SyncCosmosPayload.PlanetView p = planets.get(i);
             pos[i] = VoidSpace.planetPos(p.orbitRadius(), ClientCosmos.phase(p, partial), p.inclination());
-            sphere(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.type(), p.name().hashCode(), time, p.inhabited() ? 1 : 0);
-            if (p.type() == PlanetType.GAS_GIANT.ordinal()) rings(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.color());
+            grow[i] = ClientCosmos.growth(p.name(), partial);   // a world just made swells out of nothing
+            if (grow[i] < 0.01f) continue;
+            sphere(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()) * grow[i], p.type(), p.name().hashCode(), time, p.inhabited() ? 1 : 0);
+            if (p.type() == PlanetType.GAS_GIANT.ordinal()) rings(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()) * grow[i], p.color());
             if (p.type() == PlanetType.EARTHLIKE.ordinal()) {   // its moon, about a quarter its size, circling it
-                double pr = VoidSpace.planetRadius(p.size());
+                double pr = VoidSpace.planetRadius(p.size()) * grow[i];
                 double a = time * 0.004 + (p.name().hashCode() & 1023) / 163.0;
                 Vec3 moon = pos[i].add(Math.cos(a) * pr * 3.4, Math.sin(a * 0.5) * pr * 0.5, Math.sin(a) * pr * 3.4);
                 sphere(solid, m, cam, moon, pr * 0.27, PlanetType.BARREN_MOON.ordinal(), p.name().hashCode() + 1, time, 0);
@@ -86,8 +89,9 @@ public final class VoidBodies {
         }
         for (int i = 0; i < planets.size(); i++) {
             SyncCosmosPayload.PlanetView p = planets.get(i);
-            float r = (float) VoidSpace.planetRadius(p.size());
+            float r = (float) VoidSpace.planetRadius(p.size()) * grow[i];
             orbit(glow, m, p.orbitRadius(), p.inclination(), p.color());
+            if (grow[i] < 0.01f) continue;
             Vec3 c = impostor(cam, pos[i], r);
             float rr = (float) (r * scale(cam, pos[i]));
             halo(glow, m, c, left, up, rr, 0.97f, 1.22f, p.atmosphere() & 0xFFFFFF, 0.7f);

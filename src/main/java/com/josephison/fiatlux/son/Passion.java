@@ -23,6 +23,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.Donkey;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -346,6 +347,7 @@ final class Passion {
                 if (thief != null) Justice.crucify(level, thief, d.capital, Justice.charge(thief, com.josephison.fiatlux.civilization.Polity.Crime.THEFT),
                         com.josephison.fiatlux.civilization.Polity.Crime.THEFT, now + (long) TheSon.secs(150));
             }
+            if (at != null) SonFilms.calvary(level, d, son, at);
             TheSon.narrate(level, at, "And when they were come to the place, which is called Calvary, there they crucified him, and the malefactors, "
                     + "one on the right hand, and the other on the left.", "Luke 23:33");
             CosmosData.get(level.getServer()).record(level.getServer(), d.name, "crucifixion", "was crucified outside " + d.capitalName
@@ -381,7 +383,7 @@ final class Passion {
         if (d.step == 8 && t > TheSon.secs(6 + 7 * 11 + 6)) {
             // taken down, and laid in a tomb hewn out of a rock (Luke 23:53)
             son.setNoGravity(false);
-            BlockPos tomb = tomb(level, d.capital);
+            BlockPos tomb = tomb(level, d, d.capital);
             d.tomb = tomb;
             son.teleportTo(tomb.getX() + 0.5, tomb.getY(), tomb.getZ() + 0.5);
             son.beginAct(MortalEntity.SLEEP, Integer.MAX_VALUE);
@@ -424,13 +426,26 @@ final class Passion {
                 + "and the earth did quake, and the veil of the temple was rent in twain.");
     }
 
-    /** A tomb hewn out of a rock in a hillside near the city: a small stone chamber with its door to the east. */
-    private static BlockPos tomb(ServerLevel level, BlockPos city) {
-        BlockPos g = MortalPopulation.safeGround(level, city.getX() - 30, city.getZ() - 22, 10);
-        if (g == null) g = city.offset(-24, 0, -18);
+    /**
+     * A tomb hewn out of a rock (Luke 23:53): carved into a hillside near the city where there is one, its
+     * door to the east; where the land is flat, a chamber of stone raised on the bare earth. The story's
+     * own tomb is reused if it has one already.
+     */
+    private static BlockPos tomb(ServerLevel level, SonData d, BlockPos city) {
+        if (d.tomb != null) return d.tomb;
+        BlockPos door = com.josephison.fiatlux.civilization.Ground.hillside(level, city, 14, 64, 6, 5, 1);
+        d.tombHewn = door != null;
+        BlockPos g;
+        if (door != null) {
+            g = door.offset(-3, 0, 0);
+        } else {
+            g = com.josephison.fiatlux.civilization.Ground.naturalGround(level, city.getX() - 30, city.getZ() - 22, 24);
+            if (g == null) g = city.offset(-24, 0, -18);
+        }
         for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) for (int dy = -1; dy <= 4; dy++) {
             boolean shell = Math.abs(dx) == 3 || Math.abs(dz) == 3 || dy == -1 || dy == 4;
-            level.setBlock(g.offset(dx, dy, dz), shell ? (dy == 4 ? Blocks.MOSSY_COBBLESTONE : Blocks.STONE).defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+            BlockState s = shell ? (dy == 4 && !d.tombHewn ? Blocks.MOSSY_COBBLESTONE : Blocks.STONE).defaultBlockState() : Blocks.AIR.defaultBlockState();
+            level.setBlock(g.offset(dx, dy, dz), s, 3);
         }
         // the stone bench he is laid on
         level.setBlock(g.offset(-1, 0, 0), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 3);
@@ -438,6 +453,26 @@ final class Passion {
         // the doorway, to the east
         for (int dz = -1; dz <= 1; dz++) for (int dy = 0; dy <= 2; dy++) level.setBlock(g.offset(3, dy, dz), Blocks.AIR.defaultBlockState(), 3);
         return g.offset(-1, 1, 0);
+    }
+
+    /** Takes the tomb away again (when the story is set aside): a hewn tomb is filled back into the rock, a raised one taken down. */
+    static void unbuild(ServerLevel level, BlockPos tomb, boolean hewn) {
+        BlockPos g = tomb.offset(1, -1, 0);
+        if (hewn) {
+            for (int dx = -2; dx <= 3; dx++) for (int dz = -2; dz <= 2; dz++) for (int dy = 0; dy <= 3; dy++) {
+                if (dx == 3 && (Math.abs(dz) > 1 || dy > 2)) continue;
+                level.setBlock(g.offset(dx, dy, dz), Blocks.STONE.defaultBlockState(), 3);
+            }
+        } else {
+            for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) for (int dy = -1; dy <= 4; dy++) {
+                level.setBlock(g.offset(dx, dy, dz), (dy == -1 ? Blocks.GRASS_BLOCK : Blocks.AIR).defaultBlockState(), 3);
+            }
+        }
+        // the great stone, if it was rolled away
+        for (int dz = -1; dz <= 1; dz++) for (int dy = 0; dy <= 2; dy++) {
+            BlockPos beside = g.offset(4, dy, dz + 3);
+            if (level.getBlockState(beside).is(Blocks.POLISHED_ANDESITE)) level.setBlock(beside, Blocks.AIR.defaultBlockState(), 3);
+        }
     }
 
     /** The great stone at the door: rolled to (true) or rolled away (false). */
@@ -474,7 +509,10 @@ final class Passion {
                     + "and be ye lift up, ye everlasting doors.", "1 Peter 3:19, Psalm 24:7");
             CosmosData.get(level.getServer()).record(level.getServer(), d.name, "harrowing", "went down and preached unto the spirits in prison, and "
                     + freed + " of them were led up out of the Underworld into Heaven.");
-        } else if (d.step == 2 && t > TheSon.secs(75)) {   // "the third day"
+        } else if (TheSon.at(d, t, 2, Math.max(11, 75 - SonFilms.tombLeadSeconds()))) {
+            // the film of the empty tomb begins at dawn, a little before the stone is rolled away
+            if (son != null) SonFilms.risen(level, d, son, tomb);
+        } else if (d.step == 3 && t > TheSon.secs(75)) {   // "the third day"
             d.to(SonData.Stage.RISEN, now);
         }
         if (son != null && now % 100 == 0) level.sendParticles(ParticleTypes.WHITE_ASH, tomb.getX() + 0.5, tomb.getY() + 1, tomb.getZ() + 0.5, 4, 1, 1, 1, 0);

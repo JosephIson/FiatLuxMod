@@ -300,6 +300,7 @@ public final class TheSon {
         Component line = Component.literal(text).withStyle(s -> s.withColor(0xF5D77A).withItalic(true))
                 .append(Component.literal("  (" + ref + ")").withStyle(s -> s.withColor(0x9A8A6A).withItalic(false)));
         for (ServerPlayer p : level.players()) if (near == null || p.blockPosition().distSqr(near) < 200 * 200) p.sendSystemMessage(line);
+        com.josephison.fiatlux.cinema.Cinema.narrate(level, text, ref, 0xFFF5E6B8);
     }
 
     /** One who has no voice of its own in the world (an angel, the Devil, the Creator) speaks, in chat. */
@@ -307,6 +308,7 @@ public final class TheSon {
         Component line = Component.literal(who + ": ").withStyle(s -> s.withColor(color).withBold(true))
                 .append(Component.literal(words).withStyle(s -> s.withColor(0xF5E6B8).withItalic(true).withBold(false)));
         for (ServerPlayer p : level.players()) if (near == null || p.blockPosition().distSqr(near) < 200 * 200) p.sendSystemMessage(line);
+        com.josephison.fiatlux.cinema.Cinema.narrate(level, words, who, 0xFFF5E6B8);
     }
 
     /** The Son speaks: in his bubble, and in full to those near. */
@@ -316,6 +318,7 @@ public final class TheSon {
         Component line = Component.literal(d.name + ": ").withStyle(s -> s.withColor(0xFFE9A8).withBold(true))
                 .append(Component.literal(words).withStyle(s -> s.withColor(0xFFF6E0).withBold(false)));
         for (ServerPlayer p : level.players()) if (p.distanceToSqr(son) < 64 * 64) p.sendSystemMessage(line);
+        com.josephison.fiatlux.cinema.Cinema.narrate(level, words, d.name, 0xFFFFF6E0);
         if (record) d.saying(words);
     }
 
@@ -502,11 +505,15 @@ public final class TheSon {
                 son.discard();
             }
             if (d.town != null) dismiss(level, d.town);
-            if (d.tomb != null) Passion.seal(level, d.tomb, false);
+            // the tomb and the cross are taken away with the story
+            if (d.tomb != null) Passion.unbuild(level, d.tomb, d.tombHewn);
+            if (d.cross != null) com.josephison.fiatlux.civilization.Justice.takeDown(level, d.cross);
         }
         String name = d.name;
         d.to(SonData.Stage.NONE, 0);
         d.son = null;
+        d.tomb = d.cross = null;
+        d.tombHewn = false;
         awaitingVoice = "";
         return "The story of " + name + " is set aside; /fiatlux son to send the Son again.";
     }

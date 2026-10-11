@@ -499,7 +499,10 @@ final class Ministry {
         if (dead == null) return null;
         MortalEntity m = ModEntities.MORTAL.get().create(level);
         if (m == null) return null;
-        BlockPos at = MortalPopulation.safeGround(level, son.getBlockX() + 3, son.getBlockZ() + 2, 4);
+        // "Lazarus, come forth": out of their grave, if they lie in one here
+        BlockPos at = com.josephison.fiatlux.civilization.Graves.open(level, dead);
+        if (at != null) TheSon.go(level, son, at.north(2), 2, true);
+        else at = MortalPopulation.safeGround(level, son.getBlockX() + 3, son.getBlockZ() + 2, 4);
         if (at == null) return null;
         m.setUUID(dead.id);
         Planet world = TheSon.world(level);

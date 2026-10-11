@@ -41,6 +41,13 @@ public final class ModNetwork {
                 (p, ctx) -> com.josephison.fiatlux.client.portal.PortalViews.receive(p));
         r.playToClient(FloodPayload.TYPE, FloodPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.fx.FloodSea.update(p));
+        r.playToClient(com.josephison.fiatlux.cinema.CinemaPayloads.Play.TYPE, com.josephison.fiatlux.cinema.CinemaPayloads.Play.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.cinema.FilmPlayer.play(p.film()));
+        r.playToClient(com.josephison.fiatlux.cinema.CinemaPayloads.Live.TYPE, com.josephison.fiatlux.cinema.CinemaPayloads.Live.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.cinema.FilmPlayer.live(p.cue()));
+        r.playToServer(com.josephison.fiatlux.cinema.CinemaPayloads.Watch.TYPE, com.josephison.fiatlux.cinema.CinemaPayloads.Watch.STREAM_CODEC, (p, ctx) -> {
+            if (ctx.player() instanceof ServerPlayer sp) com.josephison.fiatlux.cinema.Cinema.onWatch(sp, p);
+        });
         r.playToClient(SonPayloads.Setup.TYPE, SonPayloads.Setup.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onSonSetup(p));
         r.playToServer(SonPayloads.Choose.TYPE, SonPayloads.Choose.STREAM_CODEC, (p, ctx) -> {

@@ -155,7 +155,8 @@ public final class LineagePayloads {
         if (seen.contains(p.id)) return;
         seen.add(p.id);
         int age = p.living() ? (int) ((now - p.born) / Math.max(1, year)) : p.ageAtDeath;
-        String info = (p.living() ? "aged " + age : "died aged " + age) + (p.profession.isEmpty() ? "" : ", " + p.profession) + " - " + p.world;
+        String info = (p.living() ? "aged " + age : "died aged " + age) + (p.profession.isEmpty() ? "" : ", " + p.profession) + " - " + p.world
+                + (p.living() || p.buried.isEmpty() ? "" : "; buried " + p.buried);
         Religion r = g.religion(p.religion);
         nodes.add(new Node(p.id, p.name, p.male, gen, info, r == null ? "" : r.name, p.soul,
                 Optional.ofNullable(p.father), Optional.ofNullable(p.mother), focus));

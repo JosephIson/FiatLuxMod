@@ -54,6 +54,8 @@ public class FiatLuxClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> com.josephison.fiatlux.client.fx.FloodSea.update(
                 com.josephison.fiatlux.network.FloodPayload.NONE));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> FxManager.clear());
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> ClientCosmos.reset());
+        com.josephison.fiatlux.client.cinema.FilmPlayer.register();
     }
 
     private static void renderers(EntityRenderersEvent.RegisterRenderers e) {
@@ -104,6 +106,7 @@ public class FiatLuxClient {
     private static void guiLayers(RegisterGuiLayersEvent e) {
         e.registerAboveAll(FiatLux.id("fx_overlay"), FxOverlay::render);
         e.registerAboveAll(FiatLux.id("divinity_hud"), DivinityHud::render);
+        e.registerAboveAll(FiatLux.id("cinema"), com.josephison.fiatlux.client.cinema.FilmOverlay::render);
     }
 
     private static void skies(RegisterDimensionSpecialEffectsEvent e) {

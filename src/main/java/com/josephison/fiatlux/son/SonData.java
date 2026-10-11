@@ -55,6 +55,8 @@ public final class SonData extends SavedData {
     public final List<String> deeds = new ArrayList<>();
     public int miracles, parables, raised, fed;
     @Nullable public BlockPos cross, tomb, capital;
+    /** Whether the tomb was hewn into a hillside (rather than raised on flat ground). */
+    public boolean tombHewn;
     public String capitalName = "";
     public long lastSign;
     /** His going about: the town he is in, when he came, when he last taught and last worked a sign. */
@@ -129,6 +131,7 @@ public final class SonData extends SavedData {
         d.fed = t.getInt("fed");
         if (t.contains("cross")) d.cross = BlockPos.of(t.getLong("cross"));
         if (t.contains("tomb")) d.tomb = BlockPos.of(t.getLong("tomb"));
+        d.tombHewn = t.getBoolean("tomb_hewn");
         if (t.contains("capital")) d.capital = BlockPos.of(t.getLong("capital"));
         d.capitalName = t.getString("capital_name");
         d.lastSign = t.getLong("last_sign");
@@ -182,6 +185,7 @@ public final class SonData extends SavedData {
         t.putInt("fed", fed);
         if (cross != null) t.putLong("cross", cross.asLong());
         if (tomb != null) t.putLong("tomb", tomb.asLong());
+        t.putBoolean("tomb_hewn", tombHewn);
         if (capital != null) t.putLong("capital", capital.asLong());
         t.putString("capital_name", capitalName);
         t.putLong("last_sign", lastSign);

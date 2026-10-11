@@ -145,6 +145,7 @@ final class Glory {
             TheSon.speak(level, son, d, "And, lo, I am with you alway, even unto the end of the world.", true);
         } else if (TheSon.at(d, t, 3, 20)) {
             Motion.ascend(son, 300);
+            SonFilms.ascension(level, d, son);
             Fx.send(level, FxKind.CELESTIAL_PILLAR, son.position(), 80f, 0xFFFFF4D6, 300);
             for (MortalEntity m : TheSon.disciples(level, d)) {
                 m.getLookControl().setLookAt(son.getX(), son.getY() + 20, son.getZ());
@@ -186,7 +187,11 @@ final class Glory {
         for (int dx = -40; dx <= 40; dx += 4) for (int dz = -40; dz <= 40; dz += 4) {
             int x = around.getX() + dx, z = around.getZ() + dz;
             int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            if (y > top && level.getFluidState(new BlockPos(x, y - 1, z)).isEmpty()) {
+            var ground = level.getBlockState(new BlockPos(x, y - 1, z));
+            boolean natural = ground.is(net.minecraft.tags.BlockTags.DIRT) || ground.is(net.minecraft.tags.BlockTags.SAND)
+                    || ground.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD) || ground.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+            // a hill of the earth itself, not a roof of men's making (or the Ark)
+            if (y > top && natural && level.getFluidState(new BlockPos(x, y - 1, z)).isEmpty()) {
                 top = y;
                 best = new BlockPos(x, y, z);
             }

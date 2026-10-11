@@ -38,6 +38,9 @@ public final class Person {
     /** The unclean spirit in this one now ("" if none), and whether an angel has anointed it to cast them out (Mark 16:17). */
     public String possessed = "";
     public boolean exorcist;
+    /** Where they were laid ("in the burying place of Ararat"), and the head of their grave. */
+    public String buried = "";
+    @Nullable public net.minecraft.core.BlockPos grave;
 
     public Person(UUID id, String name, boolean male, String world, long born, @Nullable UUID father, @Nullable UUID mother) {
         this.id = id;
@@ -76,6 +79,8 @@ public final class Person {
         if (translated) t.putBoolean("translated", true);
         if (!possessed.isEmpty()) t.putString("possessed", possessed);
         if (exorcist) t.putBoolean("exorcist", true);
+        if (!buried.isEmpty()) t.putString("buried", buried);
+        if (grave != null) t.putLong("grave", grave.asLong());
         return t;
     }
 
@@ -96,6 +101,8 @@ public final class Person {
         p.translated = t.getBoolean("translated");
         p.possessed = t.getString("possessed");
         p.exorcist = t.getBoolean("exorcist");
+        p.buried = t.getString("buried");
+        if (t.contains("grave")) p.grave = net.minecraft.core.BlockPos.of(t.getLong("grave"));
         return p;
     }
 }

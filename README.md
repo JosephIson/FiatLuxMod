@@ -461,6 +461,52 @@ hung with fruit you can pick.
   join them. Use a soul to hear who it was and where its kin are now. Sneak-use a soul in the
   Underworld to **redeem** it into Heaven. Every death is written in the Chronicle and in the Book
   of Generations, and the widowed mourn.
+* **Graves** (Genesis 3:19): the dead are buried in their town's burying place, a levelled yard outside
+  the town (westward where the ground allows), clear of its houses, temple and field.
+  * **Walls**: each yard is walled as its age walls such places: none for hunter-gatherers, an oak fence,
+    a stone wall, a mossy wall, iron railings, then glass. The gate faces the town. A town has up to
+    four yards of 24 graves; after that the dead lie unmarked.
+  * **Markers**: every grave gets a mound and a marker of its age: a heap of stones, a standing stone,
+    a carved slab with its lid, a headstone (topped as a cross for the Son's church), a polished stone
+    with flowers, then quartz.
+  * **Inscriptions**: once men write, a sign bears the name, the years and an epitaph. Rulers,
+    prophets and the first parents get taller, raised tombs.
+  * **Funerals**: family and neighbours gather at the grave, bow, and the eldest says the words
+    ("Dust thou art...", or for the church "I am the resurrection, and the life").
+  * **Lazarus**: when the Son raises someone, their grave is opened and they come out of it.
+  * **Where they lie**: the Book of Generations says where each person is buried.
+    `/fiatlux graves` shows your nearest town's burying place and who was buried there last.
+    Turn graves off with `graves` in the common config.
+
+## Films
+Cinematics for the great moments, built with a reusable toolkit (`cinema/Film`, `cinema/Cinema`,
+`client/cinema/FilmPlayer`, `client/cinema/FilmOverlay`).
+* **Shots**: camera moves between points, cranes, pans and orbits. A shot can follow a creature (the
+  Son as he rises) or a world along its orbit, with eased motion and its own field of view and roll.
+  A camera that would land inside a hill or a wall is pulled out along its line of sight.
+* **Cues**: letterbox bars, fades, a colour grade (the darkness at the sixth hour), title cards,
+  corner captions, narration and speech as subtitles, camera shake, flashes, sounds and music that
+  fades in and out.
+* **The world speaks**: whatever the story narrates or says while a film plays becomes its subtitles.
+* **Watching**: the HUD, hand and your own body are hidden and you stand still. The server holds you
+  near the scene, unseen and unhurt, and returns you to where you stood when the film ends. Hold
+  Jump to skip a film.
+* **The films**:
+  * **The Beginning**: casting Fiat Lux into the formless Void. Darkness on the face of the deep,
+    "And God said," then *Let There Be Light*. The Big Bang waits for that moment, and the camera
+    rises toward the forming sun as the stars and galaxies come out.
+  * **The forming of a world**: Planetary Genesis in the Void. The camera flies to the new world as it
+    swells out of nothing, with its name and a verse for its kind.
+  * **Golgotha**: a shot for each of the seven last words, the darkness, the earthquake, the veil of
+    the temple and the centurion, ending on *It Is Finished*.
+  * **The empty tomb**: at dawn, the earthquake and the stone rolled away, then *He Is Risen*.
+  * **The ascension**: he is taken up into the cloud, and the screen turns to white.
+* **Config**: `cinematics` and `cinematicRange` in the common config, and `cinematics` in the
+  client config so each player can switch films off for themselves.
+* **Previews**: `/fiatlux film test` plays a short film anywhere, and in the Void
+  `/fiatlux film beginning` and `/fiatlux film genesis` replay those films.
+* **The tomb**: the Son's tomb is hewn into a hillside near the city where there is one, with its
+  door to the east. `/fiatlux son reset` fills it back in, or takes it down, along with the cross.
 
 ## Visual effects
 * **Particles**: additive-blended sparks, an 8-frame animated holy fire, drifting motes,

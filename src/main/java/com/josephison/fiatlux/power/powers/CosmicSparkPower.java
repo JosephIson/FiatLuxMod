@@ -9,6 +9,7 @@ import com.josephison.fiatlux.world.CosmicExpanseSavedData;
 import com.josephison.fiatlux.world.CosmosData;
 import com.josephison.fiatlux.world.WorldTicker;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -22,9 +23,31 @@ public class CosmicSparkPower extends AbstractDivinePower {
         super(200f, 0, 0xFFFFFFFF);
     }
 
+    /** Until when (server tick) the first light is waiting on the film of the beginning. */
+    private static int pendingUntil = -1;
+
     @Override
     public boolean cast(PowerContext ctx) {
-        return ignite(ctx.level().getServer(), ctx.caster().getGameProfile().getName());
+        return beginning(ctx.level().getServer(), ctx.caster().getGameProfile().getName());
+    }
+
+    /**
+     * The first Big Bang, with its film for all in the Void: darkness on the face of the deep, the word,
+     * and then the light (the Big Bang itself waits for that moment of the film). Later ones are at once.
+     */
+    public static boolean beginning(MinecraftServer server, String actor) {
+        if (CosmicExpanseSavedData.get(server).hasBigBang()) return ignite(server, actor);
+        if (server.getTickCount() < pendingUntil) return false;   // the word is already being spoken
+        ServerLevel v = server.getLevel(com.josephison.fiatlux.world.FiatLuxDimensions.VOID);
+        if (v != null && com.josephison.fiatlux.cinema.Films.beginning(v, actor)) {
+            pendingUntil = server.getTickCount() + com.josephison.fiatlux.cinema.Films.LET_THERE_BE_LIGHT + 40;
+            com.josephison.fiatlux.cinema.Cinema.later(com.josephison.fiatlux.cinema.Films.LET_THERE_BE_LIGHT, () -> {
+                pendingUntil = -1;
+                if (!CosmicExpanseSavedData.get(server).hasBigBang()) ignite(server, actor);
+            });
+            return true;
+        }
+        return ignite(server, actor);
     }
 
     /** Shared by the power and /fiatlux event bigbang. */

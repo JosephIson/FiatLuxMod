@@ -41,6 +41,10 @@ public final class Settlement {
     public int templeStyle;
     /** 1 once the town is laid out with room for houses of every age. */
     public int layout;
+    /** The burying place outside the town (the centre of its first yard), once someone has died there. */
+    @org.jetbrains.annotations.Nullable public BlockPos graveyard;
+    /** Graves dug in it so far. */
+    public int graves;
 
     public Settlement(BlockPos centre) {
         this.centre = centre;
@@ -74,6 +78,11 @@ public final class Settlement {
     private boolean clashes(int dx, int dz) {
         int sx = shrine.getX() - centre.getX(), sz = shrine.getZ() - centre.getZ();
         if (Math.abs(dx - sx) <= 13 && dz - sz >= -15 && dz - sz <= 13) return true;   // the temple, whatever its size
+        if (graveyard != null) {   // the burying place and the yards that may be added beyond it
+            int gx = graveyard.getX() - centre.getX(), gz = graveyard.getZ() - centre.getZ();
+            int ux = Math.abs(gx) >= Math.abs(gz) ? Integer.signum(gx) : 0, uz = ux == 0 ? Integer.signum(gz) : 0;
+            for (int k = 0; k < 4; k++) if (Math.abs(dx - gx - ux * 15 * k) <= 14 && Math.abs(dz - gz - uz * 15 * k) <= 14) return true;
+        }
         int fx = field != null ? field.getX() - centre.getX() : 0, fz = field != null ? field.getZ() - centre.getZ() : 18;
         return Math.abs(dx - fx) <= 10 && Math.abs(dz - fz) <= 10;   // the field
     }
@@ -99,6 +108,8 @@ public final class Settlement {
         t.putIntArray("house_styles", houseStyles.stream().mapToInt(Integer::intValue).toArray());
         t.putInt("temple_style", templeStyle);
         t.putInt("layout", layout);
+        if (graveyard != null) t.putLong("graveyard", graveyard.asLong());
+        t.putInt("graves", graves);
         return t;
     }
 
@@ -106,6 +117,8 @@ public final class Settlement {
         Settlement s = new Settlement(BlockPos.of(t.getLong("centre")));
         if (t.contains("shrine")) s.shrine = BlockPos.of(t.getLong("shrine"));
         if (t.contains("field")) s.field = BlockPos.of(t.getLong("field"));
+        if (t.contains("graveyard")) s.graveyard = BlockPos.of(t.getLong("graveyard"));
+        s.graves = t.getInt("graves");
         for (long l : t.getLongArray("houses")) s.houses.add(BlockPos.of(l));
         for (long l : t.getLongArray("beds")) s.beds.add(BlockPos.of(l));
         s.food = t.contains("food") ? t.getInt("food") : 30;

@@ -56,6 +56,9 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.BooleanValue prophetsActAlone;
         public final ModConfigSpec.DoubleValue sonPace;
         public final ModConfigSpec.IntValue sonMinistrySeconds;
+        public final ModConfigSpec.BooleanValue cinematics;
+        public final ModConfigSpec.IntValue cinematicRange;
+        public final ModConfigSpec.BooleanValue graves;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -193,6 +196,16 @@ public final class FiatLuxConfig {
                     .defineInRange("sonMinistrySeconds", 600, 60, 36000);
             b.pop();
 
+            b.comment("Films: the great moments (the beginning, the forming of worlds, the cross, the empty tomb, the ascension) as cinematics").push("cinema");
+            cinematics = b.comment("Play the films. Each player can also turn them off for themselves in the client config.").define("cinematics", true);
+            cinematicRange = b.comment("Players within this many blocks of a great moment see its film.").defineInRange("cinematicRange", 160, 16, 4096);
+            b.pop();
+
+            b.comment("The dead").push("graves");
+            graves = b.comment("Mortals who die are buried in their town's burying place, with a marker of their age and their name on it.")
+                    .define("graves", true);
+            b.pop();
+
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");
             rebellionEnabled = b.define("rebellionEnabled", true);
             rebellionCorruptionThreshold = b.comment("World corruption (0..1) above which rebellion may break out.")
@@ -239,6 +252,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue hudX;
         public final ModConfigSpec.IntValue hudY;
         public final ModConfigSpec.BooleanValue hostAuras;
+        public final ModConfigSpec.BooleanValue cinematics;
 
         Client(ModConfigSpec.Builder b) {
             b.comment("Visual effects").push("fx");
@@ -252,6 +266,9 @@ public final class FiatLuxConfig {
             heavenSkybox = b.define("heavenSkybox", true);
             godRayCount = b.defineInRange("godRayCount", 24, 0, 128);
             heavenVignette = b.define("heavenVignette", true);
+            b.pop();
+            b.comment("Films").push("cinema");
+            cinematics = b.comment("Watch the films of the great moments (hold Jump to skip one).").define("cinematics", true);
             b.pop();
             b.comment("HUD").push("hud");
             showHud = b.define("showHud", true);

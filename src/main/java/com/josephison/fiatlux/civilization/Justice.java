@@ -312,6 +312,16 @@ public final class Justice {
         return null;
     }
 
+    /** Takes down the cross (or stocks) standing at a place, and any left empty beside it. */
+    public static void takeDown(ServerLevel level, BlockPos at) {
+        for (PunishmentPropEntity prop : level.getEntitiesOfClass(PunishmentPropEntity.class, new AABB(at).inflate(8, 4, 8))) {
+            BlockPos g = prop.blockPosition();
+            boolean occupied = !level.getEntitiesOfClass(MortalEntity.class, new AABB(g).inflate(0.8, 4, 0.8),
+                    m -> m.sentence() == Sentence.CROSS || m.sentence() == Sentence.STOCKS).isEmpty();
+            if (!occupied) prop.discard();
+        }
+    }
+
     /** The prop at a place (raised if missing), with the charge written on it. */
     private static BlockPos prop(ServerLevel level, BlockPos g, int kind, String charge) {
         PunishmentPropEntity prop = level.getEntitiesOfClass(PunishmentPropEntity.class, new AABB(g).inflate(0.6, 2, 0.6),
