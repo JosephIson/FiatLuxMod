@@ -91,12 +91,16 @@ public class GenerationsScreen extends Screen {
         boxes.clear();
         boolean labels = pageW > 380;
         int treeL = labels ? left + 22 + font.width("Grandchildren") + 8 : left + 14, treeR = pageR - 12, treeW = treeR - treeL;
-        int rowTop = top + 54, rowH = Math.max(24, (bottom - 28 - rowTop) / 5);
         Map<Integer, List<LineagePayloads.Node>> rows = new HashMap<>();
         for (LineagePayloads.Node n : view.nodes()) rows.computeIfAbsent(n.gen(), k -> new ArrayList<>()).add(n);
-        int boxH = Math.max(16, Math.min(34, rowH - 6));
-        for (int gen = -2; gen <= 2; gen++) {
-            int y = rowTop + (gen + 2) * rowH;
+        // only the generations there are take up the page
+        int minGen = rows.keySet().stream().min(Integer::compare).orElse(0), maxGen = rows.keySet().stream().max(Integer::compare).orElse(0);
+        int count = maxGen - minGen + 1;
+        int rowTop = top + 54, rowH = Math.max(24, Math.min(70, (bottom - 28 - rowTop) / count));
+        rowTop += Math.max(0, (bottom - 28 - top - 54 - rowH * count) / 2);
+        int boxH = Math.max(16, Math.min(34, rowH - 10));
+        for (int gen = minGen; gen <= maxGen; gen++) {
+            int y = rowTop + (gen - minGen) * rowH;
             String label = ROWS[gen + 2];
             if (!label.isEmpty() && labels) g.drawString(font, Component.literal(label).withStyle(s -> s.withItalic(true)), left + 14, y + boxH / 2 - 4, INK_FAINT, false);
             Ui.hGradient(g, left + 14, y + rowH - 4, treeR, y + rowH - 3, 0x7A5228, 0x18, 0x00);
