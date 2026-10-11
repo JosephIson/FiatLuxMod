@@ -805,6 +805,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             Fx.send(level, FxKind.BLESSING, position(), 2.2f, 0xFFFFF0C0, 16);   // the prayer rises
             Settlement s = settlement();
             if (s != null && random.nextInt(4) == 0) maybePetition(level, s, faith);
+            com.josephison.fiatlux.prophecy.Scripture.onPrayer(level, this, faith);
         } else if (faith != null && (faith.deity == Religion.Deity.IDOL || faith.deity == Religion.Deity.FALLEN)) {
             addSin(1);
             CosmicExpanseSavedData.get(level.getServer()).corruption += 0.0005;
@@ -869,6 +870,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             var polity = com.josephison.fiatlux.civilization.Justice.polityOf(level, this);
             String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale())
                     : com.josephison.fiatlux.civilization.Churches.titleOf(level, this);
+            if (t.isEmpty()) t = com.josephison.fiatlux.prophecy.Prophets.titleOf(level, this);
             if (!t.equals(title())) entityData.set(DATA_TITLE, t);
         }
         if (isNephil() && tickCount % 100 == 3) growAsGiant();
@@ -878,6 +880,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         nephilTick(level, year);
         possessionTick(level, year);
         exorcistTick(level);
+        com.josephison.fiatlux.prophecy.Prophets.tick(level, this);
         faithTick(level, year);
         leaveTick(level, year);
         familyTick(level, year);
@@ -1432,6 +1435,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             super.die(source);
             return;
         }
+        if (level() instanceof ServerLevel sl && !isRemoved() && !dead) com.josephison.fiatlux.prophecy.Prophets.onDeath(sl, this, source);
         if (level() instanceof ServerLevel sl && !isRemoved() && !dead) {
             Alignment a = Divinity.alignment(this);
             boolean saved = a.sin() <= a.virtue() + 3;
@@ -1518,6 +1522,12 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
                     + ". Sneak-use to cast it out.").withStyle(st -> st.withColor(0xC04040)));
         } else if (exorcist) {
             player.sendSystemMessage(Component.literal("Anointed by the " + anointedBy + " to cast out unclean spirits.").withStyle(st -> st.withColor(0xF5D77A)));
+        }
+        var prophet = com.josephison.fiatlux.prophecy.Prophets.of(player.getServer(), getUUID());
+        if (prophet != null) {
+            player.sendSystemMessage(Component.literal((prophet.false_ ? "A false prophet of " : "A prophet of ") + prophet.calledBy + ": "
+                    + prophet.oracles.size() + " oracles spoken, " + prophet.wonders + " wonders worked"
+                    + (prophet.disciple != null ? ", followed by " + prophet.discipleName : "") + ".").withStyle(st -> st.withColor(prophet.false_ ? 0xC08070 : 0xF5D77A)));
         }
         if (sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE) {
             player.sendSystemMessage(com.josephison.fiatlux.civilization.Justice.describe(this).copy().withStyle(st -> st.withColor(0xE08060)));

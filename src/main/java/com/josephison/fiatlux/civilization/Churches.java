@@ -187,6 +187,7 @@ public final class Churches {
                         + ", and " + went + (went == 1 ? " follower" : " followers") + " went with " + (dissenter.isMale() ? "him" : "her")
                         + " into the " + name + ".");
         tellCreator(level, parent, Component.translatable("message.fiatlux.faith.split", founder, parent.name, name, dispute));
+        com.josephison.fiatlux.prophecy.Scripture.testament(level, b, parent);
         return b;
     }
 

@@ -52,6 +52,8 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue hostInHeaven;
         public final ModConfigSpec.IntValue hostOnWorlds;
         public final ModConfigSpec.DoubleValue apostasyRate;
+        public final ModConfigSpec.DoubleValue prophetChance;
+        public final ModConfigSpec.BooleanValue prophetsActAlone;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -173,6 +175,13 @@ public final class FiatLuxConfig {
             schismChance = b.comment("Chance per mortal year that a faith of eight or more followers splits into a new branch (more with many towns or a corrupt leader).")
                     .defineInRange("schismChance", 0.06, 0.0, 10.0);
             apostasyRate = b.comment("Chance per mortal year that a doubting mortal (doubt over 0.6) leaves its faith.").defineInRange("apostasyRate", 0.25, 0.0, 10.0);
+            b.pop();
+
+            b.comment("Prophets, miracles and scriptures").push("prophets");
+            prophetChance = b.comment("Chance per mortal year that a prophet is raised among a people gone astray (with no prophet of its faith living).")
+                    .defineInRange("prophetChance", 0.5, 0.0, 10.0);
+            prophetsActAlone = b.comment("When a prophet calls for fire from heaven and their Creator is not on that world, the fire falls of itself.")
+                    .define("prophetsActAlone", true);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

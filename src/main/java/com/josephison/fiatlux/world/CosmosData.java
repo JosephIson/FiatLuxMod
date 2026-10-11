@@ -86,6 +86,7 @@ public class CosmosData extends SavedData {
     /** Records an act in the Chronicle, trimming the oldest entries beyond the configured length. */
     public void record(MinecraftServer server, String actor, String kind, String text) {
         chronicle.add(new ChronicleEntry(server.overworld().getGameTime(), actor, kind, text));
+        com.josephison.fiatlux.prophecy.Scripture.annal(server, server.overworld().getGameTime(), actor, kind, text);
         int max = FiatLuxConfig.COMMON.chronicleLength.get();
         while (chronicle.size() > max) {
             chronicle.removeFirst();

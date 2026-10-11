@@ -112,6 +112,7 @@ public final class Faiths {
      * Creator who did it, and the petitions of a settlement nearby are answered.
      */
     public static void onMiracle(ServerLevel level, net.minecraft.world.phys.Vec3 at, ServerPlayer caster, boolean wrathful) {
+        com.josephison.fiatlux.prophecy.Prophets.onMiracle(level, at, caster, wrathful);
         var mortals = level.getEntitiesOfClass(MortalEntity.class, new AABB(BlockPos.containing(at)).inflate(40));
         if (mortals.isEmpty()) return;
         Generations gens = Generations.get(level.getServer());

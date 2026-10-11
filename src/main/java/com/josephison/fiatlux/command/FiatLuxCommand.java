@@ -184,6 +184,72 @@ public final class FiatLuxCommand {
                                     .withStyle(s -> s.withColor(0xE0A060)), true);
                             return 1;
                         })))
+                .then(Commands.literal("prophets").executes(c -> {
+                    var lines = com.josephison.fiatlux.prophecy.Prophets.describe(c.getSource().getServer());
+                    c.getSource().sendSuccess(() -> Component.literal("The prophets:").withStyle(st -> st.withColor(0xF5D77A)), false);
+                    for (String l : lines) c.getSource().sendSuccess(() -> Component.literal(l).withStyle(st -> st.withColor(0xE8D7B0)), false);
+                    return lines.size();
+                }))
+                .then(Commands.literal("prophet").requires(FiatLuxCommand::isGod).then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                    // "Before I formed thee in the belly I knew thee ... and I ordained thee a prophet" (Jer 1:5)
+                    String name = StringArgumentType.getString(c, "name");
+                    var level = c.getSource().getLevel();
+                    var m = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class,
+                            new net.minecraft.world.phys.AABB(BlockPos.containing(c.getSource().getPosition())).inflate(128),
+                            x -> x.getName().getString().equalsIgnoreCase(name) && !x.isChild()).stream().findFirst().orElse(null);
+                    var faith = m == null ? null : com.josephison.fiatlux.civilization.Faiths.of(m);
+                    var p = faith == null ? null : com.josephison.fiatlux.prophecy.Prophets.call(level, faith, m,
+                            faith.deity.true_ ? faith.deityName : faith.deityName);
+                    if (p == null) {
+                        c.getSource().sendFailure(Component.literal(m == null ? "No grown mortal named " + name + " is near." : name + " cannot be called."));
+                        return 0;
+                    }
+                    return 1;
+                })))
+                .then(Commands.literal("scripture").executes(c -> {
+                    // the books of the faith most held where you stand (your own faith there, if you are its Creator)
+                    var src = c.getSource();
+                    var server = src.getServer();
+                    var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+                    var cos = CosmicExpanseSavedData.get(server);
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(src.getLevel().dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    var player = src.getPlayerOrException();
+                    com.josephison.fiatlux.civilization.Religion faith = null;
+                    var counts = gens.followers();
+                    for (var r : gens.religions.values()) {
+                        if (world == null || !r.world.equals(world.name)) continue;
+                        if (player.getUUID().equals(r.creator) && r.parent == null) { faith = r; break; }
+                        if (faith == null || counts.getOrDefault(r.id, 0) > counts.getOrDefault(faith.id, 0)) faith = r;
+                    }
+                    var canon = faith == null ? java.util.List.<com.josephison.fiatlux.prophecy.Book>of() : com.josephison.fiatlux.prophecy.Scripture.canon(server, faith);
+                    if (canon.isEmpty()) {
+                        src.sendFailure(Component.literal("No book has yet been written here. A people writes once it farms and has a priest or a scribe."));
+                        return 0;
+                    }
+                    for (var b : canon) player.getInventory().placeItemBackInInventory(com.josephison.fiatlux.prophecy.Scripture.item(b, faith.name));
+                    var f = faith;
+                    src.sendSuccess(() -> Component.literal("The writings of " + f.name + ": " + canon.size() + (canon.size() == 1 ? " book." : " books."))
+                            .withStyle(st -> st.withColor(0xF5D77A)), false);
+                    return canon.size();
+                })
+                        .then(Commands.literal("write").requires(FiatLuxCommand::isGod).executes(c -> {
+                            // the scribes of the world you stand on write what is not yet written
+                            var level = c.getSource().getLevel();
+                            var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                            int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(level.dimension());
+                            if (slot < 0 || slot >= cos.planets.size()) {
+                                c.getSource().sendFailure(Component.literal("Stand on a created world."));
+                                return 0;
+                            }
+                            var pd = com.josephison.fiatlux.prophecy.ProphecyData.get(c.getSource().getServer());
+                            int before = pd.books.size();
+                            for (int i = 0; i < 6; i++) com.josephison.fiatlux.prophecy.Scripture.worldTick(level, cos, cos.planets.get(slot));
+                            int n = pd.books.size() - before;
+                            c.getSource().sendSuccess(() -> Component.literal(n + " new " + (n == 1 ? "book was" : "books were") + " written.")
+                                    .withStyle(st -> st.withColor(0xF5D77A)), true);
+                            return n;
+                        })))
                 .then(Commands.literal("wed").requires(FiatLuxCommand::isGod).then(Commands.argument("man", StringArgumentType.word())
                         .then(Commands.argument("woman", StringArgumentType.word()).executes(c -> {
                             // betroth two mortals near you; they are wed at the shrine of their town by day

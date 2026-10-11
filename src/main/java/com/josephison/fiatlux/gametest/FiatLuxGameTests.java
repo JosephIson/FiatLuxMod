@@ -897,6 +897,54 @@ public final class FiatLuxGameTests {
         });
     }
 
+    /**
+     * A prophet is called and speaks the word; challenges the priest of an idol at an altar, and with no
+     * Creator by, the fire falls of itself and the altar is crowned for the true God (1 Kings 18). When
+     * the prophet's words are written down they make a written book of several pages.
+     */
+    @GameTest(template = "empty", timeoutTicks = 1100)
+    public static void prophetsFireAndScripture(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1)).offset(700, 0, -700);
+        forceAround(level, at, true);
+        level.getChunk(at);
+        BlockPos g = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 8);
+        helper.assertTrue(g != null, "no ground");
+        var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+        var faith = gens.faithOf(java.util.UUID.nameUUIDFromBytes("testgod".getBytes()), "Testgod", "the earth", level.getGameTime());
+        var idol = new com.josephison.fiatlux.civilization.Religion(java.util.UUID.randomUUID(), "Cult of the Golden Calf",
+                com.josephison.fiatlux.civilization.Religion.Deity.IDOL, "the Golden Calf", null, "Aaron", "the earth", level.getGameTime());
+        gens.add(idol);
+        var era = com.josephison.fiatlux.world.cosmos.MortalEra.AGRARIAN;
+        var prophetM = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(2, 0, 4), g, era, "Micaiah", true, 30, null, null, faith.id);
+        var priest = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(-2, 0, 4), g, era, "Zedekiah", true, 40, null, null, idol.id);
+        var follower = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(0, 0, 6), g, era, "Ahab", true, 35, null, null, idol.id);
+        helper.assertTrue(prophetM != null && priest != null && follower != null, "the people were not formed");
+        var p = com.josephison.fiatlux.prophecy.Prophets.call(level, faith, prophetM, "Testgod");
+        helper.assertTrue(p != null && "Prophet".equals(com.josephison.fiatlux.prophecy.Prophets.titleOf(level, prophetM)), "the prophet was not called");
+        for (int i = 0; i < 3; i++) com.josephison.fiatlux.prophecy.Prophets.preach(level, prophetM, p, faith, null);
+        helper.assertTrue(!p.oracles.isEmpty(), "the prophet spoke no word");
+        BlockPos altar = g.offset(0, 0, 0);
+        level.setBlock(altar, net.minecraft.world.level.block.Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 3);
+        level.setBlock(altar.above(), net.minecraft.world.level.block.Blocks.GOLD_BLOCK.defaultBlockState(), 3);
+        var d = com.josephison.fiatlux.prophecy.ProphecyData.get(server);
+        int won = d.contestsWon;
+        helper.assertTrue(com.josephison.fiatlux.prophecy.Prophets.challenge(level, prophetM, p, faith, priest, idol, altar, "Samaria"), "no contest began");
+        helper.runAfterDelay(1000, () -> {
+            boolean fire = d.contestsWon > won && level.getBlockState(altar.above()).is(com.josephison.fiatlux.registry.ModBlocks.LUX_BLOCK.get());
+            var book = com.josephison.fiatlux.prophecy.Scripture.prophetBook(level, p, "Tester");
+            var stack = com.josephison.fiatlux.prophecy.Scripture.item(book, faith.name);
+            var content = stack.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
+            int pages = content == null ? 0 : content.pages().size();
+            for (var e : java.util.List.of(prophetM, priest, follower)) e.discard();
+            forceAround(level, at, false);
+            helper.assertTrue(fire, "the fire did not fall on the altar");
+            helper.assertTrue(pages >= 2, "the prophet's book has " + pages + " pages");
+            helper.succeed();
+        });
+    }
+
     /** Keeps the chunks around a place loaded with their entities, as they are around a watching player. */
     private static void forceAround(net.minecraft.server.level.ServerLevel level, BlockPos at, boolean on) {
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, on);
