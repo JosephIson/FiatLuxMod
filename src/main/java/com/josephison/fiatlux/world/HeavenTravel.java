@@ -32,10 +32,32 @@ public final class HeavenTravel {
             return false;
         }
         int street = heaven.getChunkSource().getGenerator() instanceof HeavenChunkGenerator g ? g.streetLevel() : 120;
+        ensureGates(heaven);
         // origin is the crossing of two golden streets
         player.teleportTo(heaven, 0.5, street + 1, 0.5, player.getYRot(), 0f);
         player.fallDistance = 0;
         return true;
+    }
+
+    /**
+     * Raises the gates of pearl around the central crossing if they are missing - in worlds whose
+     * Heaven was generated before the gates existed. Cheap when they already stand.
+     */
+    public static void ensureGates(ServerLevel heaven) {
+        if (!(heaven.getChunkSource().getGenerator() instanceof HeavenChunkGenerator g)) return;
+        int level = g.streetLevel(), d = HeavenChunkGenerator.GATE_DISTANCE;
+        for (int[] c : new int[][]{{0, d}, {0, -d}, {d, 0}, {-d, 0}}) {
+            if (heaven.getBlockState(new BlockPos(c[0], level + 3, c[1])).is(com.josephison.fiatlux.registry.ModBlocks.VOID_GATE.get())) continue;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            for (int x = c[0] - 6; x <= c[0] + 6; x++) {
+                for (int z = c[1] - 6; z <= c[1] + 6; z++) {
+                    for (int y = level - 3; y <= level + 12; y++) {
+                        var state = g.gateAt(x, y, z);
+                        if (state != null) heaven.setBlock(pos.set(x, y, z), state, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                    }
+                }
+            }
+        }
     }
 
     public static void toEarth(ServerPlayer player) {

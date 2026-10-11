@@ -92,6 +92,7 @@ public final class RealmTravel {
         if (heaven == null) return false;
         int street = heaven.getChunkSource().getGenerator() instanceof com.josephison.fiatlux.world.HeavenChunkGenerator g ? g.streetLevel() : 120;
         player.setPortalCooldown();
+        com.josephison.fiatlux.world.HeavenTravel.ensureGates(heaven);
         player.teleportTo(heaven, 0.5, street + 1, com.josephison.fiatlux.world.HeavenChunkGenerator.GATE_DISTANCE - 3.5, 180f, 0f);
         player.fallDistance = 0;
         return true;
