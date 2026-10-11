@@ -443,6 +443,206 @@
     }
    }
   },
+  "animation.mortal.crucified": {
+   "loop": true,
+   "animation_length": 6.0,
+   "bones": {
+    "arm_l": {
+     "rotation": [
+      0,
+      0,
+      -86
+     ]
+    },
+    "arm_r": {
+     "rotation": [
+      0,
+      0,
+      86
+     ]
+    },
+    "forearm_l": {
+     "rotation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "forearm_r": {
+     "rotation": [
+      70.0,
+      0,
+      0
+     ]
+    },
+    "head": {
+     "rotation": [
+      "26 + math.sin(query.anim_time * 30 + 40) * 2",
+      14,
+      0
+     ]
+    },
+    "torso": {
+     "rotation": [
+      "2 + math.sin(query.anim_time * 30 + 0) * 1.2",
+      0,
+      0
+     ]
+    },
+    "leg_l": {
+     "rotation": [
+      -7,
+      0,
+      -1.5
+     ]
+    },
+    "leg_r": {
+     "rotation": [
+      -7,
+      0,
+      1.5
+     ]
+    },
+    "shin_l": {
+     "rotation": [
+      14,
+      0,
+      0
+     ]
+    },
+    "shin_r": {
+     "rotation": [
+      14,
+      0,
+      0
+     ]
+    },
+    "foot_l": {
+     "rotation": [
+      24,
+      0,
+      0
+     ]
+    },
+    "foot_r": {
+     "rotation": [
+      24,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  "animation.mortal.stocks": {
+   "loop": true,
+   "animation_length": 4.0,
+   "bones": {
+    "torso": {
+     "rotation": [
+      62,
+      0,
+      0
+     ]
+    },
+    "neck": {
+     "rotation": [
+      -10,
+      0,
+      0
+     ]
+    },
+    "head": {
+     "rotation": [
+      -48,
+      0,
+      0
+     ]
+    },
+    "arm_l": {
+     "rotation": [
+      -106,
+      -24,
+      32
+     ]
+    },
+    "arm_r": {
+     "rotation": [
+      -106,
+      24,
+      -32
+     ]
+    },
+    "forearm_l": {
+     "rotation": [
+      -140,
+      0,
+      0
+     ]
+    },
+    "forearm_r": {
+     "rotation": [
+      -70.0,
+      0,
+      0
+     ]
+    },
+    "leg_l": {
+     "rotation": [
+      -4,
+      0,
+      0
+     ]
+    },
+    "leg_r": {
+     "rotation": [
+      -4,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  "animation.mortal.exorcise": {
+   "loop": true,
+   "animation_length": 2.0,
+   "bones": {
+    "arm_r": {
+     "rotation": [
+      "-110 + math.sin(query.anim_time * 180 + 0) * 6",
+      0,
+      -10
+     ]
+    },
+    "forearm_r": {
+     "rotation": [
+      70.0,
+      0,
+      0
+     ]
+    },
+    "arm_l": {
+     "rotation": [
+      -30,
+      0,
+      20
+     ]
+    },
+    "head": {
+     "rotation": [
+      -5,
+      0,
+      0
+     ]
+    },
+    "torso": {
+     "rotation": [
+      -4,
+      0,
+      0
+     ]
+    }
+   }
+  },
   "animation.mortal.work": {
    "loop": true,
    "animation_length": 1.0,

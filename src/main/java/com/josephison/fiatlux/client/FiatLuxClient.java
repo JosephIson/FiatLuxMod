@@ -63,6 +63,7 @@ public class FiatLuxClient {
         e.registerEntityRenderer(ModEntities.STATIONED_SWORD.get(), StationedSwordRenderer::new);
         e.registerEntityRenderer(ModEntities.MORTAL.get(), com.josephison.fiatlux.client.render.MortalRenderer::new);
         e.registerEntityRenderer(ModEntities.SERPENT.get(), com.josephison.fiatlux.client.render.SerpentRenderer::new);
+        e.registerEntityRenderer(ModEntities.PUNISHMENT_PROP.get(), com.josephison.fiatlux.client.render.PunishmentPropRenderer::new);
         e.registerEntityRenderer(ModEntities.SOUL.get(), com.josephison.fiatlux.client.render.SoulRenderer::new);
         e.registerEntityRenderer(ModEntities.FALLEN.get(), com.josephison.fiatlux.client.render.FallenRenderer::new);
     }

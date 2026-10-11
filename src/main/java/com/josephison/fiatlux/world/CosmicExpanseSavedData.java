@@ -59,6 +59,9 @@ public class CosmicExpanseSavedData extends SavedData {
     public int edenStep;
     /** Man has eaten of the tree of knowledge: death, labour, birth in sorrow, and sin are in the world (Rom 5:12). */
     public boolean fallOfMan;
+    /** How far the story of Cain and Abel has gone (Genesis 4), and since when. */
+    public int cainStep;
+    public long cainSince;
     /** Black holes in the Void; the first, the Abyss, forms with the Big Bang. */
     public final List<com.josephison.fiatlux.world.cosmos.BlackHole> blackHoles = new ArrayList<>();
     public final List<Planet> planets = new ArrayList<>();
@@ -237,6 +240,8 @@ public class CosmicExpanseSavedData extends SavedData {
             d.edenSince = tag.getLong("eden_since");
             d.edenStep = tag.getInt("eden_step");
             d.fallOfMan = tag.getBoolean("fall_of_man");
+            d.cainStep = tag.getInt("cain_step");
+            d.cainSince = tag.getLong("cain_since");
         } else {
             d.fallOfMan = d.firstPairBorn;   // peoples given life before Eden was planted are fallen already
         }
@@ -317,6 +322,8 @@ public class CosmicExpanseSavedData extends SavedData {
         tag.putLong("eden_since", edenSince);
         tag.putInt("eden_step", edenStep);
         tag.putBoolean("fall_of_man", fallOfMan);
+        tag.putInt("cain_step", cainStep);
+        tag.putLong("cain_since", cainSince);
         net.minecraft.nbt.CompoundTag lg = new net.minecraft.nbt.CompoundTag();
         lifeGivers.forEach((k, v) -> {
             net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();

@@ -56,7 +56,10 @@ public final class EdenEvents {
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
-        if (event.getServer().getTickCount() % 20 == 11) tick(event.getServer(), false);
+        if (event.getServer().getTickCount() % 20 == 11) {
+            tick(event.getServer(), false);
+            CainAndAbel.tick(event.getServer(), false);
+        }
     }
 
     @Nullable
@@ -299,8 +302,9 @@ public final class EdenEvents {
     @SubscribeEvent
     public static void onChat(ServerChatEvent event) {
         String said = event.getRawText().toLowerCase().replaceAll("[^a-z ]", " ").replaceAll("\\s+", " ").trim();
-        if (!said.contains("where art thou") && !said.contains("where are you")) return;
         ServerPlayer player = event.getPlayer();
+        CainAndAbel.onAsked(player, said);
+        if (!said.contains("where art thou") && !said.contains("where are you")) return;
         player.server.execute(() -> {
             CosmicExpanseSavedData c = CosmicExpanseSavedData.get(player.server);
             if (c.eden != EdenState.FALLEN || Divinity.get(player).pilgrim() || level(player.server) != player.level()) return;

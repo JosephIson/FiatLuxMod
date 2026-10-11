@@ -92,6 +92,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.faith.petition", "[Prayer] %s of %s: \"%s\"");
         add(com.josephison.fiatlux.registry.ModEntities.SOUL.get(), "Soul");
         add(com.josephison.fiatlux.registry.ModEntities.SERPENT.get(), "The Serpent");
+        add(com.josephison.fiatlux.registry.ModEntities.PUNISHMENT_PROP.get(), "Instrument of Justice");
         add(com.josephison.fiatlux.registry.ModItems.SERPENT_SPAWN_EGG.get(), "Serpent Spawn Egg");
         add(com.josephison.fiatlux.registry.ModBlocks.LIFE_LEAVES.get(), "Leaves of the Tree of Life");
         add(com.josephison.fiatlux.registry.ModBlocks.KNOWLEDGE_LEAVES.get(), "Leaves of the Tree of Knowledge");
@@ -104,6 +105,7 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.eden.ate_life", "Life flows through you, as from a river that never runs dry.");
         add("message.fiatlux.eden.ate_knowledge", "Your eyes are opened. You know good, and you know evil.");
         add("message.fiatlux.eden.planted", "And the LORD God planted a garden eastward in Eden; and there he put the man whom he had formed. (Genesis 2:8)");
+        add("message.fiatlux.cain.warning", "Sin lies at Cain's door. Sneak and use Cain to bless him before it masters him - or let it be.");
         add("message.fiatlux.eden.serpent_driven_off", "The serpent slips away into the grass. The tempter will return.");
         add("message.fiatlux.soul.arrives_heaven", "The soul of %s of %s is taken up into Heaven.");
         add("message.fiatlux.soul.arrives_underworld", "The soul of %s of %s falls into the Underworld.");

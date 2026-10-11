@@ -22,6 +22,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -100,6 +101,66 @@ public final class FiatLuxCommand {
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
+                .then(Commands.literal("polity").executes(c -> {
+                    var src = c.getSource();
+                    var all = com.josephison.fiatlux.civilization.Polities.get(src.getServer()).byWorld.values();
+                    if (all.isEmpty()) src.sendSuccess(() -> Component.literal("No people has yet set a ruler over itself."), false);
+                    for (var g : all) {
+                        src.sendSuccess(() -> Component.literal("The " + g.name + " - " + g.rulerTitle() + ", from " + g.capital)
+                                .withStyle(s -> s.withColor(0xE8C890)), false);
+                        for (var law : g.laws) src.sendSuccess(() -> Component.literal("  " + law.text).withStyle(s -> s.withColor(0xA0A0B0)), false);
+                    }
+                    return all.size();
+                }))
+                .then(Commands.literal("judge").requires(FiatLuxCommand::isGod).then(Commands.argument("name", StringArgumentType.word())
+                        .then(Commands.argument("crime", StringArgumentType.word())
+                                .suggests((c, b) -> SharedSuggestionProvider.suggest(java.util.Arrays.stream(com.josephison.fiatlux.civilization.Polity.Crime.values())
+                                        .map(x -> x.name().toLowerCase(java.util.Locale.ROOT)), b))
+                                .executes(c -> {
+                                    // bring a mortal before the judgment of their own people's law
+                                    String name = StringArgumentType.getString(c, "name");
+                                    com.josephison.fiatlux.civilization.Polity.Crime crime;
+                                    try {
+                                        crime = com.josephison.fiatlux.civilization.Polity.Crime.valueOf(StringArgumentType.getString(c, "crime").toUpperCase(java.util.Locale.ROOT));
+                                    } catch (IllegalArgumentException e) {
+                                        c.getSource().sendFailure(Component.literal("No such crime."));
+                                        return 0;
+                                    }
+                                    var level = c.getSource().getLevel();
+                                    var m = level.getEntitiesOfClass(com.josephison.fiatlux.entity.MortalEntity.class,
+                                            new net.minecraft.world.phys.AABB(BlockPos.containing(c.getSource().getPosition())).inflate(128),
+                                            x -> x.getName().getString().equalsIgnoreCase(name)).stream().findFirst().orElse(null);
+                                    var g = m == null ? null : com.josephison.fiatlux.civilization.Justice.polityOf(level, m);
+                                    if (m == null || g == null) {
+                                        c.getSource().sendFailure(Component.literal(m == null ? "No one named " + name + " is near." : name + "'s people have no government."));
+                                        return 0;
+                                    }
+                                    com.josephison.fiatlux.civilization.Justice.judge(level, g, m.planet(), m, crime);
+                                    return 1;
+                                }))))
+                .then(Commands.literal("anoint").requires(FiatLuxCommand::isGod).then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                    // "Then Samuel took the horn of oil, and anointed him in the midst of his brethren" (1 Sam 16:13)
+                    String name = StringArgumentType.getString(c, "name");
+                    var server = c.getSource().getServer();
+                    var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+                    var person = gens.people.values().stream().filter(x -> x.living() && x.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+                    if (person == null) {
+                        c.getSource().sendFailure(Component.literal("No one living is named " + name + "."));
+                        return 0;
+                    }
+                    var cos = CosmicExpanseSavedData.get(server);
+                    var world = cos.planets.stream().filter(pl -> pl.name.equals(person.world)).findFirst().orElse(null);
+                    var g = world == null ? null : com.josephison.fiatlux.civilization.Polities.get(server).of(world.id);
+                    if (g == null) {
+                        c.getSource().sendFailure(Component.literal(person.world + " has no government yet."));
+                        return 0;
+                    }
+                    com.josephison.fiatlux.civilization.Government.crown(gens, g, person, c.getSource().getLevel().getGameTime());
+                    com.josephison.fiatlux.civilization.Government.record(server, g, c.getSource().getTextName(),
+                            "anointed " + person.name + " " + g.form.title(person.male) + " over the " + g.name + ".");
+                    c.getSource().sendSuccess(() -> Component.literal(person.name + " is anointed " + g.rulerTitle() + "."), true);
+                    return 1;
+                })))
                 .then(Commands.literal("eden").executes(c -> {
                             var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
                             c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.eden.EdenEvents.describe(cos)

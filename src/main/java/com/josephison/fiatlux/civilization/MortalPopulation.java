@@ -80,6 +80,7 @@ public final class MortalPopulation {
                 if (level.isLoaded(town.centre)) populate(level, cosmos, p, town, t == 0, towns.size());
             }
             expand(level, cosmos, p, towns);
+            Government.tick(level, cosmos, p, cosmos.townsOf(p.id));   // their rulers and their laws
         }
     }
 
@@ -115,7 +116,8 @@ public final class MortalPopulation {
         boolean numerous = Math.ceil(p.population / Math.max(1, p.era.perTown)) > towns.size();
         if (from == null || !(crowded || numerous) || fromPeople.size() < 8) return;
         List<MortalEntity> young = new java.util.ArrayList<>(fromPeople.stream()
-                .filter(m -> !m.isChild() && m.ageYears() < 36 && m.isAlive() && !m.isLeaving()).toList());
+                .filter(m -> !m.isChild() && m.ageYears() < 36 && m.isAlive() && !m.isLeaving()
+                        && m.sentence() == com.josephison.fiatlux.civilization.Justice.Sentence.NONE).toList());
         if (young.size() < 2) return;
         // a site some way off, clear of every other town
         BlockPos site = null;

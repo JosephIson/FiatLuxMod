@@ -89,8 +89,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<String> DATA_SPEECH = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.STRING);
     /** Unashamed in the garden: no coat of skins yet, only plain linen (Gen 2:25, 3:21). */
     private static final EntityDataAccessor<Boolean> DATA_INNOCENT = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
+    /** The office this mortal holds in its people's government ("King", "Judge", ...), or "". */
+    private static final EntityDataAccessor<String> DATA_TITLE = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.STRING);
     public static final int VARIANTS = 8;
-    public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7;
+    public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7,
+            CRUCIFIED = 8, STOCKS = 9, EXORCISE = 10, IMPRISONED = 11;
     public static final int ADULT_AGE = 16, ELDER_AGE = 62;
 
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.mortal.idle");
@@ -102,6 +105,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final RawAnimation A_TALK = RawAnimation.begin().thenLoop("animation.mortal.talk");
     private static final RawAnimation A_BOW = RawAnimation.begin().thenLoop("animation.mortal.bow");
     private static final RawAnimation A_CHEER = RawAnimation.begin().thenLoop("animation.mortal.cheer");
+    private static final RawAnimation A_CRUCIFIED = RawAnimation.begin().thenLoop("animation.mortal.crucified");
+    private static final RawAnimation A_STOCKS = RawAnimation.begin().thenLoop("animation.mortal.stocks");
+    private static final RawAnimation A_EXORCISE = RawAnimation.begin().thenLoop("animation.mortal.exorcise");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     // ---- life (server)
@@ -123,8 +129,15 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private int talkTicks;
     private long prayedDay = -1;
     private long lastWitness;
+    // ---- under the law
+    private com.josephison.fiatlux.civilization.Justice.Sentence sentence = com.josephison.fiatlux.civilization.Justice.Sentence.NONE;
+    private com.josephison.fiatlux.civilization.Polity.Crime sentenceCrime = com.josephison.fiatlux.civilization.Polity.Crime.THEFT;
+    private long sentenceUntil;
+    @Nullable private BlockPos sentencePlace;
     /** Gone out to found a new town: ticks on the road. */
     private boolean leaving;
+    /** "And the LORD set a mark upon Cain, lest any finding him should kill him" (Gen 4:15). */
+    private boolean marked;
     private int roadTicks;
 
     public MortalEntity(EntityType<? extends MortalEntity> type, Level level) {
@@ -146,6 +159,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         builder.define(DATA_STAGE, 1);
         builder.define(DATA_SPEECH, "");
         builder.define(DATA_INNOCENT, false);
+        builder.define(DATA_TITLE, "");
     }
 
     // ================================================================== identity
@@ -197,6 +211,30 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public boolean isElder() { return entityData.get(DATA_STAGE) == 2; }
     public String speech() { return entityData.get(DATA_SPEECH); }
     public boolean looksInnocent() { return entityData.get(DATA_INNOCENT); }
+    public String title() { return entityData.get(DATA_TITLE); }
+    public com.josephison.fiatlux.civilization.Justice.Sentence sentence() { return sentence; }
+    public com.josephison.fiatlux.civilization.Polity.Crime sentenceCrime() { return sentenceCrime; }
+    public long sentenceUntil() { return sentenceUntil; }
+    @Nullable public BlockPos sentencePlace() { return sentencePlace; }
+
+    public void sentence(com.josephison.fiatlux.civilization.Justice.Sentence s, com.josephison.fiatlux.civilization.Polity.Crime crime, long until, BlockPos place) {
+        sentence = s;
+        sentenceCrime = crime;
+        sentenceUntil = until;
+        sentencePlace = place;
+    }
+
+    /** Set free (or released by death). */
+    public void release() {
+        sentence = com.josephison.fiatlux.civilization.Justice.Sentence.NONE;
+        sentencePlace = null;
+        if (act() == CRUCIFIED || act() == STOCKS || act() == IMPRISONED) endAct();
+    }
+
+    @Nullable
+    public Planet planet() {
+        return world();
+    }
 
     /** Before the Fall of Man: neither ageing, hunger, sin nor death. */
     private boolean innocent(ServerLevel level) {
@@ -210,6 +248,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public double ageYears() { return age; }
     public void setHome(BlockPos home) { this.home = home; }
     public boolean isLeaving() { return leaving; }
+    public boolean isMarked() { return marked; }
+    public void markAsCain() { marked = true; }
 
     /** The living spouse, if near enough to be loaded. */
     @Nullable
@@ -555,6 +595,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
                 partner.addSin(1);
                 opinion.merge(partner.getUUID(), -2, Integer::sum);
                 partner.opinion.merge(getUUID(), -2, Integer::sum);
+                if (hasTrait(Trait.PROUD) && opinion.getOrDefault(partner.getUUID(), 0) < -5 && random.nextInt(3) == 0 && !innocent(level)) {
+                    swing(net.minecraft.world.InteractionHand.MAIN_HAND);   // words become blows
+                    partner.hurt(damageSources().mobAttack(this), 3f);
+                    com.josephison.fiatlux.civilization.Justice.report(level, this, com.josephison.fiatlux.civilization.Polity.Crime.VIOLENCE, partner);
+                }
             } else {
                 partner.say(MortalSpeech.Topic.REPLY);
                 opinion.merge(partner.getUUID(), 1, Integer::sum);
@@ -610,6 +655,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (!(level() instanceof ServerLevel sl)) return;
         if (!named) becomeLivingSoul(null, null);
         if (speechTicks > 0 && --speechTicks == 0) entityData.set(DATA_SPEECH, "");
+        if (sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE && sentence != com.josephison.fiatlux.civilization.Justice.Sentence.EXILE) {
+            com.josephison.fiatlux.civilization.Justice.hold(sl, this);
+        }
         conversationTick(sl);
         if (act() != NONE && act() != SLEEP && --actTicks <= 0) finishAct(sl);
         if (act() == SLEEP && !isNight()) {
@@ -617,6 +665,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             energy = 1;
             if (random.nextInt(3) == 0) say(MortalSpeech.Topic.MORNING);
         }
+        if (marked && tickCount % 40 == 0) sl.sendParticles(ParticleTypes.CRIMSON_SPORE, getX(), getY() + 1.75, getZ(), 2, 0.12, 0.05, 0.12, 0);
         if (act() == PRAY && tickCount % 20 == 0) {
             sl.sendParticles(com.josephison.fiatlux.registry.ModParticles.LIGHT_MOTE.get(), getX(), getY() + 1.4, getZ(), 2, 0.3, 0.2, 0.3, 0.01);
         }
@@ -681,7 +730,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         double before = age;
         age += 20.0 / year;
         if ((int) before < ADULT_AGE && (int) age >= ADULT_AGE) {
-            profession = Profession.pick(era(), random);
+            // "Abel was a keeper of sheep, but Cain was a tiller of the ground" (Gen 4:2)
+            profession = "Abel".equals(getName().getString()) ? Profession.SHEPHERD : "Cain".equals(getName().getString()) ? Profession.FARMER
+                    : Profession.pick(era(), random);
             say("I am grown now. I shall be a " + profession.id + ".");
             Person p = person();
             if (p != null) { p.profession = profession.id; Generations.get(level.getServer()).setDirty(); }
@@ -697,6 +748,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (age > lifespan) {
             hurt(damageSources().generic(), Float.MAX_VALUE);   // full of years (Gen 25:8)
             return;
+        }
+        if (tickCount % 100 == 3) {
+            var polity = com.josephison.fiatlux.civilization.Justice.polityOf(level, this);
+            String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale()) : "";
+            if (!t.equals(title())) entityData.set(DATA_TITLE, t);
         }
         travelTick(level);
         reactToSurroundings(level);
@@ -796,6 +852,17 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             if (lifeGiver != null) setReligion(Generations.get(level.getServer()).faithOf(lifeGiver.getFirst(), lifeGiver.getSecond(), worldName(), level.getGameTime()).id);
             return;
         }
+        if (faith != null && random.nextDouble() < 0.3 * 20.0 / year) {   // the state's religion and its law
+            var state = com.josephison.fiatlux.civilization.Justice.polityOf(level, this);
+            Religion stateFaith = state == null ? null : Generations.get(level.getServer()).religion(state.stateFaith);
+            if (stateFaith != null && !stateFaith.id.equals(faith.id)) {
+                if (stateFaith.deity.true_ && (faith.deity == Religion.Deity.IDOL || faith.deity == Religion.Deity.FALLEN)) {
+                    com.josephison.fiatlux.civilization.Justice.report(level, this, com.josephison.fiatlux.civilization.Polity.Crime.IDOLATRY, null);
+                } else if (!stateFaith.deity.true_ && faith.deity.true_) {   // persecution of the faithful
+                    com.josephison.fiatlux.civilization.Justice.report(level, this, com.josephison.fiatlux.civilization.Polity.Crime.HERESY, null);
+                }
+            }
+        }
         if (faith == null || s == null || !faith.deity.true_) return;
         if (level.getGameTime() - s.lastSign > Faiths.SILENCE) {
             double rate = hasTrait(Trait.PROUD) || hasTrait(Trait.CURIOUS) ? 0.004 : hasTrait(Trait.PIOUS) ? 0.0005 : 0.001;
@@ -851,6 +918,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             s.food -= 2;
             hunger = 1;
             addSin(2);
+            com.josephison.fiatlux.civilization.Justice.report(level, this, com.josephison.fiatlux.civilization.Polity.Crime.THEFT, null);
         } else {
             say(MortalSpeech.Topic.QUARREL);
             emote(ParticleTypes.ANGRY_VILLAGER, 3);
@@ -870,6 +938,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     public void die(DamageSource source) {
+        if (level() instanceof ServerLevel sl && !isRemoved() && !dead && source.getEntity() instanceof MortalEntity killer && killer != this) {
+            com.josephison.fiatlux.civilization.Justice.report(sl, killer, com.josephison.fiatlux.civilization.Polity.Crime.MURDER, this);
+        }
         if (level() instanceof ServerLevel sl && !isRemoved() && !dead) {
             Alignment a = Divinity.alignment(this);
             boolean saved = a.sin() <= a.virtue() + 3;
@@ -915,8 +986,17 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (level().isClientSide) return InteractionResult.SUCCESS;
         getLookControl().setLookAt(player, 30f, 30f);
+        if (player.isShiftKeyDown() && player instanceof ServerPlayer sp && !Divinity.get(sp).pilgrim()
+                && sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE && sentence != com.josephison.fiatlux.civilization.Justice.Sentence.EXILE) {
+            com.josephison.fiatlux.civilization.Justice.deliver(sp, this);   // "the angel of the Lord by night opened the prison doors" (Acts 5:19)
+            return InteractionResult.CONSUME;
+        }
         if (player.isShiftKeyDown() && player instanceof ServerPlayer sp && !Divinity.get(sp).pilgrim()) {
             // the Creator lays a hand in blessing
+            if (com.josephison.fiatlux.eden.CainAndAbel.onBlessed((ServerLevel) level(), this)) {
+                emote(ParticleTypes.HEART, 6);
+                return InteractionResult.CONSUME;
+            }
             addVirtue(3);
             heal(getMaxHealth());
             setDoubt(0);
@@ -932,6 +1012,13 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         String lineage = fatherName.isEmpty() && motherName.isEmpty() ? "" : (isMale() ? ", son of " : ", daughter of ")
                 + (fatherName.isEmpty() ? motherName : motherName.isEmpty() ? fatherName : fatherName + " and " + motherName);
         String stage = isChild() ? "child" : isElder() ? "elder" : profession.id;
+        if (!title().isEmpty()) {
+            var polity = com.josephison.fiatlux.civilization.Justice.polityOf((ServerLevel) level(), this);
+            stage = title() + (polity != null ? " of the " + polity.name : "");
+        }
+        if (sentence != com.josephison.fiatlux.civilization.Justice.Sentence.NONE) {
+            player.sendSystemMessage(com.josephison.fiatlux.civilization.Justice.describe(this).copy().withStyle(st -> st.withColor(0xE08060)));
+        }
         player.sendSystemMessage(Component.literal(getName().getString() + lineage + " - " + (int) age + ", " + stage
                 + " (" + traitA.id + ", " + traitB.id + ")").withStyle(s -> s.withColor(0xF5D77A)));
         String family = (spouse != null ? (isMale() ? "Husband of " : "Wife of ") + spouseName : isChild() ? "" : "Unmarried")
@@ -979,6 +1066,11 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         tag.putDouble("Doubt", doubt);
         tag.putLong("PrayedDay", prayedDay);
         tag.putBoolean("Leaving", leaving);
+        tag.putBoolean("Marked", marked);
+        tag.putString("Sentence", sentence.name());
+        tag.putString("SentenceCrime", sentenceCrime.name());
+        tag.putLong("SentenceUntil", sentenceUntil);
+        if (sentencePlace != null) tag.putLong("SentencePlace", sentencePlace.asLong());
         CompoundTag op = new CompoundTag();
         opinion.forEach((k, v) -> op.putInt(k.toString(), v));
         tag.put("Opinion", op);
@@ -1012,6 +1104,15 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         doubt = tag.getDouble("Doubt");
         prayedDay = tag.contains("PrayedDay") ? tag.getLong("PrayedDay") : -1;
         leaving = tag.getBoolean("Leaving");
+        marked = tag.getBoolean("Marked");
+        try {
+            sentence = com.josephison.fiatlux.civilization.Justice.Sentence.valueOf(tag.getString("Sentence"));
+            sentenceCrime = com.josephison.fiatlux.civilization.Polity.Crime.valueOf(tag.getString("SentenceCrime"));
+        } catch (IllegalArgumentException ignored) {
+            sentence = com.josephison.fiatlux.civilization.Justice.Sentence.NONE;
+        }
+        sentenceUntil = tag.getLong("SentenceUntil");
+        sentencePlace = tag.contains("SentencePlace") ? BlockPos.of(tag.getLong("SentencePlace")) : null;
         CompoundTag op = tag.getCompound("Opinion");
         for (String k : op.getAllKeys()) {
             try {
@@ -1034,6 +1135,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             case TALK -> A_TALK;
             case BOW -> A_BOW;
             case CHEER -> A_CHEER;
+            case CRUCIFIED -> A_CRUCIFIED;
+            case STOCKS -> A_STOCKS;
+            case EXORCISE -> A_EXORCISE;
             default -> state.isMoving() ? WALK : IDLE;
         })));
     }

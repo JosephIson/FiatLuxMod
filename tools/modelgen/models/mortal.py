@@ -58,6 +58,9 @@ SUIT_TRIM = Material("m_suit_trim", (70, 130, 210), "metal", emissive=True)
 VISOR = Material("m_visor", (120, 190, 255), "crystal", alpha=130)
 SCREEN = Material("m_screen", (110, 220, 255), "rune", emissive=True, accent=(220, 250, 255))
 SANDAL = Material("m_sandal", (130, 92, 56), "cloth")
+GOLD_M = Material("m_gold", (236, 190, 66), "gold", accent=(255, 236, 150))
+RUBY = Material("m_ruby", (200, 30, 50), "crystal", emissive=True)
+SAPPHIRE_M = Material("m_sapphire", (50, 90, 220), "crystal", emissive=True)
 HOLD = 70.0   # the right forearm carries the tool of the age; tool bones cancel the bend so tools are modelled upright
 
 
@@ -129,6 +132,15 @@ def build(key="a"):
     for side in (1, -1):
         m.cube(lh, (side * 3.6 - (0 if side > 0 else 0.7), 24.0, -2.6), (0.7, 6.0, 2.4), hair)
 
+    # a ruler's crown: a gold circlet with points and set stones (shown for kings, queens and emperors)
+    cr = m.bone("crown", (0, 31.0, 0), "head")
+    m.ring(cr, (0, 30.9, 0), 3.9, 12, (2.1, 1.0, 0.4), GOLD_M)
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        x, z = math.cos(a) * 3.9, math.sin(a) * 3.9
+        m.cube(cr, (x - 0.35, 31.3, z - 0.35), (0.7, 1.3, 0.7), GOLD_M)
+        m.cube(cr, (x - 0.3, 30.75, z - 0.3), (0.6, 0.6, 0.6), RUBY if k % 2 else SAPPHIRE_M)
+
     # --- dress and tools of each age (the renderer shows only the bones of the mortal's age)
     # hunter-gatherer: fur pelt over one shoulder, flint spear
     hg = m.bone("era_hunter", (0, 17.0, 0), "torso")
@@ -189,6 +201,32 @@ def build(key="a"):
 def variants():
     """Same geometry, different skin, hair and garments: one texture per palette."""
     return {k: build(k) for k in PALETTES if k != "a"}
+
+
+# Held poses that props (the cross, the stocks) are built to fit: see pose_check.py.
+POSES = {
+    # hung upon a cross: arms out along the beam, palms forward, legs together with the knees a little bent
+    # and the feet pointing down onto the footrest, the head bowed to one side
+    "crucified": {
+        "arm_l": (0, 0, -86), "arm_r": (0, 0, 86),
+        "forearm_l": (0, 0, 0), "forearm_r": (HOLD, 0, 0),
+        "head": (26, 14, 0), "torso": (2, 0, 0),
+        "leg_l": (-7, 0, -1.5), "leg_r": (-7, 0, 1.5),
+        "shin_l": (14, 0, 0), "shin_r": (14, 0, 0),
+        "foot_l": (24, 0, 0), "foot_r": (24, 0, 0),
+    },
+    # in the stocks: bent at the waist, head and wrists held in the holes of the board
+    "stocks": {
+        "torso": (62, 0, 0), "neck": (-10, 0, 0), "head": (-48, 0, 0),
+        "arm_l": (-106, -24, 32), "arm_r": (-106, 24, -32),
+        "forearm_l": (-140, 0, 0), "forearm_r": (HOLD - 140, 0, 0),
+        "leg_l": (-4, 0, 0), "leg_r": (-4, 0, 0),
+    },
+}
+
+
+def pose(name):
+    return POSES[name]
 
 
 def animations():
@@ -258,6 +296,20 @@ def animations():
         "arm_r": {"rotation": [f"-160 + {sin(720, 90, 15)}", 0, -20]},
         "body": {"position": [0, f"math.abs({sin(360, 0, 1.6)})", 0]},
         "head": {"rotation": [-15, 0, 0]},
+    }}
+    # condemned: hung upon a cross (the pose the cross model is built to fit), breathing shallowly
+    cr = {b: {"rotation": list(r)} for b, r in POSES["crucified"].items()}
+    cr["torso"] = {"rotation": [f"2 + {sin(30, 0, 1.2)}", 0, 0]}
+    cr["head"] = {"rotation": [f"26 + {sin(30, 40, 2)}", 14, 0]}
+    anims["animation.mortal.crucified"] = {"loop": True, "animation_length": 6.0, "bones": cr}
+    # in the stocks (the pose the stocks model is built to fit)
+    st = {b: {"rotation": list(r)} for b, r in POSES["stocks"].items()}
+    anims["animation.mortal.stocks"] = {"loop": True, "animation_length": 4.0, "bones": st}
+    # casting out an unclean spirit: a hand raised toward it
+    anims["animation.mortal.exorcise"] = {"loop": True, "animation_length": 2.0, "bones": {
+        "arm_r": {"rotation": [f"-110 + {sin(180, 0, 6)}", 0, -10]}, "forearm_r": {"rotation": [HOLD, 0, 0]},
+        "arm_l": {"rotation": [-30, 0, 20]}, "head": {"rotation": [-5, 0, 0]},
+        "torso": {"rotation": [-4, 0, 0]},
     }}
     anims["animation.mortal.work"] = anims.pop("animation.mortal.judge")
     anims["animation.mortal.work"]["loop"] = True

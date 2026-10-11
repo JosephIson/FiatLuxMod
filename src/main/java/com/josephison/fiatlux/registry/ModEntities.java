@@ -57,6 +57,10 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.eden.SerpentEntity>> SERPENT = ENTITIES.register("serpent",
             () -> EntityType.Builder.of(com.josephison.fiatlux.eden.SerpentEntity::new, MobCategory.MISC).sized(1.0f, 1.3f).fireImmune()
                     .clientTrackingRange(10).build(FiatLux.id("serpent").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.entity.PunishmentPropEntity>> PUNISHMENT_PROP =
+            ENTITIES.register("punishment_prop", () -> EntityType.Builder.<com.josephison.fiatlux.entity.PunishmentPropEntity>of(
+                    com.josephison.fiatlux.entity.PunishmentPropEntity::new, MobCategory.MISC).sized(1.3f, 3.6f).fireImmune()
+                    .clientTrackingRange(10).updateInterval(40).build(FiatLux.id("punishment_prop").toString()));
     public static final DeferredHolder<EntityType<?>, EntityType<FallenEntity>> FALLEN = ENTITIES.register("fallen",
             () -> EntityType.Builder.of(FallenEntity::new, MobCategory.MONSTER).sized(0.8f, 2.4f).fireImmune()
                     .clientTrackingRange(12).build(FiatLux.id("fallen").toString()));

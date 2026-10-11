@@ -33,6 +33,8 @@ MODELS = {
     "principality": ("entity", "principality", 120, 40),  # Tier 2 - Col 1:16, Dan 10:13
     "archangel": ("entity", "archangel", 120, 40),        # Tier 2 - 1 Thess 4:16, Jude 1:9
     "serpent": ("entity", "serpent", 120, 30),            # Tier 2 - Genesis 3:1, Rev 12:9
+    "cross": ("entity", "cross", 20, 1),                  # prop - John 19:17-19, built to the crucified pose
+    "stocks": ("entity", "stocks", 15, 1),                # prop - Jer 20:2, built to the stocks pose
 }
 
 

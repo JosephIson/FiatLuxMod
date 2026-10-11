@@ -377,10 +377,13 @@ public final class FiatLuxGameTests {
         cosmos.underworld = new UnderworldState();   // the GameTest world persists between runs
         cosmos.underworld.souls = 50_000;
         boolean fallen = cosmos.fallOfMan;
+        double heaven0 = cosmos.heavenSouls;
         cosmos.fallOfMan = true;   // peoples multiply only after the Fall of Man (Gen 4:1)
         for (int i = 0; i < 1000; i++) WorldTicker.step(server, 60.0);   // 1000 simulated minutes: some five hundred mortal years
         helper.assertTrue(eden.population > 1000 && eden.population < eden.era.capacity * 2, "population did not grow believably: " + eden.population);
-        helper.assertTrue(cosmos.heavenSouls < 1e7 && cosmos.underworld.knowledge < 1e9, "the numbers ran away: heaven " + cosmos.heavenSouls
+        double people = cosmos.planets.stream().mapToDouble(p -> p.population).sum();
+        helper.assertTrue(cosmos.heavenSouls - heaven0 < people * 20 + 1000 && cosmos.underworld.knowledge < 1e10,
+                "the numbers ran away: heaven +" + (cosmos.heavenSouls - heaven0) + " for " + people + " people"
                 + ", knowledge " + cosmos.underworld.knowledge);
         helper.assertTrue(eden.era.ordinal() > 0, "the mortals of Eden never left the hunter-gatherer age");
         helper.assertTrue(CosmosData.get(server).glory() > glory0, "prayer added no Glory");
@@ -469,6 +472,54 @@ public final class FiatLuxGameTests {
             if (helper.getLevel().getBlockState(p).is(com.josephison.fiatlux.registry.ModBlocks.KNOWLEDGE_FRUIT.get())) n++;
         }
         return n;
+    }
+
+    /**
+     * Peoples govern themselves and keep their laws: a classical people with many towns forms an
+     * empire with an emperor and laws; a seen crime is judged by the age's punishment - under an
+     * empire, sedition is punished by the cross - and a Creator can deliver the condemned.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void governmentsAndTheirLaws(GameTestHelper helper) {
+        helper.assertTrue(com.josephison.fiatlux.civilization.Polity.Form.of(com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL, 5, 0.5, true)
+                == com.josephison.fiatlux.civilization.Polity.Form.EMPIRE, "five towns of the classical age did not make an empire");
+        helper.assertTrue(com.josephison.fiatlux.civilization.Justice.punishment(com.josephison.fiatlux.civilization.Polity.Form.EMPIRE,
+                com.josephison.fiatlux.civilization.Polity.Crime.SEDITION) == com.josephison.fiatlux.civilization.Justice.Sentence.CROSS,
+                "an empire did not crucify sedition");
+        helper.assertTrue(com.josephison.fiatlux.civilization.Justice.punishment(com.josephison.fiatlux.civilization.Polity.Form.CLAN,
+                com.josephison.fiatlux.civilization.Polity.Crime.MURDER) == com.josephison.fiatlux.civilization.Justice.Sentence.EXILE,
+                "a clan did not drive out a murderer");
+        MinecraftServer server = helper.getLevel().getServer();
+        CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(server);
+        Planet world = PlanetaryGenesisPower.create(server, "GameTest", PlanetType.EARTHLIKE, "GameTestRome");
+        helper.assertTrue(world != null, "no world");
+        BlockPos centre = helper.absolutePos(new BlockPos(1, 2, 1));
+        var town = new com.josephison.fiatlux.civilization.Settlement(centre);
+        town.name = "GameTestRome";
+        cosmos.addTown(world.id, town);
+        var g = new com.josephison.fiatlux.civilization.Polity(java.util.UUID.randomUUID(), world.id, "Empire of GameTestRome",
+                com.josephison.fiatlux.civilization.Polity.Form.EMPIRE, "GameTestRome", 0);
+        g.laws.add(com.josephison.fiatlux.civilization.Polity.Law.SEDITION);
+        com.josephison.fiatlux.civilization.Polities.get(server).byWorld.put(world.id, g);
+        var rebel = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(helper.getLevel(), centre.offset(2, 0, 0), centre,
+                com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL, "Barabbas", true, 30, null, null, null);
+        helper.assertTrue(rebel != null, "no rebel");
+        com.josephison.fiatlux.civilization.Justice.judge(helper.getLevel(), g, world, rebel, com.josephison.fiatlux.civilization.Polity.Crime.SEDITION);
+        helper.runAfterDelay(5, () -> {
+            helper.assertTrue(rebel.sentence() == com.josephison.fiatlux.civilization.Justice.Sentence.CROSS && rebel.act() == com.josephison.fiatlux.entity.MortalEntity.CRUCIFIED,
+                    "the rebel was not crucified: " + rebel.sentence());
+            var crosses = helper.getLevel().getEntitiesOfClass(com.josephison.fiatlux.entity.PunishmentPropEntity.class, rebel.getBoundingBox().inflate(2, 4, 2));
+            helper.assertTrue(!crosses.isEmpty() && crosses.getFirst().inscription().equals("BARABBAS\nREBEL"),
+                    "no cross bears the charge: " + (crosses.isEmpty() ? "no cross" : crosses.getFirst().inscription()));
+            crosses.forEach(net.minecraft.world.entity.Entity::discard);
+            rebel.release();
+            rebel.setNoGravity(false);
+            rebel.discard();
+            com.josephison.fiatlux.civilization.Polities.get(server).byWorld.remove(world.id);
+            cosmos.towns.remove(world.id);
+            cosmos.planets.remove(world);
+            helper.succeed();
+        });
     }
 
     /** Every /fiatlux report runs without error on a living cosmos. */

@@ -42,10 +42,15 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
         for (int i = 0; i < ERAS.length; i++) {
             boolean shown = i == era && !innocent;
             model.getBone("era_" + ERAS[i]).ifPresent(b -> b.setHidden(!shown));
-            model.getBone("tool_" + ERAS[i]).ifPresent(b -> b.setHidden(!shown || mortal.isChild()));
+            boolean held = mortal.act() == MortalEntity.CRUCIFIED || mortal.act() == MortalEntity.STOCKS || mortal.act() == MortalEntity.EXORCISE;
+            model.getBone("tool_" + ERAS[i]).ifPresent(b -> b.setHidden(!shown || mortal.isChild() || held));
         }
         boolean helmet = ERAS[Math.min(era, ERAS.length - 1)].equals("spacefaring") && !innocent;
         model.getBone("era_spacefaring_helm").ifPresent(b -> b.setHidden(!helmet));
+        String title = mortal.title();
+        boolean crowned = title.equals("King") || title.equals("Queen") || title.equals("Emperor") || title.equals("Empress")
+                || title.equals("Chief") || title.equals("Chieftess");
+        model.getBone("crown").ifPresent(b -> b.setHidden(!crowned || helmet));
         model.getBone("beard").ifPresent(b -> b.setHidden(!mortal.isMale() || helmet));
         model.getBone("long_hair").ifPresent(b -> b.setHidden(mortal.isMale() || helmet));
         super.preRender(poseStack, mortal, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);

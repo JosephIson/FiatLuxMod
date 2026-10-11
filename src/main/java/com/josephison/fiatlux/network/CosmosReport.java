@@ -160,6 +160,21 @@ public record CosmosReport(CompoundTag data) implements CustomPacketPayload {
                         faiths.add(f);
                     });
             w.put("faiths", faiths);
+            com.josephison.fiatlux.civilization.Polity g = com.josephison.fiatlux.civilization.Polities.get(server).of(p.id);
+            if (g != null) {
+                CompoundTag rule = new CompoundTag();
+                rule.putString("name", g.name);
+                rule.putString("ruler", g.rulerTitle());
+                rule.putString("capital", g.capital);
+                rule.putInt("judged", g.judged);
+                ListTag laws = new ListTag();
+                for (var law : g.laws) laws.add(StringTag.valueOf(law.text + " (" + law.source + ")"));
+                rule.put("laws", laws);
+                ListTag an = new ListTag();
+                for (String a : g.annals.subList(Math.max(0, g.annals.size() - 5), g.annals.size())) an.add(StringTag.valueOf(a));
+                rule.put("annals", an);
+                w.put("government", rule);
+            }
             worlds.add(w);
         }
         int earth = census.getOrDefault("the earth", 0);

@@ -228,6 +228,11 @@ class Model:
         self.bones: dict[str, Bone] = {}
         self.visible_bounds = visible_bounds
         self.tex_w = self.tex_h = 0
+        self.decals = []  # (cube, face, fn(tex_px, glow_px, rect)) painted over a face after texturing
+
+    def decal(self, cube, face, fn):
+        """Paints over one face of a cube once the atlas is laid out (signage, plaques, glyphs)."""
+        self.decals.append((cube, face, fn))
 
     # -- building ----------------------------------------------------------------
     def bone(self, name, pivot, parent=None, rotation=(0, 0, 0)):
@@ -356,6 +361,8 @@ class Model:
             if cubes_json:
                 bj["cubes"] = cubes_json
             bones_json.append(bj)
+        for c, f, fn in self.decals:
+            any_glow |= bool(fn(tp, gp, self._face_rects(c)[f]))
         vw, vh, vo = self.visible_bounds
         geo = {
             "format_version": "1.12.0",

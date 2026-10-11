@@ -123,6 +123,15 @@ public class CosmosScreen extends Screen {
                     if (!w.getString("giver").isEmpty()) text("Life was breathed into it by " + w.getString("giver") + ".", DIM, 0);
                     bar("Faith " + pct(w.getDouble("faith")), w.getDouble("faith"), HEAVEN);
                     bar("Sin " + pct(w.getDouble("sin")), w.getDouble("sin"), HELL);
+                    if (w.contains("government")) {
+                        CompoundTag gov = w.getCompound("government");
+                        text("The " + gov.getString("name") + ", ruled by " + gov.getString("ruler") + " from " + gov.getString("capital")
+                                + (gov.getInt("judged") > 0 ? "; " + gov.getInt("judged") + " judged under its law" : "") + ".", 0xFFE8C890, 0);
+                        var laws = gov.getList("laws", Tag.TAG_STRING);
+                        for (int l = 0; l < laws.size(); l++) text(laws.getString(l), DIM, 8);
+                        var an = gov.getList("annals", Tag.TAG_STRING);
+                        for (int l = 0; l < an.size(); l++) text(an.getString(l), 0xFFB8B0C8, 8);
+                    }
                     var towns = w.getList("towns", Tag.TAG_COMPOUND);
                     text("Towns (" + towns.size() + "):", GOLD, 0);
                     for (int t = 0; t < towns.size(); t++) {

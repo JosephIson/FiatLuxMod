@@ -222,6 +222,27 @@ hung with fruit you can pick.
   beyond them at the rates of its age, up to what that age can feed. When a town is full, young
   families go out and found a new town (Enoch, Nod, Shinar, Ur and on through the cities of
   Genesis), up to `maxTownsPerWorld`.
+* **Cain and Abel** (Genesis 4): when Adam and Eve's first sons are grown, each brings an offering.
+  Abel's is accepted with fire from heaven and Cain's is not, and sin lies at his door. Bless Cain
+  then (sneak-use him) and he rules over it, and Abel lives. Otherwise Cain slays Abel in the field.
+  Come near him, or say "Where is Abel?", and he answers "Am I my brother's keeper?". He is marked
+  so that no one will kill him, and goes out to the land of Nod to build the city of Enoch.
+* **Governments and laws**: once a people is numerous, its families gather under their eldest as a
+  clan. As the ages pass they become a chiefdom, a people ruled by judges if they keep faith, then a
+  kingdom ("make us a king", 1 Sam 8:5), an empire once their towns are many, a republic and at last
+  a federation. Crowns pass to the eldest child, and judges and consuls are chosen. Rulers wear
+  crowns and give laws over the years: the commandments for a faithful people, while a pagan state
+  commands its own gods to be worshipped (Dan 3), which brings persecution. The proud sometimes
+  seize the throne. `/fiatlux polity` shows every government, and `/fiatlux anoint <name>` anoints
+  a ruler (1 Sam 16:13).
+* **Crime and punishment**: theft, violence, murder, idolatry, refusing the state's gods, and
+  sedition happen in the mortals' own lives. When someone sees it and there is a law against it,
+  the ruler judges, and the punishment fits the age: restitution and exile in clans, the stocks and
+  prison in kingdoms, and the cross outside the city under empires, shown without gore. The cross
+  and the stocks are models built to fit the condemned's pose, and each bears the charge written on
+  it, the name and the crime (John 19:19). The faithful who die for refusing a pagan state's gods
+  are martyrs and go up into Heaven. Sneak-use a condemned mortal to **deliver** them (Acts 5:19).
+  `/fiatlux judge <name> <crime>` brings someone before their people's law.
 * **Judgment and the souls of the dead**: when a mortal dies, its deeds are weighed. The righteous
   rise to Heaven and the wicked go down to the Underworld. Their **souls** then walk those realms in
   their own names and faces: in Heaven made of light, praising and singing; in the Underworld made

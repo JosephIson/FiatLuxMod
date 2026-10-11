@@ -45,6 +45,7 @@ public class SoulRenderer extends GeoEntityRenderer<SoulEntity> {
             model.getBone("tool_" + era).ifPresent(b -> b.setHidden(true));
         }
         model.getBone("era_spacefaring_helm").ifPresent(b -> b.setHidden(true));
+        model.getBone("crown").ifPresent(b -> b.setHidden(true));
         model.getBone("beard").ifPresent(b -> b.setHidden(!soul.isMale()));
         model.getBone("long_hair").ifPresent(b -> b.setHidden(soul.isMale()));
         super.preRender(poseStack, soul, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
