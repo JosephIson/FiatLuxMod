@@ -388,6 +388,32 @@ public final class FiatLuxGameTests {
         helper.succeed();
     }
 
+    /**
+     * The dead walk their realms: a righteous soul is brought forth in its own name and face, a soul in
+     * the Underworld can be redeemed into Heaven, and souls cannot die again.
+     */
+    @GameTest(template = "empty")
+    public static void soulsWalkTheirRealms(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+        var abel = new com.josephison.fiatlux.civilization.Person(java.util.UUID.randomUUID(), "Abel", true, "GameTestEden", 0, null, null);
+        abel.died = 100;
+        abel.soul = "underworld";
+        abel.profession = "shepherd";
+        abel.variant = 3;
+        gens.add(abel);
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2));
+        var soul = com.josephison.fiatlux.civilization.SoulRealms.spawn(helper.getLevel(), abel, abel.name, true, abel.world, false, at, true);
+        helper.assertTrue(soul != null && abel.embodied && soul.variant() == 3 && "Abel".equals(soul.getName().getString()),
+                "the soul was not brought forth as the person it was");
+        soul.hurt(helper.getLevel().damageSources().generic(), 1000f);
+        helper.assertTrue(soul.isAlive(), "a soul died a second death");
+        com.josephison.fiatlux.civilization.SoulRealms.redeem(server, "GameTest", soul);
+        helper.assertTrue(soul.isRemoved() && "heaven".equals(abel.soul) && abel.redeemed, "the soul was not redeemed into Heaven");
+        gens.people.remove(abel.id);
+        helper.succeed();
+    }
+
     /** Every /fiatlux report runs without error on a living cosmos. */
     @GameTest(template = "empty")
     public static void reportsRun(GameTestHelper helper) {

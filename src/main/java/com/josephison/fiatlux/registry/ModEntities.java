@@ -51,6 +51,9 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.entity.MortalEntity>> MORTAL = ENTITIES.register("mortal",
             () -> EntityType.Builder.of(com.josephison.fiatlux.entity.MortalEntity::new, MobCategory.CREATURE).sized(0.6f, 1.85f)
                     .clientTrackingRange(10).build(FiatLux.id("mortal").toString()));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.josephison.fiatlux.entity.SoulEntity>> SOUL = ENTITIES.register("soul",
+            () -> EntityType.Builder.of(com.josephison.fiatlux.entity.SoulEntity::new, MobCategory.MISC).sized(0.6f, 1.85f).fireImmune()
+                    .clientTrackingRange(10).build(FiatLux.id("soul").toString()));
     public static final DeferredHolder<EntityType<?>, EntityType<FallenEntity>> FALLEN = ENTITIES.register("fallen",
             () -> EntityType.Builder.of(FallenEntity::new, MobCategory.MONSTER).sized(0.8f, 2.4f).fireImmune()
                     .clientTrackingRange(12).build(FiatLux.id("fallen").toString()));

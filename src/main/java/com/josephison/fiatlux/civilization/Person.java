@@ -23,6 +23,12 @@ public final class Person {
     /** "heaven", "underworld", or "" while living. */
     public String soul = "";
     public int ageAtDeath;
+    /** The soul walks its realm as a SoulEntity (so it is not brought forth twice). */
+    public boolean embodied;
+    /** Raised out of the Underworld by a Creator's mercy. */
+    public boolean redeemed;
+    /** The look the mortal had in life, kept by its soul. */
+    public int variant = -1;
 
     public Person(UUID id, String name, boolean male, String world, long born, @Nullable UUID father, @Nullable UUID mother) {
         this.id = id;
@@ -53,6 +59,9 @@ public final class Person {
         if (religion != null) t.putUUID("religion", religion);
         t.putString("soul", soul);
         t.putInt("age_at_death", ageAtDeath);
+        t.putBoolean("embodied", embodied);
+        t.putBoolean("redeemed", redeemed);
+        t.putInt("variant", variant);
         return t;
     }
 
@@ -65,6 +74,9 @@ public final class Person {
         if (t.hasUUID("religion")) p.religion = t.getUUID("religion");
         p.soul = t.getString("soul");
         p.ageAtDeath = t.getInt("age_at_death");
+        p.embodied = t.getBoolean("embodied");
+        p.redeemed = t.getBoolean("redeemed");
+        p.variant = t.contains("variant") ? t.getInt("variant") : -1;
         return p;
     }
 }

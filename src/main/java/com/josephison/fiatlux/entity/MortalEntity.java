@@ -174,6 +174,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         p.profession = profession.id;
         p.religion = religion;
         p.spouse = spouse;
+        p.variant = variant();
         Generations.get(sl.getServer()).add(p);
     }
 
@@ -849,7 +850,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
                 p.died = sl.getGameTime();
                 p.soul = saved ? "heaven" : "underworld";
                 p.ageAtDeath = years;
+                p.variant = variant();
+                p.profession = profession.id;
                 Generations.get(sl.getServer()).setDirty();
+                com.josephison.fiatlux.civilization.SoulRealms.onDeath(sl.getServer(), p, saved);   // the soul arrives in its realm
             }
             String lineage = fatherName.isEmpty() && motherName.isEmpty() ? "" : ", " + (isMale() ? "son" : "daughter") + " of "
                     + (fatherName.isEmpty() ? motherName : motherName.isEmpty() ? fatherName : fatherName + " and " + motherName);

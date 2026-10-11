@@ -90,6 +90,10 @@ public class ModLanguageProvider extends LanguageProvider {
         add("message.fiatlux.mortal.praying", "%1$s, a %3$s of the %2$s age on %4$s, is kneeling in prayer.");
         add("message.fiatlux.mortal.man", "man");
         add("message.fiatlux.faith.petition", "[Prayer] %s of %s: \"%s\"");
+        add(com.josephison.fiatlux.registry.ModEntities.SOUL.get(), "Soul");
+        add("message.fiatlux.soul.arrives_heaven", "The soul of %s of %s is taken up into Heaven.");
+        add("message.fiatlux.soul.arrives_underworld", "The soul of %s of %s falls into the Underworld.");
+        add("message.fiatlux.soul.redeemed", "You redeem the soul of %s: it rises into Heaven.");
         add("message.fiatlux.faith.answered", "You have answered the prayers of %s. Their faith is renewed.");
         add("message.fiatlux.faith.schism", "%s of %s has turned away from you and founded the %s, worshipping %s.");
         add("message.fiatlux.mortal.woman", "woman");

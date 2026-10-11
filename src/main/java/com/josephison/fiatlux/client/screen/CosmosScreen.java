@@ -90,14 +90,15 @@ public class CosmosScreen extends Screen {
                 heading("Creation", GOLD);
                 text(u.getBoolean("bigBang") ? "The light has been spoken: the universe is " + String.format("%.1f", u.getDouble("age")) + " days old."
                         : "Darkness is upon the face of the deep. Speak Let There Be Light in the Void.");
-                text(u.getInt("galaxies") + " galaxies · " + u.getInt("blackHoles") + " black holes · " + u.getInt("worlds") + " worlds ("
-                        + u.getInt("living") + " with life)");
+                text(plural(u.getInt("galaxies"), "galaxy", "galaxies") + " · " + plural(u.getInt("blackHoles"), "black hole", "black holes")
+                        + " · " + plural(u.getInt("worlds"), "world", "worlds") + " (" + u.getInt("living") + " with life)");
                 text("Glory " + num(u.getLong("glory")) + " · Ascension tier " + u.getInt("tier"));
                 text("One mortal year passes every " + timeText(u.getInt("yearSeconds")) + " (simulation speed ×" + num(u.getDouble("speed")) + ").", DIM, 0);
                 heading("The living", GOLD);
-                text(data.getInt("totalLiving") + " mortals are alive, and " + data.getInt("totalWritten") + " lives are written in the Book of Generations.");
+                text(plural(data.getInt("totalLiving"), "mortal is", "mortals are") + " alive, and " + plural(data.getInt("totalWritten"), "life is", "lives are")
+                        + " written in the Book of Generations.");
                 if (data.getInt("earthLiving") > 0) text(data.getInt("earthLiving") + " of them live on the earth.");
-                text(data.getInt("faithCount") + " faiths have been founded.");
+                text(plural(data.getInt("faithCount"), "faith has", "faiths have") + " been founded.");
                 heading("The moral climate", GOLD);
                 bar("Corruption of creation " + pct(m.getDouble("corruption")), m.getDouble("corruption"), HELL);
                 bar("Pride among the Host " + pct(m.getDouble("pride")), m.getDouble("pride"), 0xFFE0A050);
@@ -173,6 +174,10 @@ public class CosmosScreen extends Screen {
                 for (int i = ch.size() - 1; i >= 0; i--) text(ch.getString(i));
             }
         }
+    }
+
+    private static String plural(int n, String one, String many) {
+        return n + " " + (n == 1 ? one : many);
     }
 
     private static String cap(String s) {

@@ -22,6 +22,7 @@ public final class DivinityEvents {
         EditQueue.tick(event.getServer());
         com.josephison.fiatlux.realm.AbyssPhysics.tick(event.getServer());   // the pull of the bottomless pits
         com.josephison.fiatlux.civilization.MortalPopulation.tick(event.getServer());   // the peoples of the living worlds
+        com.josephison.fiatlux.civilization.SoulRealms.tick(event.getServer());   // the dead in Heaven and the Underworld
     }
 
     @SubscribeEvent
