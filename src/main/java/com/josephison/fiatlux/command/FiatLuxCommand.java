@@ -184,6 +184,29 @@ public final class FiatLuxCommand {
                                     .withStyle(s -> s.withColor(0xE0A060)), true);
                             return 1;
                         })))
+                .then(Commands.literal("build").requires(FiatLuxCommand::isGod).executes(c -> {
+                    // the builders of the town nearest you build anew for their age, all at once
+                    var level = c.getSource().getLevel();
+                    var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(level.dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    var town = world == null ? null : cos.townNear(world.id, BlockPos.containing(c.getSource().getPosition()));
+                    if (town == null) {
+                        c.getSource().sendFailure(Component.literal("There is no town here."));
+                        return 0;
+                    }
+                    int done = 0;
+                    for (int i = 0; i < 40; i++) {
+                        String what = com.josephison.fiatlux.civilization.MortalPopulation.renew(level, town, world.era);
+                        if (what.isEmpty()) break;
+                        done++;
+                    }
+                    cos.setDirty();
+                    int n = done;
+                    c.getSource().sendSuccess(() -> Component.literal((town.name.isEmpty() ? "The town" : town.name) + " is built anew for the "
+                            + world.era.getSerializedName().replace('_', '-') + " age (" + n + " works).").withStyle(st -> st.withColor(0xE8C890)), true);
+                    return n;
+                }))
                 .then(Commands.literal("spirits").executes(c -> {
                     c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.infernal.Infernal.describe(c.getSource().getServer()))
                             .withStyle(s -> s.withColor(0xD08070)), false);
@@ -298,6 +321,11 @@ public final class FiatLuxCommand {
                             java.util.UUID world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).id : null;
                             cos.fallOfMan = false;
                             com.josephison.fiatlux.eden.EdenGarden.plant(level, ground, world);
+                            if (slot >= 0 && slot < cos.planets.size()) {   // the garden's world is a living world, and this Creator gave it life
+                                var planet = cos.planets.get(slot);
+                                cos.breatheLife(planet);
+                                cos.lifeGivers.putIfAbsent(planet.id, com.mojang.datafixers.util.Pair.of(p.getUUID(), p.getGameProfile().getName()));
+                            }
                             var era = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).era : com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER;
                             var faith = com.josephison.fiatlux.civilization.Generations.get(c.getSource().getServer())
                                     .faithOf(p.getUUID(), p.getGameProfile().getName(), slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot).name : "the earth",

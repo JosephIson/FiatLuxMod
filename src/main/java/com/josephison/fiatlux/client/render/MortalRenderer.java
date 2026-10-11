@@ -63,21 +63,9 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
         this.scaleWidth = scale;
         this.scaleHeight = scale;
         super.render(mortal, yaw, partialTick, poseStack, buffers, light);
-        String words = mortal.speech();
-        if (words.isEmpty() || entityRenderDispatcher.distanceToSqr(mortal) > 24 * 24) return;
-        net.minecraft.client.gui.Font font = getFont();
-        var lines = font.split(net.minecraft.network.chat.Component.literal(words), 150);
-        poseStack.pushPose();
-        poseStack.translate(0, 1.95 * scale / 0.95 * mortal.getScale() + 0.35 + lines.size() * 0.22, 0);
-        poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
-        poseStack.scale(0.028f, -0.028f, 0.028f);
-        org.joml.Matrix4f m = poseStack.last().pose();
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i);
-            font.drawInBatch(line, -font.width(line) / 2f, i * 10, 0xFF2A1E12, false, m, buffers,
-                    net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xD8F4ECD8, 0xF000F0);
-        }
-        poseStack.popPose();
+        String name = mortal.getName().getString() + (mortal.title().isEmpty() ? "" : ", " + mortal.title());
+        SpeechBubble.render(mortal, mortal.speech(), name, 1.95 * scale / 0.95 * mortal.getScale() + 0.45, 24,
+                mortal.isPossessed() ? SpeechBubble.POSSESSED : SpeechBubble.PARCHMENT, poseStack, buffers, entityRenderDispatcher, getFont(), partialTick);
     }
 
     /** One with an unclean spirit in it is drawn as if a shadow lay on it. */

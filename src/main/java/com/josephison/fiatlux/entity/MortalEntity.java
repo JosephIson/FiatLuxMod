@@ -158,6 +158,10 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     public MortalEntity(EntityType<? extends MortalEntity> type, Level level) {
         super(type, level);
+        if (getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation nav) {
+            nav.setCanOpenDoors(true);   // they live in houses with doors
+            nav.setCanPassDoors(true);
+        }
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -413,6 +417,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
+        goalSelector.addGoal(1, new net.minecraft.world.entity.ai.goal.OpenDoorGoal(this, true));
         goalSelector.addGoal(1, new PanicGoal(this, 1.5));
         goalSelector.addGoal(1, new AvoidEntityGoal<>(this, Monster.class, 10f, 0.75, 1.1));
         goalSelector.addGoal(2, new ActGoal());
@@ -595,7 +600,14 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
                         CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "house",
                                 "raised a new house in the settlement of " + worldName() + ".");
                     } else {
-                        MortalPopulation.layPath(level, s);
+                        String built = MortalPopulation.renew(level, s, era());
+                        if (!built.isEmpty()) {
+                            say("Behold, we have built anew!");
+                            CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "house",
+                                    built + " in " + (s.name.isEmpty() ? worldName() : s.name) + ".");
+                        } else {
+                            MortalPopulation.layPath(level, s);
+                        }
                     }
                 }
             }
@@ -670,6 +682,20 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (spouse != null || other.spouse != null || isChild() || other.isChild() || isMale() == other.isMale()) return;
         if (opinion.getOrDefault(other.getUUID(), 0) < 3 || other.opinion.getOrDefault(getUUID(), 0) < 3) return;
         if (other.getUUID().equals(father) || other.getUUID().equals(mother) || (father != null && father.equals(other.father))) return;
+        com.josephison.fiatlux.civilization.Weddings.betroth(level, this, other);
+    }
+
+    @Nullable public UUID spouseId() { return spouse; }
+    @Nullable public UUID fatherId() { return father; }
+    @Nullable public UUID motherId() { return mother; }
+    public int childCount() { return children; }
+
+    /**
+     * Joins this one and `other` in marriage: each is written into the Book of Generations as the
+     * other's spouse, and the Chronicle tells of it. `how` completes the sentence (e.g. "at the shrine of Enoch before Elder Ezra").
+     */
+    public void wed(ServerLevel level, MortalEntity other, String how) {
+        if (spouse != null || other.spouse != null || isMale() == other.isMale()) return;
         spouse = other.getUUID();
         spouseName = other.getName().getString();
         other.spouse = getUUID();
@@ -679,15 +705,48 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (a != null) a.spouse = other.getUUID();
         if (b != null) b.spouse = getUUID();
         g.setDirty();
-        say(MortalSpeech.Topic.WEDDING);
-        other.say(MortalSpeech.Topic.WEDDING);
         emote(ParticleTypes.HEART, 8);
         other.emote(ParticleTypes.HEART, 8);
-        for (MortalEntity m : level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(16), m -> m != this && m != other)) {
-            m.beginAct(CHEER, 60);
+        MortalEntity husband = isMale() ? this : other, wife = isMale() ? other : this;
+        if (husband.isFirstParent() && wife.isFirstParent()) {   // "and they shall be one flesh" (Gen 2:24): the first pair live long
+            husband.lifespan = Math.max(husband.lifespan, 120 + random.nextInt(20));
+            wife.lifespan = Math.max(wife.lifespan, 115 + random.nextInt(20));
         }
-        CosmosData.get(level.getServer()).record(level.getServer(), getName().getString(), "wedding",
-                "and " + other.getName().getString() + " were joined in marriage on " + worldName() + ".");
+        CosmosData.get(level.getServer()).record(level.getServer(), husband.getName().getString(), "wedding",
+                "and " + wife.getName().getString() + " were joined in marriage on " + worldName() + (how.isEmpty() ? "" : ", " + how) + ".");
+    }
+
+    /** At a feast: eats its fill among friends. */
+    public void feast() {
+        hunger = 1;
+        social = 1;
+        beginAct(EAT, 100);
+    }
+
+    /** Adam or Eve: the first of a world's people, made from the dust and not born of anyone. */
+    public boolean isFirstParent() {
+        String n = getName().getString();
+        return father == null && mother == null && ("Adam".equals(n) || "Eve".equals(n));
+    }
+
+    /**
+     * "And the rib, which the LORD God had taken from man, made he a woman, and brought her unto the man.
+     * And Adam said, This is now bone of my bones, and flesh of my flesh" (Gen 2:22-23). The first man and
+     * the first woman of a world are husband and wife from the day they are made.
+     */
+    private void firstMarriage(ServerLevel level) {
+        if (spouse != null || !isMale() || !"Adam".equals(getName().getString()) || father != null || mother != null) return;
+        MortalEntity eve = level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(96),
+                m -> m.spouse == null && !m.isMale() && "Eve".equals(m.getName().getString()) && m.father == null && m.mother == null).stream()
+                .min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+        if (eve == null) return;
+        wed(level, eve, "the first of all marriages, when the woman was brought unto the man");
+        say("This is now bone of my bones, and flesh of my flesh: she shall be called Woman.");
+        eve.say("And I am thine, and thou art mine.");
+        com.josephison.fiatlux.infernal.Infernal.narrate(level, blockPosition(), "Therefore shall a man leave his father and his mother, and shall cleave "
+                + "unto his wife: and they shall be one flesh. And they were both naked, the man and his wife, and were not ashamed.", "Genesis 2:24-25");
+        Fx.send(level, FxKind.BLESSING, position(), getBbHeight(), 0xFFFFF0C0, 40);
+        Fx.send(level, FxKind.BLESSING, eve.position(), eve.getBbHeight(), 0xFFFFF0C0, 40);
     }
 
     /** Mortals keep near their hearth: within a stroll by day, close in by night. */
@@ -773,6 +832,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         boolean unclothed = !cosmosNow.fallOfMan || cosmosNow.eden == com.josephison.fiatlux.eden.EdenState.FALLEN
                 || cosmosNow.eden == com.josephison.fiatlux.eden.EdenState.JUDGMENT && cosmosNow.edenStep < 8;
         if (unclothed != looksInnocent()) entityData.set(DATA_INNOCENT, unclothed);
+        if (tickCount % 40 == 3) firstMarriage(level);
         if (innocent(level)) {   // "And they were both naked, the man and his wife, and were not ashamed" (Gen 2:25)
             hunger = 1;
             energy = Math.max(energy, 0.5);
@@ -973,14 +1033,17 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             bearGiant(level);
             return;
         }
-        if (isMale() || spouse == null || age < 18 || age > 45) return;
+        // "And Adam lived an hundred and thirty years, and begat a son ... and he begat sons and daughters" (Gen 5:3-4)
+        boolean firstPair = isFirstParent();
+        if (isMale() || spouse == null || age < 18 || age > (firstPair ? 90 : 45)) return;
         Entity husband = level.getEntity(spouse);
         if (!(husband instanceof MortalEntity dad) || distanceToSqr(dad) > 48 * 48) return;
         Settlement s = settlement();
         int max = FiatLuxConfig.COMMON.maxMortalsPerSettlement.get();
-        if (level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(80)).size() >= max) return;
+        if (level.getEntitiesOfClass(MortalEntity.class, getBoundingBox().inflate(80)).size() >= max && !(firstPair && children < 3)) return;
         boolean blessed = s != null && s.blessedWithChild;
-        double chance = 20.0 / (year * 2.5);
+        // "Be fruitful, and multiply, and replenish the earth" (Gen 1:28): the first pair bear often, until they have many
+        double chance = 20.0 / (year * 2.5) * (firstPair && children < 8 ? 5 : 1);
         if (!blessed && random.nextDouble() > chance) return;
         if (blessed) s.blessedWithChild = false;
         // "Adam knew Eve his wife; and she conceived, and bare Cain ... And she again bare his brother Abel" (Gen 4:1-2),

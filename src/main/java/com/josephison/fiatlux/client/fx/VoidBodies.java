@@ -64,6 +64,12 @@ public final class VoidBodies {
             pos[i] = VoidSpace.planetPos(p.orbitRadius(), ClientCosmos.phase(p, partial), p.inclination());
             sphere(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.type(), p.name().hashCode(), time, p.inhabited() ? 1 : 0);
             if (p.type() == PlanetType.GAS_GIANT.ordinal()) rings(solid, m, cam, pos[i], VoidSpace.planetRadius(p.size()), p.color());
+            if (p.type() == PlanetType.EARTHLIKE.ordinal()) {   // its moon, about a quarter its size, circling it
+                double pr = VoidSpace.planetRadius(p.size());
+                double a = time * 0.004 + (p.name().hashCode() & 1023) / 163.0;
+                Vec3 moon = pos[i].add(Math.cos(a) * pr * 3.4, Math.sin(a * 0.5) * pr * 0.5, Math.sin(a) * pr * 3.4);
+                sphere(solid, m, cam, moon, pr * 0.27, PlanetType.BARREN_MOON.ordinal(), p.name().hashCode() + 1, time, 0);
+            }
         }
         var holes = ClientCosmos.get().blackHoles();
         for (var h : holes) horizon(solid, m, cam, new Vec3(h.x(), h.y(), h.z()), h.radius());

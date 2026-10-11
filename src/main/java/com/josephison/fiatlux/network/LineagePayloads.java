@@ -86,8 +86,7 @@ public final class LineagePayloads {
     public static View view(MinecraftServer server, @Nullable UUID focus) {
         Generations g = Generations.get(server);
         Person f = focus != null ? g.person(focus) : null;
-        if (f == null) f = g.people.values().stream().filter(p -> p.father == null && p.mother == null).findFirst()
-                .orElse(g.people.values().stream().findFirst().orElse(null));
+        if (f == null) f = firstParent(g);
         List<Node> nodes = new ArrayList<>();
         long now = server.overworld().getGameTime();
         int year = FiatLuxConfig.COMMON.mortalYearTicks.get();
@@ -116,6 +115,40 @@ public final class LineagePayloads {
         faiths.sort((a, b) -> Integer.compare(b.followers(), a.followers()));
         int living = (int) g.people.values().stream().filter(Person::living).count();
         return new View(nodes, faiths.subList(0, Math.min(10, faiths.size())), living, g.people.size());
+    }
+
+    /**
+     * Where the book opens: the man (or woman) not born of anyone from whom the most are descended -
+     * Adam, on a world given its first pair - so the book opens on a family and not on a stranger.
+     */
+    @Nullable
+    private static Person firstParent(Generations g) {
+        java.util.Map<UUID, List<Person>> children = new java.util.HashMap<>();
+        for (Person p : g.people.values()) {
+            if (p.father != null) children.computeIfAbsent(p.father, k -> new ArrayList<>()).add(p);
+            if (p.mother != null && !p.mother.equals(p.father)) children.computeIfAbsent(p.mother, k -> new ArrayList<>()).add(p);
+        }
+        Person best = null;
+        int most = -1;
+        for (Person p : g.people.values()) {
+            if (p.father != null || p.mother != null) continue;
+            int n = descendants(p.id, children);
+            boolean adam = p.male && p.name.equals("Adam");
+            if (n > most || n == most && adam && (best == null || !best.name.equals("Adam"))) {
+                best = p;
+                most = n;
+            }
+        }
+        return best != null ? best : g.people.values().stream().findFirst().orElse(null);
+    }
+
+    private static int descendants(UUID root, java.util.Map<UUID, List<Person>> children) {
+        java.util.Set<UUID> seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<UUID> todo = new java.util.ArrayDeque<>(List.of(root));
+        while (!todo.isEmpty()) {
+            for (Person c : children.getOrDefault(todo.poll(), List.of())) if (seen.add(c.id)) todo.add(c.id);
+        }
+        return seen.size();
     }
 
     private static void add(List<Node> nodes, List<UUID> seen, Generations g, Person p, int gen, boolean focus, long now, int year) {

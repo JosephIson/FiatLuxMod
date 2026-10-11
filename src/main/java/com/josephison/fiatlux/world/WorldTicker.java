@@ -89,7 +89,13 @@ public final class WorldTicker {
         for (int k = 0; k < budget; k++) {
             cosmos.planetCursor = (cosmos.planetCursor + 1) % Math.max(1, n);
             Planet p = cosmos.planets.get(cosmos.planetCursor);
-            if (!p.hasLife()) continue;
+            if (!p.hasLife()) {
+                // mortals walk it (put there by the garden, or left after a judgment): it is a living world
+                int living = census.getOrDefault(p.name, 0);
+                if (living <= 0 || p.capacity() <= 0) continue;
+                p.population = Math.max(2, living);
+                cosmos.setDirty();
+            }
             // a planet is visited once per ceil(n/budget) steps, so scale its share of time accordingly
             double pf = f * Math.max(1.0, (double) n / budget);
             double[] flows = stepCivilisation(server, governance, cosmos, p, pf, census.getOrDefault(p.name, 0));

@@ -1,7 +1,6 @@
 package com.josephison.fiatlux.client.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -39,19 +38,11 @@ public class CosmosScreen extends Screen {
         rebuild();
     }
 
+    private float shownScroll;
+    private int[][] tabRects = new int[0][];
+
     @Override
     protected void init() {
-        int w = Math.min(width - 24, 460);
-        int x0 = (width - w) / 2;
-        int bw = w / TABS.length;
-        for (int i = 0; i < TABS.length; i++) {
-            final int t = i;
-            addRenderableWidget(Button.builder(Component.literal(TABS[i]), b -> {
-                tab = t;
-                scroll = 0;
-                rebuild();
-            }).bounds(x0 + i * bw, 30, bw - 2, 18).build());
-        }
         rebuild();
     }
 
@@ -213,71 +204,130 @@ public class CosmosScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        int w = Math.min(width - 24, 460);
-        int x0 = (width - w) / 2, top = 52, bottom = height - 12;
-        g.fillGradient(0, 0, width, height, 0xF0060814, 0xF0120A1C);
-        // a few fixed stars
+        int w = Math.min(width - 24, 480);
+        int x0 = (width - w) / 2, top = 56, bottom = height - 12;
+        float time = net.minecraft.Util.getMillis() / 1000f;
+        // the heavens: a deep gradient, a faint nebula and twinkling stars
+        g.fillGradient(0, 0, width, height, 0xF8060814, 0xF8120A1C);
+        Ui.ring(g, width * 0.78f, height * 0.25f, 0, Math.max(width, height) * 0.45f, 0x283A2A6A, 0x003A2A6A);
+        Ui.ring(g, width * 0.2f, height * 0.8f, 0, Math.max(width, height) * 0.35f, 0x205A2A3A, 0x005A2A3A);
         java.util.Random r = new java.util.Random(7);
-        for (int i = 0; i < 90; i++) {
+        for (int i = 0; i < 140; i++) {
             int sx = r.nextInt(Math.max(1, width)), sy = r.nextInt(Math.max(1, height));
-            g.fill(sx, sy, sx + 1, sy + 1, 0x60FFFFFF | (r.nextInt(80) << 24));
+            float tw = 0.5f + 0.5f * Mth.sin(time * (0.8f + r.nextFloat() * 2f) + r.nextFloat() * 6.28f);
+            int a = (int) (40 + 160 * tw * r.nextFloat());
+            g.fill(sx, sy, sx + 1, sy + 1, a << 24 | (r.nextInt(4) == 0 ? 0xC8D8FF : 0xFFFFFF));
+            if (r.nextInt(18) == 0) {   // a few bright ones, with a cross of light
+                g.fill(sx - 1, sy, sx + 2, sy + 1, (a / 2) << 24 | 0xFFFFFF);
+                g.fill(sx, sy - 1, sx + 1, sy + 2, (a / 2) << 24 | 0xFFFFFF);
+            }
         }
-        g.drawCenteredString(font, Component.literal("The Cosmic Expanse").withStyle(s -> s.withBold(true)), width / 2, 10, GOLD);
-        g.fill(x0, top - 2, x0 + w, bottom, 0x60000000);
-        g.renderOutline(x0, top - 2, w, bottom - top + 2, 0x70F5D77A);
-        super.render(g, mouseX, mouseY, partialTick);
-        // the page, scrolled
-        int innerW = w - 20;
-        List<Object[]> rows = new ArrayList<>();   // {FormattedCharSequence or Line, color, indent, kind, value}
+        Ui.title(g, font, Component.literal("The Cosmic Expanse"), width / 2, 12, GOLD);
+        // the tabs
+        tabRects = new int[TABS.length][];
+        int tw = w / TABS.length;
+        for (int i = 0; i < TABS.length; i++) {
+            int tx = x0 + i * tw, ty = 30, th = 18;
+            boolean sel = i == tab, hover = mouseX >= tx && mouseX < tx + tw - 2 && mouseY >= ty && mouseY < ty + th;
+            tabRects[i] = new int[]{tx, ty, tw - 2, th};
+            g.fillGradient(tx, ty, tx + tw - 2, ty + th, sel ? 0xF0302440 : hover ? 0xD0221A30 : 0xB0140F1E, sel ? 0xF0181222 : 0xB00C0A14);
+            g.renderOutline(tx, ty, tw - 2, th, sel ? 0xFFF5D77A : hover ? 0xC0B89A50 : 0x808A6A2A);
+            if (sel) g.fill(tx + 1, ty + th - 2, tx + tw - 3, ty + th, GOLD);
+            String label = font.plainSubstrByWidth(TABS[i], tw - 8);
+            g.drawCenteredString(font, label, tx + (tw - 2) / 2, ty + 5, sel ? GOLD : hover ? TEXT : DIM);
+        }
+        Ui.panel(g, x0, top - 2, w, bottom - top + 2, 1f);
+        // the page, scrolled smoothly
+        int innerW = w - 24;
+        List<Object[]> rows = new ArrayList<>();   // {FormattedCharSequence, color, indent, kind, value}
         for (Line l : lines) {
             if (l.kind == Line.SPACE) {
                 rows.add(new Object[]{null, 0, 0, Line.SPACE, 0f});
             } else if (l.kind == Line.BAR) {
                 rows.add(new Object[]{l.text.getVisualOrderText(), l.color, 0, Line.BAR, l.value});
             } else {
-                for (FormattedCharSequence seq : font.split(l.text, innerW - l.indent)) rows.add(new Object[]{seq, l.color, l.indent, l.kind, 0f});
+                for (FormattedCharSequence seq : font.split(l.text, innerW - l.indent - (l.kind == Line.HEADING ? 10 : 0))) {
+                    rows.add(new Object[]{seq, l.color, l.indent, l.kind, 0f});
+                }
             }
         }
         int contentH = 0;
         for (Object[] row : rows) contentH += rowHeight((int) row[3]);
-        int viewH = bottom - top - 8;
+        int viewH = bottom - top - 10;
         scroll = Mth.clamp(scroll, 0, Math.max(0, contentH - viewH));
-        g.enableScissor(x0 + 1, top, x0 + w - 1, bottom - 1);
-        int y = top + 4 - (int) scroll;
+        shownScroll = Mth.lerp(Math.min(1f, partialTick * 0.5f + 0.25f), shownScroll, (float) scroll);
+        g.enableScissor(x0 + 3, top + 2, x0 + w - 3, bottom - 3);
+        int y = top + 6 - (int) shownScroll;
         for (Object[] row : rows) {
             int kind = (int) row[3];
             int h = rowHeight(kind);
             if (y + h >= top && y <= bottom && row[0] != null) {
-                int x = x0 + 10 + (int) row[2];
+                int x = x0 + 12 + (int) row[2];
                 int color = (int) row[1];
                 FormattedCharSequence seq = (FormattedCharSequence) row[0];
                 if (kind == Line.HEADING) {
-                    g.drawString(font, seq, x, y + 2, color, true);
-                    g.fill(x, y + 12, x0 + w - 10, y + 13, (color & 0x00FFFFFF) | 0x50000000);
+                    Ui.diamond(g, x + 3, y + 6, 3, color);
+                    g.drawString(font, seq, x + 11, y + 2, color, true);
+                    Ui.hGradient(g, x, y + 13, x0 + w - 12, y + 14, color & 0xFFFFFF, 0xA0, 0x10);
                 } else if (kind == Line.BAR) {
-                    int bw = 140, bx = x0 + w - 10 - bw;
+                    int bw = Math.min(160, innerW / 2), bx = x0 + w - 14 - bw;
                     g.drawString(font, seq, x, y + 1, TEXT, false);
-                    g.fill(bx, y + 2, bx + bw, y + 8, 0x40FFFFFF);
-                    g.fill(bx, y + 2, bx + (int) (bw * (float) row[4]), y + 8, color);
+                    Ui.bar(g, bx, y + 2, bw, 5, (float) row[4], Ui.shade(color, 0.6f), color, time * 0.3f);
                 } else {
+                    if ((int) row[2] > 0) Ui.px(g, x - 5, y + 3, Ui.withAlpha(color & 0xFFFFFF, 0x90));
                     g.drawString(font, seq, x, y, color, false);
                 }
             }
             y += h;
         }
         g.disableScissor();
+        // fade the page at its top and bottom edges
+        g.fillGradient(x0 + 3, top + 1, x0 + w - 3, top + 8, 0xC00C0A14, 0x000C0A14);
+        g.fillGradient(x0 + 3, bottom - 9, x0 + w - 3, bottom - 2, 0x000C0A14, 0xC00C0A14);
         if (contentH > viewH) {
             int barH = Math.max(16, viewH * viewH / contentH);
-            int barY = top + (int) ((viewH - barH) * (scroll / Math.max(1, contentH - viewH)));
-            g.fill(x0 + w - 4, barY, x0 + w - 2, barY + barH, 0x90F5D77A);
+            int barY = top + 2 + (int) ((viewH - barH) * (shownScroll / Math.max(1, contentH - viewH)));
+            g.fill(x0 + w - 6, top + 2, x0 + w - 5, bottom - 3, 0x30F5D77A);
+            g.fill(x0 + w - 7, barY, x0 + w - 4, barY + barH, 0xC0F5D77A);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (int i = 0; i < tabRects.length; i++) {
+            int[] t = tabRects[i];
+            if (t != null && mouseX >= t[0] && mouseX < t[0] + t[2] && mouseY >= t[1] && mouseY < t[1] + t[3]) {
+                if (tab != i) {
+                    tab = i;
+                    scroll = 0;
+                    shownScroll = 0;
+                    rebuild();
+                    net.minecraft.client.Minecraft.getInstance().getSoundManager().play(
+                            net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 1f));
+                }
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int key, int scan, int modifiers) {
+        if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT || key == org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT) {
+            tab = Math.floorMod(tab + (key == org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT ? 1 : -1), TABS.length);
+            scroll = 0;
+            shownScroll = 0;
+            rebuild();
+            return true;
+        }
+        return super.keyPressed(key, scan, modifiers);
     }
 
     private static int rowHeight(int kind) {
         return switch (kind) {
-            case Line.HEADING -> 16;
+            case Line.HEADING -> 18;
             case Line.SPACE -> 6;
-            case Line.BAR -> 11;
+            case Line.BAR -> 13;
             default -> 10;
         };
     }

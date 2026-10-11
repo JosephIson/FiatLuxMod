@@ -289,6 +289,12 @@ public final class MortalPopulation {
             for (int y = 0; y <= 3; y++) set(level, s.offset(side * 2, y, -2), Blocks.STONE_BRICK_WALL.defaultBlockState());
             set(level, s.offset(side * 2, 4, -2), Blocks.LANTERN.defaultBlockState());
         }
+        settlement.layout = 1;
+        int style = Architecture.templeStyle(era);
+        if (style > 0) {
+            Architecture.temple(level, settlement.shrine, settlement.centre, style);
+            settlement.templeStyle = style;
+        }
         // the first dwellings
         for (int i = 0; i < 3; i++) raiseHouse(level, settlement, era);
         if (era.ordinal() >= MortalEra.AGRARIAN.ordinal()) settlement.field = field(level, c.offset(0, 0, 18));
@@ -299,17 +305,50 @@ public final class MortalPopulation {
         BlockPos spot = settlement.houseSpot(settlement.houses.size());
         BlockPos g = safeGround(level, spot.getX(), spot.getZ(), 4);
         if (g == null) g = spot;
-        if (era == MortalEra.HUNTER_GATHERER) {
-            tent(level, g);
-            settlement.beds.add(g.east());
-        } else {
-            hut(level, g);
-            settlement.beds.add(g.offset(-1, 0, 0));
-        }
+        BlockPos bed = Architecture.house(level, g, settlement.centre, era);
         settlement.houses.add(g);
+        settlement.beds.add(bed);
+        settlement.houseStyles.add(era.ordinal());
         if (settlement.field == null && era.ordinal() >= MortalEra.AGRARIAN.ordinal()) {
             settlement.field = field(level, settlement.centre.offset(0, 0, 18));
         }
+    }
+
+    /**
+     * The builders build anew what is behind the age: a town laid out in the old way is laid out again
+     * with room for greater houses; the house of their god is raised for the age; then, one at a time,
+     * the houses of an older age are rebuilt. Returns what was done ("" if nothing).
+     */
+    public static String renew(ServerLevel level, Settlement s, MortalEra era) {
+        if (s.layout < 1) {
+            for (BlockPos old : s.houses) Architecture.clearOld(level, old);
+            int n = Math.max(3, s.houses.size());
+            s.houses.clear();
+            s.beds.clear();
+            s.houseStyles.clear();
+            s.layout = 1;
+            for (int i = 0; i < n; i++) raiseHouse(level, s, era);
+            return "laid out the town anew, with " + n + " houses of the " + era.getSerializedName().replace('_', '-') + " age";
+        }
+        int style = Architecture.templeStyle(era);
+        if (style > s.templeStyle) {
+            Architecture.temple(level, s.shrine, s.centre, style);
+            s.templeStyle = style;
+            return switch (style) {
+                case 1 -> "raised a high place of standing stones about the altar";
+                case 2 -> "built a temple of columns about the altar";
+                case 3 -> "built a church of stone, with a bell tower, about the altar";
+                default -> "raised a dome of glass about the altar";
+            };
+        }
+        for (int i = 0; i < s.houses.size(); i++) {
+            if (s.houseStyles.get(i) >= era.ordinal()) continue;
+            BlockPos g = s.houses.get(i);
+            s.beds.set(i, Architecture.house(level, g, s.centre, era));
+            s.houseStyles.set(i, era.ordinal());
+            return "rebuilt a house in the manner of the " + era.getSerializedName().replace('_', '-') + " age";
+        }
+        return "";
     }
 
     /** Builders lay a path of trodden earth from the hearth to a house, and set a light at its door. */
@@ -328,7 +367,10 @@ public final class MortalPopulation {
                 if (level.getBlockState(p.above()).canBeReplaced()) set(level, p.above(), Blocks.AIR.defaultBlockState());
             }
         }
-        BlockPos post = to.offset(2, 0, -3);
+        Direction front = Architecture.facing(to, settlement.centre);
+        BlockPos post = to.relative(front, 7).relative(front.getClockWise(), 2);
+        BlockPos postGround = safeGround(level, post.getX(), post.getZ(), 0);
+        if (postGround != null) post = postGround;
         if (level.getBlockState(post).canBeReplaced()) {
             set(level, post, Blocks.OAK_FENCE.defaultBlockState());
             set(level, post.above(), Blocks.OAK_FENCE.defaultBlockState());
@@ -355,42 +397,6 @@ public final class MortalPopulation {
         }
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, field.getX() + 0.5, field.getY() + 1, field.getZ() + 0.5, 6, 2, 0.3, 2, 0);
         return Math.max(1, got * 2);
-    }
-
-    private static void tent(ServerLevel level, BlockPos g) {
-        // a hide tent: a stepped cone of brown wool around a pole, open to the east
-        for (int y = 0; y < 4; y++) {
-            int r = 2 - y / 2;
-            for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) {
-                boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
-                if (!edge || (dx == r && dz == 0 && y < 2)) continue;
-                set(level, g.offset(dx, y, dz), (y % 2 == 0 ? Blocks.BROWN_WOOL : Blocks.LIGHT_GRAY_WOOL).defaultBlockState());
-            }
-        }
-        for (int y = 0; y < 5; y++) set(level, g.offset(0, y, 0), Blocks.OAK_FENCE.defaultBlockState());
-    }
-
-    private static void hut(ServerLevel level, BlockPos g) {
-        foundation(level, g, 2);
-        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
-            set(level, g.offset(dx, -1, dz), Blocks.OAK_PLANKS.defaultBlockState());
-            boolean edge = Math.abs(dx) == 2 || Math.abs(dz) == 2;
-            boolean corner = Math.abs(dx) == 2 && Math.abs(dz) == 2;
-            for (int y = 0; y < 3; y++) {
-                if (!edge) { set(level, g.offset(dx, y, dz), Blocks.AIR.defaultBlockState()); continue; }
-                boolean door = dz == -2 && dx == 0 && y < 2;
-                boolean window = y == 1 && !corner && (dx == 0 || dz == 0) && !(dz == -2);
-                set(level, g.offset(dx, y, dz), door ? Blocks.AIR.defaultBlockState() : window ? Blocks.GLASS_PANE.defaultBlockState()
-                        : corner ? Blocks.OAK_LOG.defaultBlockState() : Blocks.OAK_PLANKS.defaultBlockState());
-            }
-            set(level, g.offset(dx, 3, dz), Blocks.OAK_SLAB.defaultBlockState());
-        }
-        set(level, g.offset(0, 4, 0), Blocks.OAK_SLAB.defaultBlockState());
-        set(level, g.offset(1, 0, 1), Blocks.CRAFTING_TABLE.defaultBlockState());
-        set(level, g.offset(-1, 0, 1), Blocks.RED_BED.defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, Direction.SOUTH)
-                .setValue(net.minecraft.world.level.block.BedBlock.PART, net.minecraft.world.level.block.state.properties.BedPart.HEAD));
-        set(level, g.offset(-1, 0, 0), Blocks.RED_BED.defaultBlockState().setValue(net.minecraft.world.level.block.BedBlock.FACING, Direction.SOUTH)
-                .setValue(net.minecraft.world.level.block.BedBlock.PART, net.minecraft.world.level.block.state.properties.BedPart.FOOT));
     }
 
     /** "And the earth brought forth grass, and herb yielding seed" (Gen 1:12): a watered field of wheat. */

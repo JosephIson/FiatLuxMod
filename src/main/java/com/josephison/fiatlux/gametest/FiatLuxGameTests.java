@@ -848,6 +848,55 @@ public final class FiatLuxGameTests {
         });
     }
 
+    /**
+     * The houses of every age each stand with a bed where the builders say, and (but for the tents)
+     * a door; a church rises about an altar without moving it, with a bell in its tower; and the
+     * first man and the first woman are husband and wife within moments of being made (Gen 2:22-24).
+     */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void housesTemplesAndTheFirstMarriage(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1)).offset(-640, 0, 640);
+        forceAround(level, at, true);
+        level.getChunk(at);
+        BlockPos g = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 8);
+        helper.assertTrue(g != null, "no ground to build on");
+        for (var era : com.josephison.fiatlux.world.cosmos.MortalEra.values()) {
+            BlockPos h = g.offset(era.ordinal() * 16, 0, 0);
+            BlockPos bed = com.josephison.fiatlux.civilization.Architecture.house(level, h, h.offset(0, 0, -30), era);
+            helper.assertTrue(level.getBlockState(bed).getBlock() instanceof net.minecraft.world.level.block.BedBlock,
+                    "the " + era.getSerializedName() + " house has no bed where it should");
+            if (era == com.josephison.fiatlux.world.cosmos.MortalEra.HUNTER_GATHERER) continue;
+            boolean door = false;
+            for (BlockPos p : BlockPos.betweenClosed(h.offset(-5, 0, -5), h.offset(5, 1, 5))) {
+                if (level.getBlockState(p).getBlock() instanceof net.minecraft.world.level.block.DoorBlock) door = true;
+            }
+            helper.assertTrue(door, "the " + era.getSerializedName() + " house has no door");
+        }
+        BlockPos shrine = g.offset(0, 0, 40);
+        level.setBlock(shrine, net.minecraft.world.level.block.Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 3);
+        com.josephison.fiatlux.civilization.Architecture.temple(level, shrine, shrine.offset(0, 0, 8), 3);
+        helper.assertTrue(level.getBlockState(shrine).is(net.minecraft.world.level.block.Blocks.CHISELED_STONE_BRICKS), "the church took the altar away");
+        boolean bell = false;
+        for (BlockPos p : BlockPos.betweenClosed(shrine.offset(-9, 0, -9), shrine.offset(9, 14, 9))) {
+            if (level.getBlockState(p).is(net.minecraft.world.level.block.Blocks.BELL)) bell = true;
+        }
+        helper.assertTrue(bell, "the church has no bell");
+        var adam = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(0, 0, -20), g, com.josephison.fiatlux.world.cosmos.MortalEra.AGRARIAN,
+                "Adam", true, 24, null, null, null);
+        var eve = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(2, 0, -20), g, com.josephison.fiatlux.world.cosmos.MortalEra.AGRARIAN,
+                "Eve", false, 22, null, null, null);
+        helper.assertTrue(adam != null && eve != null, "the first pair were not formed");
+        helper.runAfterDelay(140, () -> {
+            boolean wed = eve.getUUID().equals(adam.spouseId()) && adam.getUUID().equals(eve.spouseId());
+            adam.discard();
+            eve.discard();
+            forceAround(level, at, false);
+            helper.assertTrue(wed, "Adam and Eve were not husband and wife");
+            helper.succeed();
+        });
+    }
+
     /** Keeps the chunks around a place loaded with their entities, as they are around a watching player. */
     private static void forceAround(net.minecraft.server.level.ServerLevel level, BlockPos at, boolean on) {
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, on);

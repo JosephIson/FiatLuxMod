@@ -33,20 +33,7 @@ public class SerpentRenderer extends GeoEntityRenderer<SerpentEntity> {
     @Override
     public void render(SerpentEntity serpent, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         super.render(serpent, yaw, partialTick, poseStack, buffers, light);
-        String words = serpent.speech();
-        if (words.isEmpty() || entityRenderDispatcher.distanceToSqr(serpent) > 28 * 28) return;
-        net.minecraft.client.gui.Font font = getFont();
-        var lines = font.split(net.minecraft.network.chat.Component.literal(words), 170);
-        poseStack.pushPose();
-        poseStack.translate(0, 1.6 + lines.size() * 0.22, 0);
-        poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
-        poseStack.scale(0.028f, -0.028f, 0.028f);
-        org.joml.Matrix4f m = poseStack.last().pose();
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i);
-            font.drawInBatch(line, -font.width(line) / 2f, i * 10, 0xFFD6F0B0, false, m, buffers,
-                    net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xD0142818, 0xF000F0);
-        }
-        poseStack.popPose();
+        SpeechBubble.render(serpent, serpent.speech(), "The Serpent", 1.7, 28, SpeechBubble.SERPENT,
+                poseStack, buffers, entityRenderDispatcher, getFont(), partialTick);
     }
 }

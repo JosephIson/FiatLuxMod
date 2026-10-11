@@ -62,22 +62,8 @@ public class SoulRenderer extends GeoEntityRenderer<SoulEntity> {
         if (soul.inHeaven()) poseStack.translate(0, 0.15 + Mth.sin((soul.tickCount + partialTick) * 0.06f) * 0.06, 0);   // lightly floating
         super.render(soul, yaw, partialTick, poseStack, buffers, soul.inHeaven() ? 0xF000F0 : light);
         poseStack.popPose();
-        String words = soul.speech();
-        if (words.isEmpty() || entityRenderDispatcher.distanceToSqr(soul) > 24 * 24) return;
-        net.minecraft.client.gui.Font font = getFont();
-        var lines = font.split(net.minecraft.network.chat.Component.literal(words), 150);
-        poseStack.pushPose();
-        poseStack.translate(0, 2.3 + lines.size() * 0.22, 0);
-        poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
-        poseStack.scale(0.028f, -0.028f, 0.028f);
-        org.joml.Matrix4f m = poseStack.last().pose();
-        int text = soul.inHeaven() ? 0xFF6A5420 : 0xFFE8D0C8, back = soul.inHeaven() ? 0xD8FFF8E0 : 0xD0301818;
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i);
-            font.drawInBatch(line, -font.width(line) / 2f, i * 10, text, false, m, buffers,
-                    net.minecraft.client.gui.Font.DisplayMode.NORMAL, back, 0xF000F0);
-        }
-        poseStack.popPose();
+        SpeechBubble.render(soul, soul.speech(), soul.getName().getString(), 2.4, 24, soul.inHeaven() ? SpeechBubble.HEAVENLY : SpeechBubble.DAMNED,
+                poseStack, buffers, entityRenderDispatcher, getFont(), partialTick);
     }
 
     @Override

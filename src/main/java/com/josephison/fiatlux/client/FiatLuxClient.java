@@ -117,6 +117,7 @@ public class FiatLuxClient {
         Minecraft mc = Minecraft.getInstance();
         FxManager.tick();
         if (mc.player == null || mc.level == null) return;
+        if (mc.level.getGameTime() % 20 == 0) com.josephison.fiatlux.client.render.SpeechBubble.forgetAbsent();
         while (Keybinds.POWER_WHEEL.consumeClick()) {
             mc.setScreen(new PowerWheelScreen());
         }

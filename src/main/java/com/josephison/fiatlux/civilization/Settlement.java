@@ -35,6 +35,12 @@ public final class Settlement {
     public long petitionsSince, lastPetition;
     /** A prayer for a child was answered: the next couple to hope for one will have it. */
     public boolean blessedWithChild;
+    /** The age each house was built in (its style), parallel to {@link #houses}; -1 for the old huts and tents. */
+    public final List<Integer> houseStyles = new ArrayList<>();
+    /** The style of the house of their god (see {@link Architecture#templeStyle}). */
+    public int templeStyle;
+    /** 1 once the town is laid out with room for houses of every age. */
+    public int layout;
 
     public Settlement(BlockPos centre) {
         this.centre = centre;
@@ -46,12 +52,30 @@ public final class Settlement {
         return Math.max(4, beds.size() * 2);
     }
 
-    /** Where the n-th house would stand: on rings around the hearth, clear of shrine and field. */
+    /**
+     * Where the n-th house would stand: on rings around the hearth with room between them for the
+     * largest houses, clear of the shrine and its temple to the north and the field to the south.
+     */
     public BlockPos houseSpot(int n) {
-        int ring = n / 6;
-        double r = 10 + ring * 7;
-        double a = Math.PI * 2 * (n % 6) / 6 + ring * 0.5 + 0.3;
-        return centre.offset((int) Math.round(Math.cos(a) * r), 0, (int) Math.round(Math.sin(a) * r));
+        int found = 0;
+        for (int ring = 0; ring < 12; ring++) {
+            double r = 15 + ring * 12;
+            int count = (int) (2 * Math.PI * r / 13.5);
+            for (int k = 0; k < count; k++) {
+                double a = 2 * Math.PI * k / count + ring * 0.37 + 0.2;
+                int dx = (int) Math.round(Math.cos(a) * r), dz = (int) Math.round(Math.sin(a) * r);
+                if (clashes(dx, dz)) continue;
+                if (found++ == n) return centre.offset(dx, 0, dz);
+            }
+        }
+        return centre.offset(n * 12, 0, 200);
+    }
+
+    private boolean clashes(int dx, int dz) {
+        int sx = shrine.getX() - centre.getX(), sz = shrine.getZ() - centre.getZ();
+        if (Math.abs(dx - sx) <= 13 && dz - sz >= -15 && dz - sz <= 13) return true;   // the temple, whatever its size
+        int fx = field != null ? field.getX() - centre.getX() : 0, fz = field != null ? field.getZ() - centre.getZ() : 18;
+        return Math.abs(dx - fx) <= 10 && Math.abs(dz - fz) <= 10;   // the field
     }
 
     public CompoundTag save() {
@@ -72,6 +96,9 @@ public final class Settlement {
         t.putString("name", name);
         t.putLong("founded", founded);
         t.putString("founders", founders);
+        t.putIntArray("house_styles", houseStyles.stream().mapToInt(Integer::intValue).toArray());
+        t.putInt("temple_style", templeStyle);
+        t.putInt("layout", layout);
         return t;
     }
 
@@ -96,6 +123,10 @@ public final class Settlement {
         s.name = t.getString("name");
         s.founded = t.getLong("founded");
         s.founders = t.getString("founders");
+        int[] styles = t.getIntArray("house_styles");
+        for (int i = 0; i < s.houses.size(); i++) s.houseStyles.add(i < styles.length ? styles[i] : -1);
+        s.templeStyle = t.getInt("temple_style");
+        s.layout = t.getInt("layout");
         return s;
     }
 }

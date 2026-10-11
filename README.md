@@ -308,6 +308,33 @@ hung with fruit you can pick.
   * **Commands**: `/fiatlux faiths` shows the faiths of your world as a family tree of branches,
     each with its followers, its leader and what it split over. `/fiatlux faiths split` splits the
     faith of the mortal nearest you, and the Cosmos screen lists leaders and branches.
+* **Marriage**: the first man and the first woman of a world are husband and wife from the moment
+  they are made ("This is now bone of my bones", Gen 2:23), however they came to be: by Breath of
+  Life, the garden, or `/fiatlux eden begin`. After the Fall they bear often (Cain, Abel, Seth, and
+  sons and daughters, Gen 5:4) and live long. Other mortals who come to love each other are
+  **betrothed**, then **wed at the shrine** of their town by day:
+  * the couple go up before the altar, the town gathers in rows behind them, and the leader of their
+    faith (or a priest, or the eldest) officiates;
+  * the vows follow their faith: "What therefore God hath joined together, let not man put
+    asunder" (Mark 10:9) and "Whither thou goest, I will go" (Ruth 1:16) for the true faith, with a
+    ring in later ages; an oath under the sun, a handfasting under the trees, a blood oath to the
+    fallen, a contract under the law for the school of reason, an oath to the divine emperor;
+  * then the bell rings, petals fall and the guests cheer, and everyone goes down to the hearth to
+    **feast** (John 2:1-10). The Chronicle records who was wed, where and before whom.
+* **Buildings of every age**: each age builds in its own manner, and every house turns its door
+  toward the hearth:
+  * **hunter-gatherer**: hide tents;
+  * **agrarian**: mud-brick houses with flat beamed roofs and a parapet (Deut 22:8);
+  * **classical**: plastered villas with red-tiled hipped roofs and a columned porch;
+  * **medieval**: timber-framed houses on stone footings, with steep roofs and smoking chimneys;
+  * **industrial**: brick terraces;
+  * **star-faring**: white halls banded with glass.
+
+  The shrine grows with the people: an altar in the open, then a high place of standing stones
+  (Ex 20:25), a temple of columns, a stone church with coloured windows and a bell tower, and
+  finally a dome of glass. Builders lay out towns with room for every house. When an age turns,
+  they rebuild the temple first and then the houses, one at a time. Mortals open and close doors.
+  `/fiatlux build` has the town nearest you built anew for its age at once.
 * **Unclean spirits and possession** (Eph 6:12): once angels have fallen, **rifts** from the
   Underworld tear open now and then near the towns of fallen worlds. They come more often by night
   and on sinful worlds. Each is a jagged burning tear standing on the ground, and unclean spirits
@@ -368,6 +395,23 @@ hung with fruit you can pick.
   additive light washes out against it.
 * **GeckoLib**: `AutoGlowingGeoLayer` lights every `_glowmask` texel (holy fire, coal veins,
   lightning faces, eyes); translucent passes for crystal and beryl.
+* **Planet skies**: an earthlike world has **a moon** opposite the sun, waxing and waning through
+  its phases with a halo of light ("the lesser light to rule the night", Gen 1:16). A gas giant
+  has a train of small moons. In the Void, a moon circles every earthlike world.
+* **Interface**:
+  * **HUD**: a gilded panel with a halo that fills toward the next tier of Ascension, an essence
+    bar that eases and glints, a chip for the play mode, and the power at the ready with its cost.
+  * **Power wheel**: a true ring of coloured segments that turns and blooms open. The hovered
+    power rises from the ring, and its name, cost and words show in the medallion and on a panel
+    beneath.
+  * **Cosmos screen**: an ornate page under twinkling stars, with its own tabs (arrow keys switch
+    them) and smooth scrolling.
+  * **Book of Generations**: a parchment page of family cards. Click anyone to open their family;
+    use Back (or Backspace) and "The First Parents" to move around. It opens on the first parents
+    with the most descendants. The faiths are kept in the margin.
+  * **Speech bubbles**: solid rounded bubbles with the speaker's name and title, a tail, a pop
+    when something new is said and a fade with distance. Souls, the serpent and the possessed
+    each have their own colours.
 * All of it is configurable in the CLIENT config: density, flashes, god rays, vignette, auras.
 
 ## Architecture

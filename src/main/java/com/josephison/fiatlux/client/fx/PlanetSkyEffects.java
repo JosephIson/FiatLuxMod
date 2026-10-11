@@ -116,7 +116,19 @@ public class PlanetSkyEffects extends DimensionSpecialEffects {
             sb.addVertex(sun, Mth.cos(an) * 12, 100, Mth.sin(an) * 12).setColor(255, 220, 150, 0);
         }
         BufferUploader.drawWithShader(sb.buildOrThrow());
+        // "the moon and the stars to rule by night" (Gen 1:16): an earthlike world has its moon, opposite the
+        // sun, waxing and waning through its phases; a gas giant has a train of little moons
+        if (type == 0) moon(level, sun, 26f, 1f - level.getRainLevel(partialTick), day);
         ps.popPose();
+        if (type == 3) {
+            for (int k = 0; k < 3; k++) {
+                ps.pushPose();
+                ps.mulPose(Axis.YP.rotationDegrees(-90f + 25f * k));
+                ps.mulPose(Axis.XP.rotation(sunAngle * (1.6f + k * 0.7f) + k * 2.1f));
+                moon(level, ps.last().pose(), 6f - k * 1.5f, 1f, day);
+                ps.popPose();
+            }
+        }
 
         RenderSystem.defaultBlendFunc();
         ps.pushPose();
@@ -140,6 +152,39 @@ public class PlanetSkyEffects extends DimensionSpecialEffects {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         return true;
+    }
+
+    private static final net.minecraft.resources.ResourceLocation MOON = net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/environment/moon_phases.png");
+
+    /** The moon in its phase at y = -100 of `m` (opposite the sun), with a faint halo of light about it. */
+    private static void moon(ClientLevel level, Matrix4f m, float size, float clear, float day) {
+        float alpha = clear * Mth.clamp(1.1f - day * 0.75f, 0.25f, 1f);   // pale by day, bright by night
+        if (alpha <= 0.02f) return;
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        // the halo
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        BufferBuilder halo = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        halo.addVertex(m, 0, -100, 0).setColor(200, 215, 255, (int) (70 * alpha));
+        for (int i = 0; i <= 32; i++) {
+            float an = Mth.TWO_PI * i / 32;
+            halo.addVertex(m, Mth.cos(an) * size * 2.2f, -100, Mth.sin(an) * size * 2.2f).setColor(200, 215, 255, 0);
+        }
+        BufferUploader.drawWithShader(halo.buildOrThrow());
+        // the face, in its phase
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, MOON);
+        RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
+        int phase = level.getMoonPhase();
+        int col = phase % 4, row = phase / 4 % 2;
+        float u0 = col / 4f, v0 = row / 2f, u1 = (col + 1) / 4f, v1 = (row + 1) / 2f;
+        BufferBuilder face = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        face.addVertex(m, -size, -100, size).setUv(u1, v1);
+        face.addVertex(m, size, -100, size).setUv(u0, v1);
+        face.addVertex(m, size, -100, -size).setUv(u0, v0);
+        face.addVertex(m, -size, -100, -size).setUv(u1, v0);
+        BufferUploader.drawWithShader(face.buildOrThrow());
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
     }
 
     private static int sky(float pitchDeg, float ar, float ag, float ab, float day) {
