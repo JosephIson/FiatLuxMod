@@ -47,6 +47,10 @@ public final class PowerCasting {
         if (!power.cast(ctx)) {
             return Result.FAILED;
         }
+        // mortals who see it react: wonder or terror, faith regained, prayers answered
+        String path = id.getPath();
+        boolean wrathful = path.equals("smite") || path.equals("deluge") || path.equals("bottomless_pit");
+        com.josephison.fiatlux.civilization.Faiths.onMiracle(ctx.level(), ctx.target(), player, wrathful);
         Divinity.set(player, Divinity.get(player).withEssence(state.essence() - cost));
         cosmos.addGlory(power.glory());
         Divinity.sync(player);

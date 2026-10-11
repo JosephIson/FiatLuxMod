@@ -19,4 +19,10 @@ public final class ClientPayloads {
     public static void onFx(FxPayload p) {
         FxManager.handle(p);
     }
+
+    public static void onLineage(com.josephison.fiatlux.network.LineagePayloads.View view) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.screen instanceof com.josephison.fiatlux.client.screen.GenerationsScreen screen) screen.show(view);
+        else mc.setScreen(new com.josephison.fiatlux.client.screen.GenerationsScreen(view));
+    }
 }

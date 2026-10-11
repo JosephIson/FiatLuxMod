@@ -45,6 +45,7 @@ Model work needs only Python 3 with Pillow.
   `/fiatlux planet visit <name>` (walk on a created world), `/fiatlux planet approach <name>` (fly to it in the Void),
   `/fiatlux realm heaven|void|underworld|earth`,
   `/fiatlux host` (the nine choirs and how many of each are loaded, loyal and rebel),
+  `/fiatlux lineage [name]` (open the Book of Generations), `/fiatlux faiths` (every religion and its followers),
   `/fiatlux sim step <seconds>`, `/fiatlux event bigbang|rebellion|fall|castout|cleanse`
 
 ### Play modes
@@ -165,6 +166,38 @@ Heaven follows Revelation 21: floating cloud islands, streets of "pure gold, as 
 transparent glass", jasper "clear as crystal", lamp pillars of Lux, and a sky with the light
 of the throne and "a rainbow round about the throne, in sight like unto an emerald" (Rev 4:3).
 
+## Mortals: the living peoples of the worlds
+Speak **Breath of Life** on a created world (or on the earth) and "the LORD God formed man of the
+dust of the ground, and breathed into his nostrils the breath of life" (Gen 2:7): the first pair
+rises from the dust, a settlement is founded around a shrine, and their people live on their own.
+* **Lives**: every mortal is born, grows from child to adult to elder, and dies of old age (one
+  year is `mortalYearTicks`). Each has a name, two traits from ten (pious, proud, curious, greedy,
+  kind, lazy, fearful, joyful, brave, industrious), a trade suited to their people's era (gatherer,
+  hunter, farmer, shepherd, builder, priest, scholar, merchant, smith, engineer, pilot), and
+  hunger, rest and company that they look after.
+* **Days**: they wake at dawn, work their trade, eat at the hearth, gather for evening prayer at
+  the shrine and sleep in their houses at night. They talk in speech bubbles about their work, the
+  weather and the news of the cosmos: a war in Heaven, angels who fell, a pit in the sky that
+  swallows light. Conversations can end in friendship, a quarrel, a conversion or a marriage.
+  Builders raise new houses and paths as the village grows, and its buildings follow its era from
+  tents to huts to stone.
+* **Family trees**: couples marry and have children, and every life is written in the **Book of
+  Generations** (Gen 5:1). Use the item or `/fiatlux lineage [name]` to see five generations of a
+  family on parchment: each person's age, trade, world and faith, and where the dead went. Click
+  anyone to turn to their family.
+* **Religions they create, and worship of you**: a people formed by your breath follow *The Way of
+  <your name>*. They pray, they kneel when you come among them and call you by name, and they lay
+  **petitions** before you (bread, healing, a child, protection, a sign) that arrive in your chat.
+  Work a miracle near them to answer: the store fills, the sick are healed and children are given.
+  Leave them in silence too long, or ignore their petitions, and doubt grows. A doubter may found a
+  faith of their own: the sun, the stars, the ancestors, an idol such as the Golden Calf, or one of
+  the fallen. That faith spreads by conversation, and the shrine is crowned by whatever most of the
+  village worships. Miracles win the doubting back; wrath only terrifies them. Sneak-use a mortal
+  to bless them; use them normally to hear who they are.
+* **Judgment**: when a mortal dies, its deeds are weighed. The righteous rise to Heaven in a pillar
+  of light and the wicked go down to the Underworld. Every death is written in the Chronicle and in
+  the Book of Generations, and the widowed mourn.
+
 ## Visual effects
 * **Particles**: additive-blended sparks, an 8-frame animated holy fire, drifting motes,
   falling feathers, embers and radiance, plus a feather pass with normal blending.
@@ -215,5 +248,4 @@ Outputs open directly in Blockbench for hand polishing.
 ## Roadmap
 See [SPEC_STATUS.md](SPEC_STATUS.md) for every item of the design spec (§0–§10) marked Done,
 Partial or Not yet, with where it lives in the code. The largest remaining pieces are the Son
-(§8), the rest of the weapon arsenal (§4), mortal and demon entities with Soul Records and
-Judgment (§6–§7), the management GUIs (§9), and the Tier 4 colossi (§3).
+(§8), the rest of the weapon arsenal (§4), demon entities and a Judgment Seat (§6–§7), the management GUIs (§9), and the Tier 4 colossi (§3).

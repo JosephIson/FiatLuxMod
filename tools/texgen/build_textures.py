@@ -459,3 +459,28 @@ def void_gate():
 
 if __name__ == "__main__":
     void_gate()
+
+
+def book_of_generations():
+    """A thick book bound in red leather, with gold clasps and a tree embossed on the cover."""
+    from PIL import Image
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y in range(2, 15):
+        for x in range(3, 13):
+            edge = x in (3, 12) or y in (2, 14)
+            img.putpixel((x, y), (120, 30, 30, 255) if not edge else (80, 18, 18, 255))
+        img.putpixel((13, y), (236, 226, 200, 255))   # pages
+    for x in range(4, 12):
+        img.putpixel((x, 3), (214, 170, 70, 255))
+        img.putpixel((x, 13), (214, 170, 70, 255))
+    # the embossed tree of generations
+    for y in range(6, 12):
+        img.putpixel((8, y), (230, 190, 90, 255))
+    for (x, y) in ((6, 6), (7, 7), (9, 7), (10, 6), (5, 8), (11, 8), (7, 5), (9, 5), (8, 4)):
+        img.putpixel((x, y), (240, 205, 110, 255))
+    img.putpixel((12, 8), (240, 205, 110, 255))
+    save(img, "item/book_of_generations.png")
+
+
+if __name__ == "__main__":
+    book_of_generations()

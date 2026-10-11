@@ -19,7 +19,7 @@ The 10 GameTests in `gametest/FiatLuxGameTests.java` run in CI on every push (`.
 | Spec item | Status | Where / notes |
 |---|---|---|
 | Self-sustaining simulation (SavedData + throttled ticks) | ✅ | `world/WorldTicker.java` and `CosmicExpanseSavedData`: orbits, mortal growth, prayer → faith → Glory, sin → corruption, deaths → souls, eras. The simulation advances without the player (GameTest `creationSustainsItself`). |
-| Mortals form tribes, pray, build, advance eras, sin, die | 🟡 | Simulated as numbers per planet (`Planet`: population, faith, sin, `MortalEra`). There are no mortal *entities* walking around yet (see §7). |
+| Mortals form tribes, pray, build, advance eras, sin, die | ✅ | Simulated per planet (`Planet`: population, faith, sin, `MortalEra`), and embodied as `MortalEntity` villagers on worlds given the Breath of Life (see §7). |
 | Angels track alignment and pride | ✅ | `divinity/AngelState` (pride, loyalty) and `Alignment` attachments. Pride drifts with the cosmic climate (`RebellionWar.tickBeing`). |
 | Demons form hierarchies, advance tech eras, trade contracts | 🟡 | `UnderworldState`: demons, overlords, territories, contracts, knowledge and eras. Territory *wars* between overlords are not simulated. |
 | No mandatory gates; milestones are events, not cutscenes | ✅ | Big Bang, Genesis, Rebellion, Fall, Flood (Deluge) and Underworld revolutions all emerge from the simulation or are cast/triggered (`/fiatlux event …`). |
@@ -36,7 +36,7 @@ The 10 GameTests in `gametest/FiatLuxGameTests.java` run in CI on every push (`.
 | DeferredRegister / DeferredHolder everywhere | ✅ | `registry/*`, `PowerRegistry`, `DivineWeaponRegistry` |
 | Custom registry | ✅ | `fiatlux:divine_power` (`PowerRegistry`) |
 | Data Components only on items (no raw NBT) | ✅ | `registry/ModDataComponents` (weapon traits, bound power) |
-| Data Attachments for per-entity data | ✅ | `ModAttachments`: divine state, alignment, angel state. Soul records are not built yet (see §7). |
+| Data Attachments for per-entity data | ✅ | `ModAttachments`: divine state, alignment, angel state. Mortal lives are kept in the `Generations` SavedData (see §7). |
 | SavedData for world systems | ✅ | `CosmicExpanseSavedData`, `CosmosData` (mode, Glory, Chronicle). Covenants and the Son's state are not built. |
 | CustomPacketPayload + StreamCodec, split by direction | ✅ | `network/*`: clientbound Fx/SyncCosmos/SyncDivinity; serverbound Cast/SelectPower |
 | PartEntity for colossal models | ✅ | `OphanEntity` + `OphanPart`. Leviathan and Behemoth don't exist yet. |
@@ -47,7 +47,8 @@ The 10 GameTests in `gametest/FiatLuxGameTests.java` run in CI on every push (`.
 | Package | Status |
 |---|---|
 | registry, config, network, divinity, power, entity, realm, weapon, world, effect, client, command, datagen, creation | ✅ present |
-| faith, civilization, son, soul, artifact, achievement | ❌ not created yet (their systems are listed as missing below) |
+| civilization | ✅ present (mortals, settlements, families, faiths) |
+| faith, son, soul, artifact, achievement | ❌ not created yet (faith lives in `civilization`; the rest are listed as missing below) |
 
 ## §3 Blockbench workflow & model quality
 
@@ -120,9 +121,9 @@ The 10 GameTests in `gametest/FiatLuxGameTests.java` run in CI on every push (`.
 
 | Spec item | Status | Where / notes |
 |---|---|---|
-| Settlements, families, temples, eras up to spacefaring | 🟡 | Simulated per planet (population, eras from hunter-gatherer to spacefaring). No mortal entities or built settlements on planets yet. |
-| Soul Record & deeds per entity | ❌ | Only the `Alignment` attachment (virtue/sin). |
-| Judgment Seat / automated realm rules | 🟡 | The simulation sends the dead to Heaven or the Underworld by their sin; there is no Judgment Seat. |
+| Settlements, families, temples, eras up to spacefaring | ✅ | `civilization/MortalPopulation`, `Settlement`, `entity/MortalEntity`. Breath of Life forms the first pair and founds a settlement with a shrine that grows (houses, paths, a field) in its era's style. Mortals age, marry, bear children, work 11 trades, keep daily routines and talk. Families are kept in `Generations` and shown in the Book of Generations (`client/screen/GenerationsScreen`). Faiths: the Creator's own faith, petitions and answered prayers, doubt, schisms into false religions, conversion, crowned shrines (`Faiths`, `Religion`). GameTest `mortalsComeAlive`. |
+| Soul Record & deeds per entity | 🟡 | Every mortal's life is a `Person` record (parents, spouse, trade, faith, age, and the fate of the soul), and deeds move its `Alignment` (blessings, vice). There is no deed log per entity. |
+| Judgment Seat / automated realm rules | 🟡 | Automated: each mortal who dies is judged by virtue against sin and sent to Heaven or the Underworld (`MortalEntity.die`), and the simulation does the same for the numbered population. There is no Judgment Seat screen. |
 | Redemption Havens in the Underworld | ❌ | |
 
 ## §8 The Son
@@ -156,7 +157,7 @@ The 10 GameTests in `gametest/FiatLuxGameTests.java` run in CI on every push (`.
 
 1. **The Son (§8):** incarnation NPC, ministry, disciples, miracles, Passion and Resurrection.
 2. **Weapon arsenal (§4):** Michael's Lance, Exorcist Scythe, Staff of Wonders, Infernal blades, Trumpets.
-3. **Mortal and demon entities (§7, §6):** settlements on planets, overlords and territories in the Underworld, Soul Records, Judgment Seat, Redemption Havens.
+3. **Demon entities and the rest of §7 (§6, §7):** overlords and territories in the Underworld, a Judgment Seat, Redemption Havens.
 4. **GUIs (§9):** Creation Codex, Achievement Forge, Realm Forge, Judgment Seat, Commandment Editor.
 5. **Tier 4 colossi (§3):** Leviathan and Behemoth as PartEntities.
 6. **Remaining biblical events (§0):** Babel, Exodus, Incarnation, and per-planet day length.

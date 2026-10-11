@@ -36,6 +36,8 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.IntValue bigBangGalaxies;
         // civilisation & faith
         public final ModConfigSpec.DoubleValue populationGrowthRate;
+        public final ModConfigSpec.IntValue mortalYearTicks;
+        public final ModConfigSpec.IntValue maxMortalsPerSettlement;
         public final ModConfigSpec.DoubleValue faithPerBeliever;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
@@ -117,6 +119,10 @@ public final class FiatLuxConfig {
             gloryPerFaith = b.comment("World Glory gained per unit of faith offered.").defineInRange("gloryPerFaith", 0.05, 0.0, 100.0);
             sinRate = b.comment("Corruption generated per mortal per step.").defineInRange("sinRate", 0.00002, 0.0, 1.0);
             mortalEraProgressRate = b.defineInRange("mortalEraProgressRate", 1.0, 0.0, 1000.0);
+            mortalYearTicks = b.comment("Ticks in one year of an embodied mortal's life (6000 = five minutes; a long life lasts some hours).")
+                    .defineInRange("mortalYearTicks", 6000, 200, 1_000_000);
+            maxMortalsPerSettlement = b.comment("Most mortals that live in one settlement (children included).")
+                    .defineInRange("maxMortalsPerSettlement", 28, 2, 200);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

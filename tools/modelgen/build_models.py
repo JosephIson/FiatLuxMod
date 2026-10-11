@@ -26,6 +26,7 @@ MODELS = {
     "cherub": ("entity", "cherub", 250, 70),    # Tier 3 - Ezekiel 1:5-13, 10:12-14
     "ophan": ("entity", "ophan", 250, 70),      # Tier 3 - Ezekiel 1:15-21, 10:9-13
     "fallen": ("entity", "fallen", 120, 40),    # Tier 2 - Isaiah 14:12, Luke 10:18, Rev 12:9
+    "mortal": ("entity", "mortal", 40, 20),               # Tier 1 - Genesis 1:27, 2:7
     "dominion": ("entity", "dominion", 250, 70),          # Tier 3 - Col 1:16
     "virtue": ("entity", "virtue", 250, 70),              # Tier 3 - Eph 1:21
     "power": ("entity", "power", 250, 70),                # Tier 3 - Eph 6:12, Jude 1:6, Rev 20:1
@@ -51,6 +52,11 @@ def main():
         failed |= not ok
         print(f"{'OK ' if ok else 'LOW'} {kind}/{name}: {stats['cubes']} cubes, {stats['bones']} bones, "
               f"{model.tex_w}x{model.tex_h} atlas (tier minimum {min_cubes}/{min_bones})")
+        if hasattr(mod, "variants"):   # same geometry, other palettes: extra textures sharing the UV layout
+            import tempfile
+            for vname, vmodel in mod.variants().items():
+                with tempfile.TemporaryDirectory() as tmp:
+                    vmodel.write(Path(tmp) / "variant.geo.json", ASSETS / f"textures/{kind}/{name}_{vname}.png")
         if args.preview:
             model.preview(args.preview / f"{name}.png")
             if hasattr(mod, "preview_pose"):

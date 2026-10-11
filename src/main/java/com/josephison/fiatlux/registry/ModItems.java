@@ -48,6 +48,10 @@ public final class ModItems {
             () -> new DeferredSpawnEggItem(ModEntities.PRINCIPALITY, 0xF4F0E4, 0x9E1E2A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ARCHANGEL_SPAWN_EGG = ITEMS.register("archangel_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.ARCHANGEL, 0xF4F2E8, 0xF6C43C, new Item.Properties()));
+    public static final DeferredItem<com.josephison.fiatlux.item.BookOfGenerationsItem> BOOK_OF_GENERATIONS = ITEMS.register("book_of_generations",
+            () -> new com.josephison.fiatlux.item.BookOfGenerationsItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<DeferredSpawnEggItem> MORTAL_SPAWN_EGG = ITEMS.register("mortal_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.MORTAL, 0xC69C78, 0x8A6A44, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> FALLEN_SPAWN_EGG = ITEMS.register("fallen_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.FALLEN, 0x2C262E, 0xC0281C, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> OPHAN_SPAWN_EGG = ITEMS.register("ophan_spawn_egg",

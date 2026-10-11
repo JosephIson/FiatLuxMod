@@ -259,6 +259,51 @@ public final class FiatLuxGameTests {
         helper.succeed();
     }
 
+    /**
+     * The breath of life and the life that follows: mortals rise from the dust with names, temperaments
+     * and homes, are written in the Book of Generations, bear children whose parents are recorded,
+     * speak, pray and rise again, may found a faith of their own, and when they die are judged.
+     */
+    @GameTest(template = "empty", timeoutTicks = 120)
+    public static void mortalsComeAlive(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var gens = com.josephison.fiatlux.civilization.Generations.get(level.getServer());
+        BlockPos at = helper.absolutePos(new BlockPos(2, 1, 2));
+        var era = com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL;
+        var dad = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at, at, era, null, true, 30, null, null, null);
+        var mum = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at.east(), at, era, null, false, 28, null, null, null);
+        helper.assertTrue(dad != null && mum != null && dad.isMale() && !mum.isMale(), "the first pair did not rise from the dust");
+        helper.assertTrue(dad.hasCustomName() && dad.era() == era && at.equals(dad.home()), "a mortal has no name, age or home");
+        helper.assertTrue(gens.person(dad.getUUID()) != null, "the mortal is not written in the Book of Generations");
+        var child = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, at, at, era, null, null, 0, dad, mum, null);
+        helper.assertTrue(child != null && child.isChild(), "the newborn is not a child");
+        var record = gens.person(child.getUUID());
+        helper.assertTrue(record != null && dad.getUUID().equals(record.father) && mum.getUUID().equals(record.mother), "the child's parents are not recorded");
+        helper.assertTrue(gens.childrenOf(dad.getUUID()).stream().anyMatch(p -> p.id.equals(child.getUUID())), "the family tree does not reach the child");
+        helper.assertTrue(!ModTags.isCorrupt(dad), "a newborn soul is counted among the corrupt");
+        dad.say(com.josephison.fiatlux.civilization.MortalSpeech.Topic.CHAT);
+        helper.assertTrue(!dad.speech().isEmpty(), "the mortal said nothing");
+        var faith = com.josephison.fiatlux.civilization.Faiths.schism(level, mum, "TestWorld");
+        helper.assertTrue(faith.deity != com.josephison.fiatlux.civilization.Religion.Deity.CREATOR && faith.id.equals(mum.religion())
+                && gens.religion(faith.id) != null, "the doubter founded no faith");
+        mum.beginAct(com.josephison.fiatlux.entity.MortalEntity.PRAY, 10);
+        helper.assertTrue(mum.isPraying(), "the mortal would not kneel to pray");
+        helper.assertTrue(com.josephison.fiatlux.civilization.MortalPopulation.embodied(0) == 0
+                && com.josephison.fiatlux.civilization.MortalPopulation.embodied(1_000_000) > 10, "the settlement does not follow the population");
+        helper.assertTrue(!com.josephison.fiatlux.civilization.MortalPopulation.fauna(PlanetType.EARTHLIKE).isEmpty()
+                && com.josephison.fiatlux.civilization.MortalPopulation.fauna(PlanetType.GAS_GIANT).isEmpty(), "creatures were brought forth where none could live");
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(!mum.isPraying(), "the prayer never ended");
+            dad.hurt(level.damageSources().generic(), Float.MAX_VALUE);
+            var dead = gens.person(dad.getUUID());
+            helper.assertTrue(dead != null && !dead.living() && dead.soul.equals("heaven"), "the righteous dead were not judged: " + (dead == null ? "none" : dead.soul));
+            mum.discard();
+            child.discard();
+            gens.religions.remove(faith.id);
+            helper.succeed();
+        });
+    }
+
     /** The creation queue applies a batched edit over ticks, then undoes it exactly. */
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void creationQueueAppliesAndUndoes(GameTestHelper helper) {

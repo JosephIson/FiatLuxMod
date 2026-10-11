@@ -38,6 +38,12 @@ public class CosmicExpanseSavedData extends SavedData {
     public long bigBangTime = -1;          // overworld game time of the Big Bang, -1 = not yet
     public double cosmicAge;               // simulated days since the Big Bang
     public final List<Galaxy> galaxies = new ArrayList<>();
+    /** The settlement (hearth) of each living world, by planet id. */
+    public final java.util.Map<java.util.UUID, com.josephison.fiatlux.civilization.Settlement> settlements = new java.util.HashMap<>();
+    /** Who breathed life into each world (planet id -> player id and name): its people worship them. */
+    public final java.util.Map<java.util.UUID, com.mojang.datafixers.util.Pair<java.util.UUID, String>> lifeGivers = new java.util.HashMap<>();
+    /** Whether the first man and woman (Adam and Eve) have been brought forth. */
+    public boolean firstPairBorn;
     /** Black holes in the Void; the first, the Abyss, forms with the Big Bang. */
     public final List<com.josephison.fiatlux.world.cosmos.BlackHole> blackHoles = new ArrayList<>();
     public final List<Planet> planets = new ArrayList<>();
@@ -114,6 +120,11 @@ public class CosmicExpanseSavedData extends SavedData {
         return planets.stream().filter(p -> p.name.equalsIgnoreCase(name)).findFirst();
     }
 
+    @org.jetbrains.annotations.Nullable
+    public com.mojang.datafixers.util.Pair<java.util.UUID, String> lifeGiverOf(@org.jetbrains.annotations.Nullable Planet p) {
+        return p == null ? null : lifeGivers.get(p.id);
+    }
+
     /** "the LORD God ... breathed into his nostrils the breath of life" (Gen 2:7): seeds mortal life. */
     public boolean breatheLife(Planet p) {
         if (p.capacity() <= 0 || p.hasLife()) return false;
@@ -130,6 +141,25 @@ public class CosmicExpanseSavedData extends SavedData {
         d.cosmicAge = tag.getDouble("cosmic_age");
         GALAXIES.parse(NbtOps.INSTANCE, tag.get("galaxies")).result().ifPresent(d.galaxies::addAll);
         BLACK_HOLES.parse(NbtOps.INSTANCE, tag.get("black_holes")).result().ifPresent(d.blackHoles::addAll);
+        d.firstPairBorn = tag.getBoolean("first_pair_born");
+        net.minecraft.nbt.CompoundTag lg = tag.getCompound("life_givers");
+        for (String k : lg.getAllKeys()) {
+            net.minecraft.nbt.CompoundTag e = lg.getCompound(k);
+            try {
+                d.lifeGivers.put(java.util.UUID.fromString(k), com.mojang.datafixers.util.Pair.of(e.getUUID("id"), e.getString("name")));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        net.minecraft.nbt.CompoundTag st = tag.getCompound("settlements");
+        for (String k : st.getAllKeys()) {
+            try {
+                var id = java.util.UUID.fromString(k);
+                d.settlements.put(id, st.contains(k, net.minecraft.nbt.Tag.TAG_COMPOUND)
+                        ? com.josephison.fiatlux.civilization.Settlement.load(st.getCompound(k))
+                        : new com.josephison.fiatlux.civilization.Settlement(net.minecraft.core.BlockPos.of(st.getLong(k))));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
         if (d.hasBigBang() && !tag.contains("black_holes")) {   // universes born before black holes existed gain their Abyss
             net.minecraft.world.phys.Vec3 a = com.josephison.fiatlux.world.VoidSpace.ABYSS;
             d.blackHoles.add(new com.josephison.fiatlux.world.cosmos.BlackHole("The Abyss", a.x, a.y, a.z,
@@ -167,6 +197,18 @@ public class CosmicExpanseSavedData extends SavedData {
         tag.putDouble("cosmic_age", cosmicAge);
         GALAXIES.encodeStart(NbtOps.INSTANCE, galaxies).result().ifPresent(t -> tag.put("galaxies", t));
         BLACK_HOLES.encodeStart(NbtOps.INSTANCE, blackHoles).result().ifPresent(t -> tag.put("black_holes", t));
+        tag.putBoolean("first_pair_born", firstPairBorn);
+        net.minecraft.nbt.CompoundTag lg = new net.minecraft.nbt.CompoundTag();
+        lifeGivers.forEach((k, v) -> {
+            net.minecraft.nbt.CompoundTag e = new net.minecraft.nbt.CompoundTag();
+            e.putUUID("id", v.getFirst());
+            e.putString("name", v.getSecond());
+            lg.put(k.toString(), e);
+        });
+        tag.put("life_givers", lg);
+        net.minecraft.nbt.CompoundTag st = new net.minecraft.nbt.CompoundTag();
+        settlements.forEach((k, v) -> st.put(k.toString(), v.save()));
+        tag.put("settlements", st);
         PLANETS.encodeStart(NbtOps.INSTANCE, planets).result().ifPresent(t -> tag.put("planets", t));
         tag.putDouble("corruption", corruption);
         tag.putDouble("angelic_pride", angelicPride);

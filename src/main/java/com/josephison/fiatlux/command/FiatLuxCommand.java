@@ -100,6 +100,34 @@ public final class FiatLuxCommand {
                                 }))))
                 .then(Commands.literal("cosmos").executes(c -> cosmos(c.getSource())))
                 .then(Commands.literal("host").executes(c -> host(c.getSource())))
+                .then(Commands.literal("lineage").executes(c -> {
+                            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(c.getSource().getPlayerOrException(),
+                                    com.josephison.fiatlux.network.LineagePayloads.view(c.getSource().getServer(), null));
+                            return 1;
+                        })
+                        .then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                            String name = StringArgumentType.getString(c, "name");
+                            var g = com.josephison.fiatlux.civilization.Generations.get(c.getSource().getServer());
+                            var person = g.people.values().stream().filter(p -> p.name.equalsIgnoreCase(name))
+                                    .sorted((a, b) -> Boolean.compare(b.living(), a.living())).findFirst();
+                            if (person.isEmpty()) {
+                                c.getSource().sendFailure(Component.literal("No one named " + name + " is written in the Book of Generations."));
+                                return 0;
+                            }
+                            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(c.getSource().getPlayerOrException(),
+                                    com.josephison.fiatlux.network.LineagePayloads.view(c.getSource().getServer(), person.get().id));
+                            return 1;
+                        })))
+                .then(Commands.literal("faiths").executes(c -> {
+                    var g = com.josephison.fiatlux.civilization.Generations.get(c.getSource().getServer());
+                    var counts = g.followers();
+                    c.getSource().sendSuccess(() -> Component.literal("The faiths of the cosmos:").withStyle(s -> s.withColor(0xF5D77A)), false);
+                    for (var r : g.religions.values()) {
+                        c.getSource().sendSuccess(() -> Component.literal(String.format("%s (%s) - worships %s, founded by %s - %d followers",
+                                r.name, r.world, r.deityName, r.founder, counts.getOrDefault(r.id, 0))).withStyle(s -> s.withColor(r.deity.color & 0xFFFFFF)), false);
+                    }
+                    return 1;
+                }))
                 .then(Commands.literal("blackhole").requires(FiatLuxCommand::isGod)
                         .then(Commands.literal("create").then(Commands.argument("radius", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(2f, 40f))
                                 .executes(c -> {
@@ -174,6 +202,9 @@ public final class FiatLuxCommand {
                             var cosmos = CosmicExpanseSavedData.get(c.getSource().getServer());
                             var p = cosmos.planet(StringArgumentType.getString(c, "name")).orElse(null);
                             boolean ok = p != null && cosmos.breatheLife(p);
+                            if (ok && c.getSource().getEntity() instanceof ServerPlayer giver) {
+                                cosmos.lifeGivers.put(p.id, com.mojang.datafixers.util.Pair.of(giver.getUUID(), giver.getGameProfile().getName()));
+                            }
                             c.getSource().sendSuccess(() -> Component.translatable(ok ? "command.fiatlux.life" : "command.fiatlux.life.fail"), true);
                             WorldTicker.syncAll(c.getSource().getServer());
                             return ok ? 1 : 0;

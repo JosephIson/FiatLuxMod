@@ -21,9 +21,10 @@ public class ModItemModelProvider extends ItemModelProvider {
         }
         getBuilder("celestial_crystal").parent(new ModelFile.UncheckedModelFile("item/generated"))
                 .texture("layer0", modLoc("block/celestial_crystal"));
+        basicItem(com.josephison.fiatlux.registry.ModItems.BOOK_OF_GENERATIONS.get());
         getBuilder("divine_scepter").parent(new ModelFile.UncheckedModelFile("item/handheld"))
                 .texture("layer0", modLoc("item/divine_scepter"));
-        for (String egg : new String[]{"angel", "seraph", "cherub", "ophan", "fallen", "dominion", "virtue", "power", "principality", "archangel"}) {
+        for (String egg : new String[]{"angel", "seraph", "cherub", "ophan", "fallen", "mortal", "dominion", "virtue", "power", "principality", "archangel"}) {
             withExistingParent(egg + "_spawn_egg", mcLoc("item/template_spawn_egg"));
         }
         // The 3D GeckoLib sword: builtin/entity hands rendering to the GeoItemRenderer. The model is
