@@ -83,6 +83,7 @@ public final class WorldTicker {
 
         // 2. civilisations (bounded round-robin)
         double sinFlow = 0, faithFlow = 0;
+        java.util.Map<String, Integer> census = com.josephison.fiatlux.civilization.Generations.get(server).census();
         int n = cosmos.planets.size();
         int budget = Math.min(n, c.planetsPerStep.get());
         for (int k = 0; k < budget; k++) {
@@ -91,7 +92,7 @@ public final class WorldTicker {
             if (!p.hasLife()) continue;
             // a planet is visited once per ceil(n/budget) steps, so scale its share of time accordingly
             double pf = f * Math.max(1.0, (double) n / budget);
-            double[] flows = stepCivilisation(server, governance, cosmos, p, pf);
+            double[] flows = stepCivilisation(server, governance, cosmos, p, pf, census.getOrDefault(p.name, 0));
             sinFlow += flows[0];
             faithFlow += flows[1];
         }
@@ -104,8 +105,11 @@ public final class WorldTicker {
             cosmos.corruption += (target - cosmos.corruption) * Math.min(1.0, 0.002 * f);
         }
         cosmos.corruption = clamp01(cosmos.corruption * (1.0 - c.corruptionDecay.get() * f));
-        cosmos.angelicPride = clamp01(cosmos.angelicPride + c.prideGrowthRate.get() * cosmos.corruption * f
-                - 0.0002 * (1 - cosmos.corruption) * f);
+        // before the first Fall the morning star's pride grows of itself: "Thine heart was lifted up because
+        // of thy beauty" (Ezek 28:17); after it, pride feeds on the corruption of creation
+        double primordial = cosmos.fallenAngels <= 0 && cosmos.hasBigBang() ? c.primordialPrideRate.get() * f : 0;
+        cosmos.angelicPride = clamp01(cosmos.angelicPride + primordial + c.prideGrowthRate.get() * cosmos.corruption * f
+                - (primordial > 0 ? 0 : 0.0002 * (1 - cosmos.corruption) * f));
         stepRebellion(server, governance, cosmos, random, days);
 
         // 4. the Underworld
@@ -128,38 +132,55 @@ public final class WorldTicker {
         com.josephison.fiatlux.realm.UnderworldSettlements.currentEra = com.josephison.fiatlux.world.cosmos.UnderworldEra.TRIBAL_PITS;
     }
 
-    private static double[] stepCivilisation(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, Planet p, double f) {
+    /** Mortal years in f simulated seconds. */
+    public static double years(double f) {
+        return f / (FiatLuxConfig.COMMON.mortalYearTicks.get() / 20.0);
+    }
+
+    /**
+     * One world's people over f simulated seconds: births and deaths at the rates of their age up to
+     * what that age can feed on this world, never fewer than the living mortals actually walking it
+     * (the census); how many of them pray and how many have turned to sin; souls of the unseen dead;
+     * and the passage of the ages once enough years have gone by and the people are numerous enough.
+     */
+    private static double[] stepCivilisation(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, Planet p, double f, int census) {
         var c = FiatLuxConfig.COMMON;
-        double cap = p.capacity();
-        if (cap <= 0) return new double[]{0, 0};
-        double r = c.populationGrowthRate.get();
-        p.population = Math.max(0, p.population + r * p.population * (1 - p.population / cap) * f);
-        // prayer: the pious share offers faith, which glorifies the world
-        double believers = p.population * p.era.piety;
-        double faith = believers * c.faithPerBeliever.get() * f;
-        p.faith += faith;
-        cosmos.pendingGlory += faith * c.gloryPerFaith.get();
+        double hab = p.type.habitability * p.type.size;
+        if (hab <= 0) return new double[]{0, 0};
+        double years = years(f);
+        double cap = Math.max(2, p.era.capacity * hab);
+        double before = p.population;
+        double r = (p.era.growth - p.era.mortality) * c.populationGrowthRate.get();
+        p.population = Math.max(2, p.population + r * p.population * (1 - p.population / cap) * years);
+        p.population = Math.max(p.population, census);
+        // faith and sin are shares of the people, drifting toward what their age and the climate of creation make them
+        double faithTarget = clamp01(p.era.piety * (1 - cosmos.corruption * 0.6));
+        double sinTarget = clamp01((0.08 + (1 - p.era.piety) * 0.35 + cosmos.corruption * 0.5) * c.sinRate.get());
+        double k = Math.min(1, years * 0.15);
+        p.faith = clamp01(p.faith + (faithTarget - p.faith) * k);
+        p.sin = clamp01(p.sin + (sinTarget - p.sin) * k);
+        // prayer offers Glory
+        cosmos.pendingGlory += Math.sqrt(p.population * p.faith) * c.gloryPerFaith.get() * years;
         if (cosmos.pendingGlory >= 1) {
             long whole = (long) cosmos.pendingGlory;
             gov.addGlory(whole);
             cosmos.pendingGlory -= whole;
         }
-        // sin
-        double sin = p.population * c.sinRate.get() * f;
-        p.sin += sin;
-        // death and souls: the righteous ascend, the unrepentant descend
-        double deaths = p.population * 0.0005 * f;
+        // the unseen dead (the living mortals one meets are judged one by one as they die)
+        double unseen = Math.max(0, before - census);
+        double deaths = unseen * p.era.mortality * years;
         double righteous = p.faith / (p.faith + p.sin + 1e-9);
         cosmos.heavenSouls += deaths * righteous;
         cosmos.underworld.souls += deaths * (1 - righteous);
         // the ages of mortals
-        p.eraProgress += Math.sqrt(p.population) * 0.01 * c.mortalEraProgressRate.get() * f;
-        if (p.eraProgress >= p.era.threshold && p.era != MortalEra.SPACEFARING) {
+        p.eraProgress += years / c.mortalEraProgressRate.get();
+        MortalEra next = p.era.next();
+        if (p.era != MortalEra.SPACEFARING && p.eraProgress >= p.era.minYears && p.population >= next.minPopulation) {
             p.eraProgress = 0;
-            p.era = p.era.next();
+            p.era = next;
             gov.record(server, p.name, "mortal_era", "entered the " + human(p.era.getSerializedName()) + " age.");
         }
-        return new double[]{sin, faith};
+        return new double[]{p.population * p.sin, p.population * p.faith};
     }
 
     private static void stepRebellion(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, RandomSource random, double days) {
@@ -171,7 +192,8 @@ public final class WorldTicker {
             }
             return;
         }
-        if (c.rebellionEnabled.get() && cosmos.corruption >= c.rebellionCorruptionThreshold.get()
+        boolean firstPride = cosmos.fallenAngels <= 0 && cosmos.angelicPride >= 0.6;   // Lucifer's own pride needs no corrupt world
+        if (c.rebellionEnabled.get() && (cosmos.corruption >= c.rebellionCorruptionThreshold.get() || firstPride)
                 && random.nextDouble() < c.rebellionChancePerCheck.get() * cosmos.angelicPride) {
             startRebellion(server, gov, cosmos);
         }
@@ -206,18 +228,21 @@ public final class WorldTicker {
     private static void stepUnderworld(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, double f, double days) {
         var c = FiatLuxConfig.COMMON;
         UnderworldState u = cosmos.underworld;
-        // soul power fuels everything below
-        u.soulPower += u.souls * c.soulPowerPerSoul.get() * f;
-        // infernal population: fallen ones beget hierarchy; sinner souls are pressed into service
-        u.demons = Math.min(c.maxInfernalPopulation.get(), u.demons + (cosmos.fallenAngels * 0.0005 + u.souls * 0.00005) * f);
-        u.overlords = (int) Math.floor(Math.log10(u.demons + 1) * Math.max(1, u.era.ordinal() + 1));
+        double years = years(f);
+        // the demons are the fallen angels themselves ("the angels which kept not their first estate", Jude 1:6):
+        // they do not multiply; only a Fall adds to them, and only the chains of a cleanse take them away
+        u.demons = Math.min(c.maxInfernalPopulation.get(), Math.max(0, cosmos.fallenAngels));
+        // soul power is drawn from the sinner souls held below
+        u.soulPower = u.souls * c.soulPowerPerSoul.get();
+        // the lords of the hierarchy rise one by one as the fallen gather and the deep grows rich in souls
+        u.overlords = u.demons <= 0 ? 0 : Math.min(com.josephison.fiatlux.infernal.InfernalHierarchy.LORDS,
+                1 + (int) (Math.log10(1 + u.demons) * 6 + Math.log10(1 + u.soulPower) * 6) + u.era.ordinal() * 8);
         u.territories = u.overlords * 3;
-        // soul contracts: signed and self-regulating; each consumes a little of a soul
-        double signed = u.souls * 0.0002 * f * (1 + u.era.ordinal());
+        // soul contracts: bargains struck with the living
+        double signed = Math.sqrt(u.souls) * 0.05 * years * (1 + u.era.ordinal());
         u.contracts += signed;
-        u.souls = Math.max(0, u.souls - signed * 0.1);
         // knowledge and technological revolutions
-        u.knowledge += u.soulPower * c.underworldTechRate.get() * f * (1 + u.overlords * 0.05);
+        u.knowledge += (u.demons * 0.05 + Math.sqrt(u.soulPower) * 2) * c.underworldTechRate.get() * years * (1 + u.overlords * 0.02);
         UnderworldEra before = u.era;
         if (u.era == UnderworldEra.TRIBAL_PITS && u.knowledge >= c.feudalThreshold.get()) u.era = UnderworldEra.FEUDAL_CASTLE;
         if (u.era == UnderworldEra.FEUDAL_CASTLE && u.knowledge >= c.industrialThreshold.get()) u.era = UnderworldEra.INDUSTRIAL;
@@ -233,7 +258,7 @@ public final class WorldTicker {
         }
         // periodic divine cleanses
         long day = server.overworld().getDayTime() / 24000L;
-        if (c.divineCleansesEnabled.get() && u.demons > 1000 && day - u.lastCleanseDay >= c.cleanseIntervalDays.get()) {
+        if (c.divineCleansesEnabled.get() && u.demons > 500 && day - u.lastCleanseDay >= c.cleanseIntervalDays.get()) {
             divineCleanse(server, gov, cosmos, day);
         }
     }
@@ -242,11 +267,11 @@ public final class WorldTicker {
     public static void divineCleanse(MinecraftServer server, CosmosData gov, CosmicExpanseSavedData cosmos, long day) {
         UnderworldState u = cosmos.underworld;
         double s = FiatLuxConfig.COMMON.cleanseStrength.get();
-        long purged = (long) (u.demons * s);
-        u.demons *= (1 - s);
-        u.soulPower *= (1 - s);
+        long purged = (long) (cosmos.fallenAngels * s);
+        cosmos.fallenAngels *= (1 - s);   // "delivered them into chains of darkness" (2 Peter 2:4)
+        u.demons = cosmos.fallenAngels;
         u.lastCleanseDay = day;
-        gov.record(server, "The Host", "cleanse", "Exorcist Angels descended into the Underworld and purged " + purged + " of the infernal host.");
+        gov.record(server, "The Host", "cleanse", "Exorcist Angels descended into the Underworld and bound " + purged + " of the fallen in chains of darkness.");
         globalFx(server, FxKind.HOST_ARRIVAL, 0xFFFFF4D6);
         cosmos.setDirty();
     }

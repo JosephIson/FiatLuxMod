@@ -226,12 +226,13 @@ public class ModLanguageProvider extends LanguageProvider {
                 {"simulationEnabled", "Simulation Enabled"}, {"simulationSpeed", "Simulation Speed"}, {"cosmicStepInterval", "Ticks per Simulation Step"},
                 {"planetsPerStep", "Planets per Step"}, {"cosmosSyncInterval", "Sky Sync Interval"}, {"maxPlanets", "Maximum Worlds"},
                 {"orbitSpeedMultiplier", "Orbit Speed"}, {"bigBangGalaxies", "Galaxies Born of the Big Bang"},
-                {"populationGrowthRate", "Population Growth"}, {"faithPerBeliever", "Faith per Believer"}, {"gloryPerFaith", "Glory per Faith"},
-                {"sinRate", "Sin Rate"}, {"mortalEraProgressRate", "Mortal Era Progress"}, {"rebellionEnabled", "Rebellion Enabled"},
+                {"populationGrowthMultiplier", "Population Growth"}, {"gloryPerBelieverYear", "Glory per Believer-Year"}, {"maxTownsPerWorld", "Most Towns per World"},
+                {"ticksPerMortalYear", "Ticks per Mortal Year"}, {"eraYearsMultiplier", "Years per Age"}, {"primordialPrideRate", "Primordial Pride"},
+                {"sinMultiplier", "Sin"}, {"maxMortalsPerSettlement", "Most Mortals per Town"}, {"rebellionEnabled", "Rebellion Enabled"},
                 {"rebellionCorruptionThreshold", "Rebellion Corruption Threshold"}, {"rebellionChancePerCheck", "Rebellion Chance"},
-                {"prideGrowthRate", "Angelic Pride Growth"}, {"corruptionDecay", "Corruption Decay"}, {"underworldTechRate", "Underworld Tech Rate"},
-                {"soulPowerPerSoul", "Soul Power per Soul"}, {"feudalThreshold", "Feudal Era Threshold"}, {"industrialThreshold", "Industrial Era Threshold"},
-                {"modernThreshold", "Modern/Cybernetic Era Threshold"}, {"maxInfernalPopulation", "Max Infernal Population"},
+                {"prideGrowthRate", "Angelic Pride Growth"}, {"corruptionDecay", "Corruption Decay"}, {"knowledgeMultiplier", "Underworld Knowledge"},
+                {"soulPowerPerSinnerSoul", "Soul Power per Sinner Soul"}, {"feudalKnowledge", "Feudal Era Knowledge"}, {"industrialKnowledge", "Industrial Era Knowledge"},
+                {"modernKnowledge", "Modern/Cybernetic Era Knowledge"}, {"maxInfernalPopulation", "Max Infernal Population"},
                 {"divineCleansesEnabled", "Divine Cleanses"}, {"cleanseIntervalDays", "Cleanse Interval (days)"}, {"cleanseStrength", "Cleanse Strength"}};
         for (String[] v : values) add("fiatlux.configuration." + v[0], v[1]);
     }

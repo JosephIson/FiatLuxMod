@@ -121,6 +121,9 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private int talkTicks;
     private long prayedDay = -1;
     private long lastWitness;
+    /** Gone out to found a new town: ticks on the road. */
+    private boolean leaving;
+    private int roadTicks;
 
     public MortalEntity(EntityType<? extends MortalEntity> type, Level level) {
         super(type, level);
@@ -196,6 +199,40 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     public void setDoubt(double d) { doubt = Math.max(0, Math.min(1, d)); }
     public double ageYears() { return age; }
     public void setHome(BlockPos home) { this.home = home; }
+    public boolean isLeaving() { return leaving; }
+
+    /** The living spouse, if near enough to be loaded. */
+    @Nullable
+    public MortalEntity spouseEntity() {
+        return spouse != null && level() instanceof ServerLevel sl && sl.getEntity(spouse) instanceof MortalEntity m ? m : null;
+    }
+
+    /** Goes out to the site of a new town and makes a home there. */
+    public void leaveFor(BlockPos site) {
+        home = site;
+        leaving = true;
+        roadTicks = 0;
+        say(random.nextBoolean() ? "We go out to find a land of our own." : "Farewell! We shall build a new town beyond the hills.");
+        emote(ParticleTypes.HAPPY_VILLAGER, 4);
+    }
+
+    /** On the road: walks home, and if the way is long and no one watches, is simply there. */
+    private void travelTick(ServerLevel level) {
+        if (!leaving || home == null) return;
+        roadTicks += 20;
+        double d = Math.sqrt(distanceToSqr(Vec3.atBottomCenterOf(home)));
+        if (d < 12) {
+            leaving = false;
+            say("Here we shall live. Let us build.");
+            return;
+        }
+        boolean watched = level.getNearestPlayer(this, 40) != null;
+        if (roadTicks > 2400 || (!watched && d > 40 && roadTicks > 200)) {
+            BlockPos at = MortalPopulation.safeGround(level, home.getX() + random.nextInt(7) - 3, home.getZ() + random.nextInt(7) - 3, 10);
+            if (at != null) teleportTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+            leaving = false;
+        }
+    }
     @Nullable public BlockPos home() { return home; }
 
     public MortalEra era() {
@@ -238,7 +275,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     @Nullable
     public Settlement settlement() {
         Planet w = world();
-        return w == null || getServer() == null ? null : CosmicExpanseSavedData.get(getServer()).settlements.get(w.id);
+        return w == null || getServer() == null ? null : CosmicExpanseSavedData.get(getServer()).townNear(w.id, home != null ? home : blockPosition());
     }
 
     private void updateStage() {
@@ -637,6 +674,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             hurt(damageSources().generic(), Float.MAX_VALUE);   // full of years (Gen 25:8)
             return;
         }
+        travelTick(level);
         reactToSurroundings(level);
         faithTick(level, year);
         familyTick(level, year);
@@ -743,7 +781,15 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         double chance = 20.0 / (year * 2.5);
         if (!blessed && random.nextDouble() > chance) return;
         if (blessed) s.blessedWithChild = false;
-        MortalEntity child = MortalPopulation.bringForth(level, blockPosition(), home, era(), null, null, 0, dad, this, religion);
+        // "Adam knew Eve his wife; and she conceived, and bare Cain ... And she again bare his brother Abel" (Gen 4:1-2),
+        // "and she bare a son, and called his name Seth" (Gen 4:25)
+        String name = null;
+        Boolean male = null;
+        if ("Adam".equals(dad.getName().getString()) && "Eve".equals(getName().getString()) && children < 3) {
+            name = new String[]{"Cain", "Abel", "Seth"}[children];
+            male = true;
+        }
+        MortalEntity child = MortalPopulation.bringForth(level, blockPosition(), home, era(), name, male, 0, dad, this, religion);
         if (child == null) return;
         children++;
         dad.children++;
@@ -889,6 +935,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         tag.putDouble("Social", social);
         tag.putDouble("Doubt", doubt);
         tag.putLong("PrayedDay", prayedDay);
+        tag.putBoolean("Leaving", leaving);
         CompoundTag op = new CompoundTag();
         opinion.forEach((k, v) -> op.putInt(k.toString(), v));
         tag.put("Opinion", op);
@@ -921,6 +968,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         if (tag.contains("Social")) social = tag.getDouble("Social");
         doubt = tag.getDouble("Doubt");
         prayedDay = tag.contains("PrayedDay") ? tag.getLong("PrayedDay") : -1;
+        leaving = tag.getBoolean("Leaving");
         CompoundTag op = tag.getCompound("Opinion");
         for (String k : op.getAllKeys()) {
             try {

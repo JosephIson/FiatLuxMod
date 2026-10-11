@@ -63,16 +63,89 @@ public final class MortalPopulation {
             if (!p.hasLife()) continue;
             ServerLevel level = server.getLevel(RealmPool.dimension(i));
             if (level == null || level.players().isEmpty()) continue;
-            Settlement settlement = cosmos.settlements.get(p.id);
-            if (settlement == null) {
-                settlement = found(level, p);
-                if (settlement == null) continue;
-                cosmos.settlements.put(p.id, settlement);
-                cosmos.setDirty();
+            if (cosmos.townsOf(p.id).isEmpty()) {
+                Settlement first = found(level, p);
+                if (first == null) continue;
+                first.name = p.name;
+                first.founded = level.getGameTime();
+                cosmos.addTown(p.id, first);
             }
-            if (!level.isLoaded(settlement.centre)) continue;
-            populate(level, cosmos, p, settlement);
+            List<Settlement> towns = cosmos.townsOf(p.id);
+            for (int t = 0; t < towns.size(); t++) {
+                Settlement town = towns.get(t);
+                if (level.isLoaded(town.centre)) populate(level, cosmos, p, town, t == 0, towns.size());
+            }
+            expand(level, cosmos, p, towns);
         }
+    }
+
+    /** Names for the towns a people founds as it spreads, after the cities of Genesis and the land of Israel. */
+    private static final String[] TOWN_NAMES = {"Enoch", "Nod", "Irad", "Havilah", "Shinar", "Erech", "Accad", "Calneh", "Nineveh", "Rehoboth",
+            "Calah", "Resen", "Ur", "Haran", "Salem", "Zoar", "Gerar", "Beersheba", "Bethel", "Hebron", "Shechem", "Mamre", "Peniel",
+            "Succoth", "Ephrath", "Jericho", "Gilgal", "Shiloh", "Ramah", "Mizpah", "Bethlehem", "Cana", "Bethany", "Emmaus", "Joppa"};
+
+    /**
+     * "Be fruitful, and multiply, and replenish the earth" (Gen 1:28): when a town is full, or the
+     * people have grown beyond what their towns can hold, young families go out and found another a
+     * little way off, and it grows in its turn.
+     */
+    private static void expand(ServerLevel level, CosmicExpanseSavedData cosmos, Planet p, List<Settlement> towns) {
+        int max = com.josephison.fiatlux.config.FiatLuxConfig.COMMON.maxTownsPerWorld.get();
+        if (towns.size() >= max) return;
+        long year = com.josephison.fiatlux.config.FiatLuxConfig.COMMON.mortalYearTicks.get();
+        long newest = towns.stream().mapToLong(t -> t.founded).max().orElse(0);
+        if (level.getGameTime() - newest < 3 * year) return;
+        int perTown = com.josephison.fiatlux.config.FiatLuxConfig.COMMON.maxMortalsPerSettlement.get();
+        // the most crowded loaded town sends out its young
+        Settlement from = null;
+        List<MortalEntity> fromPeople = List.of();
+        for (Settlement t : towns) {
+            if (!level.isLoaded(t.centre)) continue;
+            var people = level.getEntitiesOfClass(MortalEntity.class, new AABB(t.centre).inflate(RANGE));
+            if (people.size() > fromPeople.size()) {
+                from = t;
+                fromPeople = people;
+            }
+        }
+        boolean crowded = from != null && fromPeople.size() >= perTown - 4;
+        boolean numerous = Math.ceil(p.population / Math.max(1, p.era.perTown)) > towns.size();
+        if (from == null || !(crowded || numerous) || fromPeople.size() < 8) return;
+        List<MortalEntity> young = new java.util.ArrayList<>(fromPeople.stream()
+                .filter(m -> !m.isChild() && m.ageYears() < 36 && m.isAlive() && !m.isLeaving()).toList());
+        if (young.size() < 2) return;
+        // a site some way off, clear of every other town
+        BlockPos site = null;
+        for (int tries = 0; tries < 12 && site == null; tries++) {
+            double a = level.random.nextDouble() * Math.PI * 2;
+            double r = 90 + level.random.nextInt(90);
+            int x = from.centre.getX() + (int) (Math.cos(a) * r), z = from.centre.getZ() + (int) (Math.sin(a) * r);
+            BlockPos g = safeGround(level, x, z, 24);
+            if (g == null) continue;
+            boolean clear = towns.stream().allMatch(t -> t.centre.distSqr(g) > 70 * 70);
+            if (clear) site = g;
+        }
+        if (site == null) return;
+        Settlement town = new Settlement(site);
+        java.util.Set<String> used = new java.util.HashSet<>();
+        towns.forEach(t -> used.add(t.name));
+        town.name = java.util.Arrays.stream(TOWN_NAMES).filter(n -> !used.contains(n)).findFirst().orElse(p.name + " " + (towns.size() + 1));
+        town.founded = level.getGameTime();
+        build(level, town, p.era);
+        // a young couple first if there is one, then others of an age to go
+        young.sort(java.util.Comparator.comparingDouble(MortalEntity::ageYears));
+        List<MortalEntity> going = new java.util.ArrayList<>();
+        for (MortalEntity m : young) {
+            if (going.size() >= 4) break;
+            if (going.contains(m)) continue;
+            going.add(m);
+            MortalEntity spouse = m.spouseEntity();
+            if (spouse != null && young.contains(spouse) && !going.contains(spouse) && going.size() < 4) going.add(spouse);
+        }
+        for (MortalEntity m : going) m.leaveFor(site);
+        town.founders = going.stream().map(m -> m.getName().getString()).collect(java.util.stream.Collectors.joining(", "));
+        cosmos.addTown(p.id, town);
+        com.josephison.fiatlux.world.CosmosData.get(level.getServer()).record(level.getServer(), town.founders, "town",
+                "went out from " + from.name + " and founded " + town.name + " on " + p.name + ".");
     }
 
     /** Founds a settlement on safe ground near the landing place, and builds it for the people's age. */
@@ -89,18 +162,19 @@ public final class MortalPopulation {
      * Keeps a living settlement peopled. Its own families grow it by birth; newcomers arrive only to
      * found it and to keep it from dwindling below what its world's population would show.
      */
-    private static void populate(ServerLevel level, CosmicExpanseSavedData cosmos, Planet p, Settlement settlement) {
+    private static void populate(ServerLevel level, CosmicExpanseSavedData cosmos, Planet p, Settlement settlement, boolean first, int townCount) {
         BlockPos centre = settlement.centre;
         AABB area = new AABB(centre).inflate(RANGE);
         var people = level.getEntitiesOfClass(MortalEntity.class, area);
         Faiths.expirePetitions(level, settlement, people);
         Faiths.crownShrine(level, settlement, people);
         int have = people.size();
-        int want = Math.min(embodied(p.population) / 2 + 2, 8);
+        // newcomers only found the first town and keep a town from dying out: beyond that, it grows by its own births
+        int want = first ? (int) Math.min(6, Math.floor(p.population)) : have > 0 ? 0 : 2;
         var giver = cosmos.lifeGiverOf(p);
         if (giver == null && !level.players().isEmpty()) {   // a world given life before its giver was recorded worships the first Creator it sees
-            var first = level.players().getFirst();
-            giver = com.mojang.datafixers.util.Pair.of(first.getUUID(), first.getGameProfile().getName());
+            var seer = level.players().getFirst();
+            giver = com.mojang.datafixers.util.Pair.of(seer.getUUID(), seer.getGameProfile().getName());
             cosmos.lifeGivers.put(p.id, giver);
             cosmos.setDirty();
         }
@@ -109,7 +183,7 @@ public final class MortalPopulation {
         for (int n = 0; n < Math.min(2, want - have); n++) {
             String name = null;
             Boolean male = null;
-            if (!cosmos.firstPairBorn) {   // "Adam called his wife's name Eve; because she was the mother of all living" (Gen 3:20)
+            if (!cosmos.firstPairBorn && first) {   // "Adam called his wife's name Eve; because she was the mother of all living" (Gen 3:20)
                 name = n == 0 ? "Adam" : "Eve";
                 male = n == 0;
                 if (n == 1) {

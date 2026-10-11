@@ -125,7 +125,7 @@ public final class Faiths {
         }
         // answered prayers
         CosmicExpanseSavedData cosmos = CosmicExpanseSavedData.get(level.getServer());
-        for (Settlement s : cosmos.settlements.values()) {
+        for (Settlement s : cosmos.allTowns()) {
             if (s.centre.distSqr(BlockPos.containing(at)) > 56 * 56) continue;
             s.lastSign = level.getGameTime();
             if (wrathful || s.petitions.isEmpty()) continue;

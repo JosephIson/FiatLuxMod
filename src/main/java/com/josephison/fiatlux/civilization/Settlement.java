@@ -15,6 +15,11 @@ import java.util.List;
  */
 public final class Settlement {
     public final BlockPos centre;
+    /** The town's name (the first town of a world is named after it until its people name it). */
+    public String name = "";
+    /** When it was founded (game time), and by whom ("" for the first). */
+    public long founded;
+    public String founders = "";
     public BlockPos shrine;
     @Nullable
     public BlockPos field;
@@ -64,6 +69,9 @@ public final class Settlement {
         petitions.forEach((k, v) -> pt.putString(k.name(), v));
         t.put("petitions", pt);
         t.putLong("petitions_since", petitionsSince);
+        t.putString("name", name);
+        t.putLong("founded", founded);
+        t.putString("founders", founders);
         return t;
     }
 
@@ -85,6 +93,9 @@ public final class Settlement {
             }
         }
         s.petitionsSince = t.getLong("petitions_since");
+        s.name = t.getString("name");
+        s.founded = t.getLong("founded");
+        s.founders = t.getString("founders");
         return s;
     }
 }

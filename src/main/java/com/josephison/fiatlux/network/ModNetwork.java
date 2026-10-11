@@ -29,6 +29,8 @@ public final class ModNetwork {
         });
         r.playToClient(LineagePayloads.View.TYPE, LineagePayloads.View.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onLineage(p));
+        r.playToClient(CosmosReport.TYPE, CosmosReport.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onCosmosReport(p));
         r.playToClient(SyncDivinityPayload.TYPE, SyncDivinityPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onSync(p));
         r.playToClient(SyncCosmosPayload.TYPE, SyncCosmosPayload.STREAM_CODEC,

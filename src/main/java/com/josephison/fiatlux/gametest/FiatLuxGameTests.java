@@ -376,13 +376,40 @@ public final class FiatLuxGameTests {
         long glory0 = CosmosData.get(server).glory();
         cosmos.underworld = new UnderworldState();   // the GameTest world persists between runs
         cosmos.underworld.souls = 50_000;
-        for (int i = 0; i < 400; i++) WorldTicker.step(server, 60.0);   // 400 simulated minutes
-        helper.assertTrue(eden.population > 1000, "population did not grow: " + eden.population);
+        for (int i = 0; i < 1000; i++) WorldTicker.step(server, 60.0);   // 1000 simulated minutes: some five hundred mortal years
+        helper.assertTrue(eden.population > 1000 && eden.population < eden.era.capacity * 2, "population did not grow believably: " + eden.population);
+        helper.assertTrue(cosmos.heavenSouls < 1e7 && cosmos.underworld.knowledge < 1e9, "the numbers ran away: heaven " + cosmos.heavenSouls
+                + ", knowledge " + cosmos.underworld.knowledge);
         helper.assertTrue(eden.era.ordinal() > 0, "the mortals of Eden never left the hunter-gatherer age");
         helper.assertTrue(CosmosData.get(server).glory() > glory0, "prayer added no Glory");
         helper.assertTrue(eden.phase != phase0, "the planet did not move along its orbit");
         helper.assertTrue(cosmos.underworld.era.ordinal() > 0, "the Underworld never left the Tribal/Pits era: knowledge " + cosmos.underworld.knowledge);
         cosmos.planets.remove(eden);
+        helper.succeed();
+    }
+
+    /** Every /fiatlux report runs without error on a living cosmos. */
+    @GameTest(template = "empty")
+    public static void reportsRun(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        java.util.List<String> out = new java.util.ArrayList<>();
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        net.minecraft.commands.CommandSource sink = new net.minecraft.commands.CommandSource() {
+            @Override public void sendSystemMessage(net.minecraft.network.chat.Component c) { out.add(c.getString()); }
+            @Override public boolean acceptsSuccess() { return true; }
+            @Override public boolean acceptsFailure() { return true; }
+            @Override public boolean shouldInformAdmins() { return false; }
+        };
+        var src = new net.minecraft.commands.CommandSourceStack(sink, net.minecraft.world.phys.Vec3.ZERO, net.minecraft.world.phys.Vec2.ZERO,
+                helper.getLevel(), 4, "GameTest", net.minecraft.network.chat.Component.literal("GameTest"), server, null)
+                .withCallback((ok, result) -> { if (!ok) errors.add("failed"); });
+        for (String cmd : new String[]{"fiatlux cosmos", "fiatlux host", "fiatlux faiths", "fiatlux chronicle 5"}) {
+            out.clear();
+            server.getCommands().performPrefixedCommand(src, cmd);
+            FiatLux.LOGGER.info("[reportsRun] {} -> {}", cmd, out);
+            helper.assertTrue(out.stream().noneMatch(l -> l.toLowerCase().contains("unexpected error") || l.contains("Unknown")),
+                    cmd + " failed: " + out);
+        }
         helper.succeed();
     }
 

@@ -65,6 +65,13 @@ public final class Generations extends SavedData {
         return r;
     }
 
+    /** How many are living on each world, by world name. */
+    public Map<String, Integer> census() {
+        Map<String, Integer> out = new java.util.HashMap<>();
+        for (Person p : people.values()) if (p.living()) out.merge(p.world, 1, Integer::sum);
+        return out;
+    }
+
     /** Followers among the living, by religion. */
     public Map<UUID, Integer> followers() {
         Map<UUID, Integer> out = new LinkedHashMap<>();

@@ -285,21 +285,28 @@ public final class FiatLuxCommand {
         return 1;
     }
 
+    /** Opens the Cosmos screen for a player; anyone else (the console) is told in a few plain lines. */
     private static int cosmos(CommandSourceStack src) {
+        if (src.getEntity() instanceof ServerPlayer player) {
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, com.josephison.fiatlux.network.CosmosReport.build(src.getServer()));
+            return 1;
+        }
         var c = CosmicExpanseSavedData.get(src.getServer());
         var u = c.underworld;
+        var census = com.josephison.fiatlux.civilization.Generations.get(src.getServer()).census();
         src.sendSuccess(() -> Component.translatable("command.fiatlux.cosmos.header"), false);
-        src.sendSuccess(() -> Component.literal(String.format("Big Bang: %s · galaxies %d · cosmic age %.1f days",
-                c.hasBigBang() ? "yes" : "not yet", c.galaxies.size(), c.cosmicAge)).withStyle(s -> s.withColor(0xF5D77A)), false);
+        src.sendSuccess(() -> Component.literal(String.format("Universe: %s, %d galaxies, %.1f days old",
+                c.hasBigBang() ? "lit" : "dark", c.galaxies.size(), c.cosmicAge)), false);
         for (var p : c.planets) {
-            src.sendSuccess(() -> Component.literal(String.format("  %s (%s) orbit %.2f AU / %.1f d · pop %,.0f · %s · faith %.1f · sin %.1f",
-                    p.name, p.type.getSerializedName(), p.orbitRadius, p.orbitPeriodDays, p.population,
-                    p.hasLife() ? p.era.getSerializedName() : "lifeless", p.faith, p.sin)).withStyle(s -> s.withColor(0xCFE8FF)), false);
+            src.sendSuccess(() -> Component.literal(p.hasLife()
+                    ? String.format("%s (%s): %d living, %s in all, %s age, %d towns, faith %d%%, sin %d%%", p.name, p.type.getSerializedName(),
+                    census.getOrDefault(p.name, 0), com.josephison.fiatlux.network.CosmosReport.num(p.population), p.era.getSerializedName(),
+                    c.townsOf(p.id).size(), Math.round(p.faith * 100), Math.round(p.sin * 100))
+                    : String.format("%s (%s): without life", p.name, p.type.getSerializedName())), false);
         }
-        src.sendSuccess(() -> Component.literal(String.format("Corruption %.0f%% · angelic pride %.0f%% · rebellion %s · fallen %,.0f · souls in Heaven %,.0f",
-                c.corruption * 100, c.angelicPride * 100, c.rebellionActive ? "RAGING" : "none", c.fallenAngels, c.heavenSouls)).withStyle(s -> s.withColor(0xFFD0A0)), false);
-        src.sendSuccess(() -> Component.literal(String.format("Underworld: %s · knowledge %,.0f · soul power %,.0f · demons %,.0f · sinner souls %,.0f · overlords %d · contracts %,.0f",
-                u.era.getSerializedName(), u.knowledge, u.soulPower, u.demons, u.souls, u.overlords, u.contracts)).withStyle(s -> s.withColor(0xFF7A5A)), false);
+        src.sendSuccess(() -> Component.literal(String.format("Heaven: %s souls. Underworld: %s era, %s fallen, %s sinner souls, %d lords risen.",
+                com.josephison.fiatlux.network.CosmosReport.num(c.heavenSouls), u.era.getSerializedName(),
+                com.josephison.fiatlux.network.CosmosReport.num(u.demons), com.josephison.fiatlux.network.CosmosReport.num(u.souls), u.overlords)), false);
         return 1;
     }
 

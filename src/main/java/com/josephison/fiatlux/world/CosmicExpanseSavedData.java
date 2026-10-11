@@ -38,8 +38,10 @@ public class CosmicExpanseSavedData extends SavedData {
     public long bigBangTime = -1;          // overworld game time of the Big Bang, -1 = not yet
     public double cosmicAge;               // simulated days since the Big Bang
     public final List<Galaxy> galaxies = new ArrayList<>();
-    /** The settlement (hearth) of each living world, by planet id. */
-    public final java.util.Map<java.util.UUID, com.josephison.fiatlux.civilization.Settlement> settlements = new java.util.HashMap<>();
+    /** The towns of each living world, by planet id: the first is where its people began. */
+    public final java.util.Map<java.util.UUID, List<com.josephison.fiatlux.civilization.Settlement>> towns = new java.util.HashMap<>();
+    /** Version of the simulation's units; older universes are rescaled to believable numbers on load. */
+    public static final int SIM_VERSION = 2;
     /** Who breathed life into each world (planet id -> player id and name): its people worship them. */
     public final java.util.Map<java.util.UUID, com.mojang.datafixers.util.Pair<java.util.UUID, String>> lifeGivers = new java.util.HashMap<>();
     /** Whether the first man and woman (Adam and Eve) have been brought forth. */
@@ -65,6 +67,45 @@ public class CosmicExpanseSavedData extends SavedData {
     public static CosmicExpanseSavedData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(
                 new SavedData.Factory<>(CosmicExpanseSavedData::new, CosmicExpanseSavedData::load), NAME);
+    }
+
+    /** The towns of one world (empty if none). */
+    public List<com.josephison.fiatlux.civilization.Settlement> townsOf(java.util.UUID planet) {
+        return towns.getOrDefault(planet, List.of());
+    }
+
+    /** The first town of a world: where its people began. */
+    @org.jetbrains.annotations.Nullable
+    public com.josephison.fiatlux.civilization.Settlement firstTown(java.util.UUID planet) {
+        var l = towns.get(planet);
+        return l == null || l.isEmpty() ? null : l.getFirst();
+    }
+
+    /** The town of a world nearest a place. */
+    @org.jetbrains.annotations.Nullable
+    public com.josephison.fiatlux.civilization.Settlement townNear(java.util.UUID planet, net.minecraft.core.BlockPos pos) {
+        com.josephison.fiatlux.civilization.Settlement best = null;
+        double bd = Double.MAX_VALUE;
+        for (var t : townsOf(planet)) {
+            double d = t.centre.distSqr(pos);
+            if (d < bd) {
+                bd = d;
+                best = t;
+            }
+        }
+        return best;
+    }
+
+    public void addTown(java.util.UUID planet, com.josephison.fiatlux.civilization.Settlement town) {
+        towns.computeIfAbsent(planet, k -> new ArrayList<>()).add(town);
+        setDirty();
+    }
+
+    /** Every town of every world. */
+    public List<com.josephison.fiatlux.civilization.Settlement> allTowns() {
+        List<com.josephison.fiatlux.civilization.Settlement> all = new ArrayList<>();
+        towns.values().forEach(all::addAll);
+        return all;
     }
 
     public boolean hasBigBang() {
@@ -133,6 +174,34 @@ public class CosmicExpanseSavedData extends SavedData {
         return true;
     }
 
+    /**
+     * Universes from before the simulation counted in mortal years ran away into the billions: bring
+     * them back to believable numbers, keeping the ages they reached.
+     */
+    private void rescale() {
+        for (Planet p : planets) {
+            double hab = p.type.habitability * p.type.size;
+            if (p.population >= 1) p.population = Math.max(2, Math.min(p.population, p.era.capacity * hab * 0.05));
+            p.faith = p.era.piety;
+            p.sin = 0.15;
+            p.eraProgress = 0;
+        }
+        heavenSouls = Math.min(heavenSouls, 2_000);
+        UnderworldState u = underworld;
+        u.souls = Math.min(u.souls, 1_000);
+        u.soulPower = u.souls;
+        u.demons = fallenAngels;
+        u.contracts = Math.min(u.contracts, 300);
+        var c = com.josephison.fiatlux.config.FiatLuxConfig.COMMON;
+        u.knowledge = switch (u.era) {
+            case TRIBAL_PITS -> Math.min(u.knowledge, c.feudalThreshold.get() * 0.5);
+            case FEUDAL_CASTLE -> c.feudalThreshold.get();
+            case INDUSTRIAL -> c.industrialThreshold.get();
+            case MODERN_CYBERNETIC -> c.modernThreshold.get();
+        };
+        setDirty();
+    }
+
     // ------------------------------------------------------------------ persistence
 
     public static CosmicExpanseSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
@@ -150,11 +219,22 @@ public class CosmicExpanseSavedData extends SavedData {
             } catch (IllegalArgumentException ignored) {
             }
         }
-        net.minecraft.nbt.CompoundTag st = tag.getCompound("settlements");
+        net.minecraft.nbt.CompoundTag tw = tag.getCompound("towns");
+        for (String k : tw.getAllKeys()) {
+            try {
+                var id = java.util.UUID.fromString(k);
+                for (net.minecraft.nbt.Tag t : tw.getList(k, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                    d.towns.computeIfAbsent(id, x -> new ArrayList<>()).add(com.josephison.fiatlux.civilization.Settlement.load((CompoundTag) t));
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        net.minecraft.nbt.CompoundTag st = tag.getCompound("settlements");   // one settlement per world, before towns
         for (String k : st.getAllKeys()) {
             try {
                 var id = java.util.UUID.fromString(k);
-                d.settlements.put(id, st.contains(k, net.minecraft.nbt.Tag.TAG_COMPOUND)
+                if (d.towns.containsKey(id)) continue;
+                d.towns.computeIfAbsent(id, x -> new ArrayList<>()).add(st.contains(k, net.minecraft.nbt.Tag.TAG_COMPOUND)
                         ? com.josephison.fiatlux.civilization.Settlement.load(st.getCompound(k))
                         : new com.josephison.fiatlux.civilization.Settlement(net.minecraft.core.BlockPos.of(st.getLong(k))));
             } catch (IllegalArgumentException ignored) {
@@ -186,6 +266,7 @@ public class CosmicExpanseSavedData extends SavedData {
             com.josephison.fiatlux.realm.UnderworldSettlements.CELL_ERAS.put(cells[i],
                     com.josephison.fiatlux.world.cosmos.UnderworldEra.values()[Math.max(0, Math.min(3, eras[i]))]);
         }
+        if (tag.getInt("sim_version") < SIM_VERSION) d.rescale();
         com.josephison.fiatlux.realm.UnderworldSettlements.currentEra = d.underworld.era;
         com.josephison.fiatlux.realm.RealmPool.publish(d.planets);
         return d;
@@ -206,9 +287,14 @@ public class CosmicExpanseSavedData extends SavedData {
             lg.put(k.toString(), e);
         });
         tag.put("life_givers", lg);
-        net.minecraft.nbt.CompoundTag st = new net.minecraft.nbt.CompoundTag();
-        settlements.forEach((k, v) -> st.put(k.toString(), v.save()));
-        tag.put("settlements", st);
+        net.minecraft.nbt.CompoundTag tw = new net.minecraft.nbt.CompoundTag();
+        towns.forEach((k, v) -> {
+            net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+            for (var t : v) list.add(t.save());
+            tw.put(k.toString(), list);
+        });
+        tag.put("towns", tw);
+        tag.putInt("sim_version", SIM_VERSION);
         PLANETS.encodeStart(NbtOps.INSTANCE, planets).result().ifPresent(t -> tag.put("planets", t));
         tag.putDouble("corruption", corruption);
         tag.putDouble("angelic_pride", angelicPride);

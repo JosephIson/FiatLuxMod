@@ -70,14 +70,16 @@ public class BreathOfLifePower extends AbstractDivinePower {
         var faith = com.josephison.fiatlux.civilization.Generations.get(server)
                 .faithOf(ctx.caster().getUUID(), ctx.caster().getGameProfile().getName(), worldName, ctx.level().getGameTime()).id;
         boolean firstOfWorld = world != null && !world.hasLife();
-        com.josephison.fiatlux.civilization.Settlement settlement = world != null ? cosmos.settlements.get(world.id) : null;
+        com.josephison.fiatlux.civilization.Settlement settlement = world != null ? cosmos.townNear(world.id, ground) : null;
         if (firstOfWorld) {
             cosmos.breatheLife(world);
             cosmos.lifeGivers.put(world.id, com.mojang.datafixers.util.Pair.of(ctx.caster().getUUID(), ctx.caster().getGameProfile().getName()));
             if (settlement == null) {
                 settlement = new com.josephison.fiatlux.civilization.Settlement(ground);
+                settlement.name = world.name;
+                settlement.founded = ctx.level().getGameTime();
                 com.josephison.fiatlux.civilization.MortalPopulation.build(ctx.level(), settlement, world.era);
-                cosmos.settlements.put(world.id, settlement);
+                cosmos.addTown(world.id, settlement);
             }
             CosmosData.get(server).record(server, ctx.caster().getGameProfile().getName(), "life",
                     "breathed the breath of life upon " + world.name + ", and mortals became living souls.");

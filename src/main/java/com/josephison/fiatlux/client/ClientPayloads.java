@@ -25,4 +25,10 @@ public final class ClientPayloads {
         if (mc.screen instanceof com.josephison.fiatlux.client.screen.GenerationsScreen screen) screen.show(view);
         else mc.setScreen(new com.josephison.fiatlux.client.screen.GenerationsScreen(view));
     }
+
+    public static void onCosmosReport(com.josephison.fiatlux.network.CosmosReport report) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.screen instanceof com.josephison.fiatlux.client.screen.CosmosScreen screen) screen.show(report.data());
+        else mc.setScreen(new com.josephison.fiatlux.client.screen.CosmosScreen(report.data()));
+    }
 }

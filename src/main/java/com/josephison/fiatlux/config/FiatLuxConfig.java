@@ -38,7 +38,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.DoubleValue populationGrowthRate;
         public final ModConfigSpec.IntValue mortalYearTicks;
         public final ModConfigSpec.IntValue maxMortalsPerSettlement;
-        public final ModConfigSpec.DoubleValue faithPerBeliever;
+        public final ModConfigSpec.IntValue maxTownsPerWorld;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -47,6 +47,7 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.DoubleValue rebellionCorruptionThreshold;
         public final ModConfigSpec.DoubleValue rebellionChancePerCheck;
         public final ModConfigSpec.DoubleValue prideGrowthRate;
+        public final ModConfigSpec.DoubleValue primordialPrideRate;
         public final ModConfigSpec.DoubleValue corruptionDecay;
         public final ModConfigSpec.IntValue maxEmbodiedRebels;
         // underworld
@@ -112,17 +113,18 @@ public final class FiatLuxConfig {
             bigBangGalaxies = b.comment("Galaxies formed by the Big Bang.").defineInRange("bigBangGalaxies", 7, 1, 64);
             b.pop();
 
-            b.comment("Mortal civilisation and faith (abstract per-planet simulation)").push("civilization");
-            populationGrowthRate = b.comment("Logistic growth rate of mortal populations per step.")
-                    .defineInRange("populationGrowthRate", 0.02, 0.0, 10.0);
-            faithPerBeliever = b.defineInRange("faithPerBeliever", 0.001, 0.0, 10.0);
-            gloryPerFaith = b.comment("World Glory gained per unit of faith offered.").defineInRange("gloryPerFaith", 0.05, 0.0, 100.0);
-            sinRate = b.comment("Corruption generated per mortal per step.").defineInRange("sinRate", 0.00002, 0.0, 1.0);
-            mortalEraProgressRate = b.defineInRange("mortalEraProgressRate", 1.0, 0.0, 1000.0);
-            mortalYearTicks = b.comment("Ticks in one year of an embodied mortal's life (6000 = five minutes; a long life lasts some hours).")
-                    .defineInRange("mortalYearTicks", 6000, 200, 1_000_000);
-            maxMortalsPerSettlement = b.comment("Most mortals that live in one settlement (children included).")
+            b.comment("Mortal civilisation and faith. Peoples grow by births and deaths each mortal year, at the rates of their age,",
+                    "up to what their age and world can feed; the living mortals you meet are counted among them.").push("civilization");
+            mortalYearTicks = b.comment("Ticks in one mortal year (2400 = two minutes: a child grows up in about half an hour, a long life lasts some hours).")
+                    .defineInRange("ticksPerMortalYear", 2400, 200, 1_000_000);
+            populationGrowthRate = b.comment("Multiplies every age's natural growth (births minus deaths).")
+                    .defineInRange("populationGrowthMultiplier", 1.0, 0.0, 100.0);
+            gloryPerFaith = b.comment("Glory a world offers per mortal year, per square root of its believers.").defineInRange("gloryPerBelieverYear", 2.0, 0.0, 1000.0);
+            sinRate = b.comment("Multiplies how much of a people turns to sin.").defineInRange("sinMultiplier", 1.0, 0.0, 10.0);
+            mortalEraProgressRate = b.comment("Multiplies the years a people needs in each age before the next.").defineInRange("eraYearsMultiplier", 1.0, 0.01, 100.0);
+            maxMortalsPerSettlement = b.comment("Most mortals that live in one town (children included); beyond it, young families leave to found another.")
                     .defineInRange("maxMortalsPerSettlement", 28, 2, 200);
+            maxTownsPerWorld = b.comment("Most towns a people founds on one world.").defineInRange("maxTownsPerWorld", 10, 1, 64);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");
@@ -131,17 +133,20 @@ public final class FiatLuxConfig {
                     .defineInRange("rebellionCorruptionThreshold", 0.6, 0.0, 1.0);
             rebellionChancePerCheck = b.defineInRange("rebellionChancePerCheck", 0.01, 0.0, 1.0);
             prideGrowthRate = b.defineInRange("prideGrowthRate", 0.001, 0.0, 1.0);
+            primordialPrideRate = b.comment("Before the first Fall, the pride of the morning star grows on its own (Ezek 28:17), per simulated second.")
+                    .defineInRange("primordialPrideRate", 0.0004, 0.0, 1.0);
             corruptionDecay = b.comment("Fraction of world corruption that fades each step.").defineInRange("corruptionDecay", 0.0005, 0.0, 1.0);
             maxEmbodiedRebels = b.comment("Most rebel angels that gather in the world when war breaks out in heaven (0 = the war stays abstract).")
                     .defineInRange("maxEmbodiedRebels", 9, 0, 64);
             b.pop();
 
             b.comment("The Underworld: infernal population, soul power and technological eras").push("underworld");
-            underworldTechRate = b.comment("Knowledge gained per unit of soul power per step.").defineInRange("underworldTechRate", 0.0005, 0.0, 100.0);
-            soulPowerPerSoul = b.defineInRange("soulPowerPerSoul", 0.01, 0.0, 100.0);
-            feudalThreshold = b.comment("Knowledge to leave the Tribal/Pits era.").defineInRange("feudalThreshold", 100.0, 1.0, 1e12);
-            industrialThreshold = b.defineInRange("industrialThreshold", 1000.0, 1.0, 1e12);
-            modernThreshold = b.defineInRange("modernThreshold", 10000.0, 1.0, 1e12);
+            underworldTechRate = b.comment("Multiplies the knowledge the Underworld gathers each mortal year (from the fallen and the soul power below).")
+                    .defineInRange("knowledgeMultiplier", 1.0, 0.0, 100.0);
+            soulPowerPerSoul = b.comment("Soul power each sinner soul held below yields.").defineInRange("soulPowerPerSinnerSoul", 1.0, 0.0, 1000.0);
+            feudalThreshold = b.comment("Knowledge to leave the Tribal/Pits era.").defineInRange("feudalKnowledge", 2_000.0, 1.0, 1e12);
+            industrialThreshold = b.defineInRange("industrialKnowledge", 60_000.0, 1.0, 1e12);
+            modernThreshold = b.defineInRange("modernKnowledge", 1_500_000.0, 1.0, 1e12);
             maxInfernalPopulation = b.defineInRange("maxInfernalPopulation", 100000, 0, Integer.MAX_VALUE);
             divineCleansesEnabled = b.comment("Exorcist Angels periodically descend to keep infernal empires in check.").define("divineCleansesEnabled", true);
             cleanseIntervalDays = b.defineInRange("cleanseIntervalDays", 7, 1, 100000);
