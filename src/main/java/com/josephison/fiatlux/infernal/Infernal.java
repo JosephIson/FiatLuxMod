@@ -85,9 +85,15 @@ public final class Infernal {
     @Nullable
     public static RiftEntity openRift(ServerLevel level, BlockPos near, @Nullable Lord lord) {
         RandomSource r = level.random;
-        double a = r.nextDouble() * Math.PI * 2;
-        int dist = 28 + r.nextInt(20);
-        BlockPos g = MortalPopulation.safeGround(level, near.getX() + (int) (Math.cos(a) * dist), near.getZ() + (int) (Math.sin(a) * dist), 12);
+        BlockPos g = null;
+        for (int tries = 0; tries < 8 && g == null; tries++) {   // it tears the earth itself, not a roof or a floor
+            double a = r.nextDouble() * Math.PI * 2;
+            int dist = 28 + r.nextInt(20);
+            g = MortalPopulation.safeGround(level, near.getX() + (int) (Math.cos(a) * dist), near.getZ() + (int) (Math.sin(a) * dist), 12);
+            if (g != null && !level.getBlockState(g.below()).is(net.minecraft.tags.BlockTags.DIRT)
+                    && !level.getBlockState(g.below()).is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
+                    && !level.getBlockState(g.below()).is(net.minecraft.tags.BlockTags.SAND)) g = null;
+        }
         if (g == null) return null;
         RiftEntity rift = ModEntities.RIFT.get().create(level);
         if (rift == null) return null;
