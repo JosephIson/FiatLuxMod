@@ -939,9 +939,63 @@ public final class FiatLuxGameTests {
             int pages = content == null ? 0 : content.pages().size();
             for (var e : java.util.List.of(prophetM, priest, follower)) e.discard();
             forceAround(level, at, false);
-            helper.assertTrue(fire, "the fire did not fall on the altar");
+            helper.assertTrue(fire, "the fire did not fall on the altar: won " + d.contestsWon + "/" + won + ", crown " + level.getBlockState(altar.above())
+                    + ", prophet alive " + prophetM.isAlive() + " removed " + prophetM.getRemovalReason() + " pos " + prophetM.blockPosition() + " altar " + altar
+                    + " fate " + p.fate);
             helper.assertTrue(pages >= 2, "the prophet's book has " + pages + " pages");
             helper.succeed();
+        });
+    }
+
+    /**
+     * The story of the Son, hastened from the annunciation to Pentecost: he is born of the chosen
+     * mother, grows, calls disciples, is crucified with his charge written over him, laid in the tomb,
+     * rises shining, is taken up, and the church is born with its Gospels.
+     */
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void theSonFromBirthToPentecost(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1)).offset(-900, 0, -900);
+        for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, true);
+        level.getChunk(at);
+        BlockPos g = com.josephison.fiatlux.civilization.MortalPopulation.safeGround(level, at.getX(), at.getZ(), 8);
+        helper.assertTrue(g != null, "no ground");
+        var gens = com.josephison.fiatlux.civilization.Generations.get(server);
+        var faith = gens.faithOf(java.util.UUID.nameUUIDFromBytes("sontest".getBytes()), "Testgod", "the earth", level.getGameTime());
+        var era = com.josephison.fiatlux.world.cosmos.MortalEra.CLASSICAL;
+        var mother = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(2, 0, 2), g, era, "Miriam", false, 20, null, null, faith.id);
+        var joseph = com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(4, 0, 2), g, era, "Joseph", true, 26, null, null, faith.id);
+        java.util.List<com.josephison.fiatlux.entity.MortalEntity> folk = new java.util.ArrayList<>();
+        for (int i = 0; i < 6; i++) folk.add(com.josephison.fiatlux.civilization.MortalPopulation.bringForth(level, g.offset(-4 + i, 0, 6), g, era, null, true, 24, null, null, faith.id));
+        helper.assertTrue(mother != null && joseph != null, "the people were not formed");
+        var d = com.josephison.fiatlux.son.SonData.get(server);
+        helper.runAfterDelay(20, () -> {
+        com.josephison.fiatlux.son.TheSon.start(level, g, "Nazareth", "Galilee", faith.creator, "Testgod", mother, faith.id, "Immanuel", 3);
+        com.josephison.fiatlux.son.TheSon.hasten(level, d, com.josephison.fiatlux.son.SonData.Stage.MINISTRY);
+        var son = d.son == null ? null : level.getEntity(d.son);
+        helper.assertTrue(son instanceof com.josephison.fiatlux.entity.MortalEntity m && m.variant() == 3 && m.ageYears() >= 30,
+                "the Son was not born and grown as chosen: stage " + d.stage + " step " + d.step + ", son " + son + ", mother " + level.getEntity(d.mother)
+                        + " dim " + d.dim + " town " + d.town + " loaded " + level.isLoaded(d.town) + " secs2 " + com.josephison.fiatlux.son.TheSon.describe(server)
+                        + (son instanceof com.josephison.fiatlux.entity.MortalEntity m2 ? " variant " + m2.variant() + " age " + m2.ageYears() : ""));
+        com.josephison.fiatlux.son.TheSon.hasten(level, d, com.josephison.fiatlux.son.SonData.Stage.TOMB);
+        helper.assertTrue(!d.disciples.isEmpty(), "no disciples were called: stage " + d.stage + " step " + d.step + " son " + level.getEntity(d.son));
+        helper.assertTrue(d.cross != null && d.tomb != null, "he was not crucified and laid in a tomb");
+        com.josephison.fiatlux.son.TheSon.hasten(level, d, com.josephison.fiatlux.son.SonData.Stage.ASCENSION);
+        boolean shone = son instanceof com.josephison.fiatlux.entity.MortalEntity m && m.glory() == 2;
+        com.josephison.fiatlux.son.TheSon.hasten(level, d, com.josephison.fiatlux.son.SonData.Stage.DONE);
+        var church = gens.religion(d.church);
+        int gospels = (int) com.josephison.fiatlux.prophecy.ProphecyData.get(server).books.stream()
+                .filter(b -> b.kind == com.josephison.fiatlux.prophecy.Book.Kind.GOSPEL && church != null && b.faith.equals(church.id)).count();
+        boolean ascended = son == null || son.isRemoved();
+        for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new net.minecraft.world.phys.AABB(g).inflate(120),
+                e -> !(e instanceof net.minecraft.world.entity.player.Player))) e.discard();
+        for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) level.setChunkForced((at.getX() >> 4) + dx, (at.getZ() >> 4) + dz, false);
+        helper.assertTrue(shone, "he did not rise shining");
+        helper.assertTrue(ascended, "he was not taken up");
+        helper.assertTrue(d.stage == com.josephison.fiatlux.son.SonData.Stage.DONE && church != null, "the church was not born: " + d.stage);
+        helper.assertTrue(gospels >= 2, "the Gospels were not written (" + gospels + ")");
+        helper.succeed();
         });
     }
 

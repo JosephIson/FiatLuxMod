@@ -67,6 +67,14 @@ public final class Weddings {
 
     private Weddings() {}
 
+    /** Whether a wedding feast is being kept within `r` of `at`. */
+    public static boolean feastingNear(ServerLevel level, BlockPos at, double r) {
+        for (Ceremony c : ACTIVE.values()) {
+            if (c.stage == Stage.FEAST && c.dim == level.dimension() && c.centre.distSqr(at) < r * r) return true;
+        }
+        return false;
+    }
+
     public static boolean betrothed(MortalEntity m) {
         return ACTIVE.containsKey(m.getUUID());
     }

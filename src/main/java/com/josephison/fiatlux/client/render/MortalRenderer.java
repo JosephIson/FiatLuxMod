@@ -62,10 +62,36 @@ public class MortalRenderer extends GeoEntityRenderer<MortalEntity> {
         float scale = mortal.isChild() ? 0.6f : mortal.isElder() ? 0.92f : 0.95f;
         this.scaleWidth = scale;
         this.scaleHeight = scale;
-        super.render(mortal, yaw, partialTick, poseStack, buffers, light);
+        int glory = mortal.glory();
+        super.render(mortal, yaw, partialTick, poseStack, buffers, glory >= 2 ? 0xF000F0 : light);   // the risen and transfigured shine
+        if (glory > 0) halo(mortal, poseStack, buffers, partialTick, glory, scale);
         String name = mortal.getName().getString() + (mortal.title().isEmpty() ? "" : ", " + mortal.title());
         SpeechBubble.render(mortal, mortal.speech(), name, 1.95 * scale / 0.95 * mortal.getScale() + 0.45, 24,
                 mortal.isPossessed() ? SpeechBubble.POSSESSED : SpeechBubble.PARCHMENT, poseStack, buffers, entityRenderDispatcher, getFont(), partialTick);
+    }
+
+    /** A ring of light over his head, turning slowly; brighter when he is glorified. */
+    private void halo(MortalEntity mortal, PoseStack pose, MultiBufferSource buffers, float partialTick, int glory, float scale) {
+        pose.pushPose();
+        pose.translate(0, 2.08 * scale / 0.95 * mortal.getScale(), 0);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees((mortal.tickCount + partialTick) * 1.5f));
+        org.joml.Matrix4f m = pose.last().pose();
+        com.mojang.blaze3d.vertex.VertexConsumer vc = buffers.getBuffer(RenderType.lightning());
+        float r0 = 0.24f, r1 = 0.31f;
+        int a = glory >= 2 ? 230 : 150;
+        for (int i = 0; i < 24; i++) {
+            float t0 = (float) (Math.PI * 2 * i / 24), t1 = (float) (Math.PI * 2 * (i + 1) / 24);
+            float c0 = net.minecraft.util.Mth.cos(t0), s0 = net.minecraft.util.Mth.sin(t0), c1 = net.minecraft.util.Mth.cos(t1), s1 = net.minecraft.util.Mth.sin(t1);
+            vc.addVertex(m, c0 * r0, 0, s0 * r0).setColor(255, 236, 160, a);
+            vc.addVertex(m, c0 * r1, 0, s0 * r1).setColor(255, 214, 110, a / 3);
+            vc.addVertex(m, c1 * r1, 0, s1 * r1).setColor(255, 214, 110, a / 3);
+            vc.addVertex(m, c1 * r0, 0, s1 * r0).setColor(255, 236, 160, a);
+            vc.addVertex(m, c1 * r0, 0, s1 * r0).setColor(255, 236, 160, a);
+            vc.addVertex(m, c1 * r1, 0, s1 * r1).setColor(255, 214, 110, a / 3);
+            vc.addVertex(m, c0 * r1, 0, s0 * r1).setColor(255, 214, 110, a / 3);
+            vc.addVertex(m, c0 * r0, 0, s0 * r0).setColor(255, 236, 160, a);
+        }
+        pose.popPose();
     }
 
     /** One with an unclean spirit in it is drawn as if a shadow lay on it. */

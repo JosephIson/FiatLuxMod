@@ -121,6 +121,7 @@ public final class MortalPopulation {
         if (from == null || !(crowded || numerous) || fromPeople.size() < 8) return;
         List<MortalEntity> young = new java.util.ArrayList<>(fromPeople.stream()
                 .filter(m -> !m.isChild() && m.ageYears() < 36 && m.isAlive() && !m.isLeaving()
+                        && !com.josephison.fiatlux.son.TheSon.isSon(m) && !com.josephison.fiatlux.son.TheSon.disciple(m)
                         && m.sentence() == com.josephison.fiatlux.civilization.Justice.Sentence.NONE).toList());
         if (young.size() < 2) return;
         // a site some way off, clear of every other town

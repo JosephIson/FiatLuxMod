@@ -54,6 +54,8 @@ public final class FiatLuxConfig {
         public final ModConfigSpec.DoubleValue apostasyRate;
         public final ModConfigSpec.DoubleValue prophetChance;
         public final ModConfigSpec.BooleanValue prophetsActAlone;
+        public final ModConfigSpec.DoubleValue sonPace;
+        public final ModConfigSpec.IntValue sonMinistrySeconds;
         public final ModConfigSpec.DoubleValue gloryPerFaith;
         public final ModConfigSpec.DoubleValue sinRate;
         public final ModConfigSpec.DoubleValue mortalEraProgressRate;
@@ -182,6 +184,13 @@ public final class FiatLuxConfig {
                     .defineInRange("prophetChance", 0.5, 0.0, 10.0);
             prophetsActAlone = b.comment("When a prophet calls for fire from heaven and their Creator is not on that world, the fire falls of itself.")
                     .define("prophetsActAlone", true);
+            b.pop();
+
+            b.comment("The Son").push("son");
+            sonPace = b.comment("How fast the story of the Son moves (1 = about forty minutes from the annunciation to Pentecost; 2 = twice as fast).")
+                    .defineInRange("sonPace", 1.0, 0.05, 20.0);
+            sonMinistrySeconds = b.comment("Seconds (at pace 1) of the Son's ministry among the towns, between the temptation and the entry into the city.")
+                    .defineInRange("sonMinistrySeconds", 600, 60, 36000);
             b.pop();
 
             b.comment("Angelic free will: pride, loyalty and rebellion").push("rebellion");

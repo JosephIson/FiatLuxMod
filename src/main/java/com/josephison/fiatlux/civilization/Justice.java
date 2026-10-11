@@ -68,6 +68,7 @@ public final class Justice {
     public static void report(ServerLevel level, MortalEntity offender, Crime crime, @Nullable MortalEntity victim) {
         Planet world = offender.planet();
         if (world == null || offender.sentence() != Sentence.NONE || offender.isChild() || offender.isMarked()) return;   // Cain is the Creator's to judge
+        if (com.josephison.fiatlux.son.TheSon.isSon(offender)) return;   // his hour is not yet come (John 7:30)
         Polity g = Polities.get(level.getServer()).of(world.id);
         if (g == null || g.laws.stream().noneMatch(l -> l.crime == crime)) return;
         if (offender.getUUID().equals(g.ruler)) return;   // the king is above his own law (and the people murmur)
@@ -287,6 +288,14 @@ public final class Justice {
             level.setBlock(g.offset(0, 1, 2), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER), 3);
         }
         return g;
+    }
+
+    /** Crucifies `m` outside the town at `centre` with `charge` written over it, until `until` (or for ever). */
+    @Nullable
+    public static BlockPos crucify(ServerLevel level, MortalEntity m, BlockPos centre, String charge, Crime crime, long until) {
+        BlockPos at = cross(level, centre, charge);
+        if (at != null) m.sentence(Sentence.CROSS, crime, until, at);
+        return at;
     }
 
     /** A cross of rough timber on the rise outside the town, beside any others standing there (Luke 23:33). */

@@ -184,6 +184,52 @@ public final class FiatLuxCommand {
                                     .withStyle(s -> s.withColor(0xE0A060)), true);
                             return 1;
                         })))
+                .then(Commands.literal("son").requires(FiatLuxCommand::isGod).executes(c -> {
+                    // "in the fulness of the time": choose the Son's name, his likeness, his town and his mother
+                    var player = c.getSource().getPlayerOrException();
+                    var cos = CosmicExpanseSavedData.get(c.getSource().getServer());
+                    int slot = com.josephison.fiatlux.realm.RealmPool.slotOf(player.serverLevel().dimension());
+                    var world = slot >= 0 && slot < cos.planets.size() ? cos.planets.get(slot) : null;
+                    if (world == null || !world.hasLife()) {
+                        c.getSource().sendFailure(Component.literal("Stand on a living world you have made."));
+                        return 0;
+                    }
+                    net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player,
+                            com.josephison.fiatlux.network.SonPayloads.setup(player.serverLevel(), world.name, world.id));
+                    return 1;
+                })
+                        .then(Commands.literal("begin").then(Commands.argument("name", StringArgumentType.word()).executes(c -> {
+                            var player = c.getSource().getPlayerOrException();
+                            String err = com.josephison.fiatlux.son.TheSon.begin(player, StringArgumentType.getString(c, "name"),
+                                    player.getRandom().nextInt(com.josephison.fiatlux.entity.MortalEntity.VARIANTS), player.blockPosition(), null);
+                            if (err != null) {
+                                c.getSource().sendFailure(Component.literal(err));
+                                return 0;
+                            }
+                            c.getSource().sendSuccess(() -> Component.literal("The Son is sent.").withStyle(st -> st.withColor(0xF5D77A)), true);
+                            return 1;
+                        })))
+                        .then(Commands.literal("status").executes(c -> {
+                            c.getSource().sendSuccess(() -> Component.literal(com.josephison.fiatlux.son.TheSon.describe(c.getSource().getServer()))
+                                    .withStyle(st -> st.withColor(0xF5D77A)), false);
+                            return 1;
+                        }))
+                        .then(Commands.literal("next").executes(c -> {
+                            // hasten the story to its next part
+                            var server = c.getSource().getServer();
+                            var sd = com.josephison.fiatlux.son.SonData.get(server);
+                            var level = sd.dim.isEmpty() ? null : server.getLevel(net.minecraft.resources.ResourceKey.create(
+                                    net.minecraft.core.registries.Registries.DIMENSION, net.minecraft.resources.ResourceLocation.parse(sd.dim)));
+                            if (!sd.active() || level == null) {
+                                c.getSource().sendFailure(Component.literal("The Son's story is not under way."));
+                                return 0;
+                            }
+                            var from = sd.stage;
+                            for (int i = 0; i < 200 && sd.stage == from; i++) com.josephison.fiatlux.son.TheSon.tick(level, sd, true);
+                            c.getSource().sendSuccess(() -> Component.literal("The story moves on to the " + sd.stage.name().toLowerCase() + ".")
+                                    .withStyle(st -> st.withColor(0xF5D77A)), true);
+                            return 1;
+                        })))
                 .then(Commands.literal("prophets").executes(c -> {
                     var lines = com.josephison.fiatlux.prophecy.Prophets.describe(c.getSource().getServer());
                     c.getSource().sendSuccess(() -> Component.literal("The prophets:").withStyle(st -> st.withColor(0xF5D77A)), false);

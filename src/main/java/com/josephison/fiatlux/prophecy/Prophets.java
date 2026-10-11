@@ -91,7 +91,11 @@ public final class Prophets {
     public static String titleOf(ServerLevel level, MortalEntity m) {
         ProphecyData d = ProphecyData.get(level.getServer());
         Prophet p = d.prophet(m.getUUID());
-        if (p != null && p.living()) return p.false_ ? "False Prophet" : m.isMale() ? "Prophet" : "Prophetess";
+        if (p != null && p.living()) {
+            var son = com.josephison.fiatlux.son.SonData.get(level.getServer());
+            if (son.church != null && son.church.equals(p.faith)) return "Apostle";
+            return p.false_ ? "False Prophet" : m.isMale() ? "Prophet" : "Prophetess";
+        }
         Prophet master = d.masterOf(m.getUUID());
         return master != null ? "Disciple of " + master.name : "";
     }

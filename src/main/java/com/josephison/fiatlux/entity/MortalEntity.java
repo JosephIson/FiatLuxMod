@@ -95,6 +95,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Boolean> DATA_NEPHIL = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
     /** An unclean spirit is in this one (Mark 1:23). */
     private static final EntityDataAccessor<Boolean> DATA_POSSESSED = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.BOOLEAN);
+    /** The glory on the Son: 0 none, 1 a quiet light about him, 2 shining (transfigured, risen). */
+    private static final EntityDataAccessor<Integer> DATA_GLORY = SynchedEntityData.defineId(MortalEntity.class, EntityDataSerializers.INT);
     public static final int VARIANTS = 8;
     public static final int NONE = 0, PRAY = 1, WORK = 2, SLEEP = 3, EAT = 4, TALK = 5, BOW = 6, CHEER = 7,
             CRUCIFIED = 8, STOCKS = 9, EXORCISE = 10, IMPRISONED = 11, POSSESSED = 12, TORN = 13;
@@ -173,6 +175,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_VARIANT, 0);
+        builder.define(DATA_GLORY, 0);
         builder.define(DATA_MALE, true);
         builder.define(DATA_ERA, 0);
         builder.define(DATA_ACT, 0);
@@ -228,6 +231,34 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     public boolean isMale() { return entityData.get(DATA_MALE); }
     public int variant() { return entityData.get(DATA_VARIANT); }
+    public void setVariant(int v) { entityData.set(DATA_VARIANT, Math.floorMod(v, VARIANTS)); }
+    /** For a likeness only (the Son's chooser): a man or a woman. */
+    public void setMaleLikeness(boolean male) { entityData.set(DATA_MALE, male); }
+    public int glory() { return entityData.get(DATA_GLORY); }
+    public void setGlory(int g) { entityData.set(DATA_GLORY, g); }
+    public void setAgeYears(double years) { age = years; updateStage(); }
+    public void setLifespan(int years) { lifespan = years; }
+
+    /**
+     * "Lazarus, come forth. And he that was dead came forth" (John 11:43-44): this body takes up again the
+     * life written in the Book of Generations - the same name, look, kin and faith.
+     */
+    public void restore(Person p) {
+        entityData.set(DATA_MALE, p.male);
+        if (p.variant >= 0) entityData.set(DATA_VARIANT, p.variant);
+        setCustomName(Component.literal(p.name));
+        Trait[] t = Trait.values();
+        traitA = t[random.nextInt(t.length)];
+        do traitB = t[random.nextInt(t.length)]; while (traitB == traitA);
+        age = Math.max(1, p.ageAtDeath);
+        lifespan = (int) age + 30 + random.nextInt(20);
+        for (Profession pr : Profession.values()) if (pr.id.equals(p.profession)) profession = pr;
+        father = p.father;
+        mother = p.mother;
+        religion = p.religion;
+        named = true;
+        updateStage();
+    }
     public int act() { return entityData.get(DATA_ACT); }
     public boolean isPraying() { return act() == PRAY; }
     public boolean isChild() { return entityData.get(DATA_STAGE) == 0; }
@@ -549,6 +580,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         @Override public boolean canUse() {
             if (isChild() || isNight() || act() != NONE || isPossessed() || random.nextInt(hasTrait(Trait.LAZY) ? 160 : hasTrait(Trait.INDUSTRIOUS) ? 30 : 70) != 0) return false;
             if (com.josephison.fiatlux.prophecy.Prophets.called(getServer(), getUUID())) return false;   // they have left their trade (Amos 7:15)
+            if (com.josephison.fiatlux.son.TheSon.isSon(MortalEntity.this) || com.josephison.fiatlux.son.TheSon.disciple(MortalEntity.this)) return false;
             site = workSite();
             return site != null;
         }
@@ -680,6 +712,7 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
 
     /** "Therefore shall a man leave his father and his mother, and shall cleave unto his wife" (Gen 2:24). */
     private void tryMarry(ServerLevel level, MortalEntity other) {
+        if (com.josephison.fiatlux.son.TheSon.isSon(this) || com.josephison.fiatlux.son.TheSon.isSon(other)) return;
         if (spouse != null || other.spouse != null || isChild() || other.isChild() || isMale() == other.isMale()) return;
         if (opinion.getOrDefault(other.getUUID(), 0) < 3 || other.opinion.getOrDefault(getUUID(), 0) < 3) return;
         if (other.getUUID().equals(father) || other.getUUID().equals(mother) || (father != null && father.equals(other.father))) return;
@@ -869,7 +902,8 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
         }
         if (tickCount % 100 == 3) {
             var polity = com.josephison.fiatlux.civilization.Justice.polityOf(level, this);
-            String t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale())
+            String t = com.josephison.fiatlux.son.TheSon.titleOf(this);
+            if (t.isEmpty()) t = polity != null && getUUID().equals(polity.ruler) ? polity.form.title(isMale())
                     : com.josephison.fiatlux.civilization.Churches.titleOf(level, this);
             if (t.isEmpty()) t = com.josephison.fiatlux.prophecy.Prophets.titleOf(level, this);
             if (!t.equals(title())) entityData.set(DATA_TITLE, t);
@@ -1400,6 +1434,12 @@ public class MortalEntity extends PathfinderMob implements GeoEntity {
             emote(ParticleTypes.ANGRY_VILLAGER, 3);
             addSin(1);
         }
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (!level().isClientSide && com.josephison.fiatlux.son.TheSon.shielded(this) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
+        return super.hurt(source, amount);
     }
 
     public void addVirtue(int n) {

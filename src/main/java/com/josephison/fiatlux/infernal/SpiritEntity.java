@@ -250,7 +250,7 @@ public class SpiritEntity extends Mob implements GeoEntity {
      * heart, or more sin than virtue - and no guardian angel stands by it (Psalm 91:10-11).
      */
     public static boolean open(MortalEntity m) {
-        if (!m.isAlive() || m.isPossessed() || m.isExorcist() || m.isChild() || m.isNephil()) return false;
+        if (!m.isAlive() || m.isPossessed() || m.isExorcist() || m.isChild() || m.isNephil() || com.josephison.fiatlux.son.TheSon.isSon(m)) return false;
         Religion r = Faiths.of(m);
         Alignment a = Divinity.alignment(m);
         boolean weak = r == null || !r.deity.true_ || m.doubt() > 0.45 || a.sin() > a.virtue() + 2;

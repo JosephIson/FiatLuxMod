@@ -41,5 +41,14 @@ public final class ModNetwork {
                 (p, ctx) -> com.josephison.fiatlux.client.portal.PortalViews.receive(p));
         r.playToClient(FloodPayload.TYPE, FloodPayload.STREAM_CODEC,
                 (p, ctx) -> com.josephison.fiatlux.client.fx.FloodSea.update(p));
+        r.playToClient(SonPayloads.Setup.TYPE, SonPayloads.Setup.STREAM_CODEC,
+                (p, ctx) -> com.josephison.fiatlux.client.ClientPayloads.onSonSetup(p));
+        r.playToServer(SonPayloads.Choose.TYPE, SonPayloads.Choose.STREAM_CODEC, (p, ctx) -> {
+            if (!(ctx.player() instanceof ServerPlayer sp) || Divinity.get(sp).pilgrim()) return;
+            String err = com.josephison.fiatlux.son.TheSon.begin(sp, p.name(), p.variant(), p.town(), p.mother().orElse(null));
+            sp.sendSystemMessage(net.minecraft.network.chat.Component.literal(err != null ? err
+                    : "\"Behold, a virgin shall conceive, and bear a son\" - " + p.name() + " is sent. Watch over his mother.")
+                    .withStyle(s -> s.withColor(err != null ? 0xE08060 : 0xF5D77A)));
+        });
     }
 }

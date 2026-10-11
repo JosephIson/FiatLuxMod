@@ -30,7 +30,9 @@ public final class Book {
         /** The words and deeds of a prophet (Isaiah, Jeremiah, Jonah). */
         PROPHET,
         /** The doctrine over which a branch parted from the faith it came from. */
-        TESTAMENT
+        TESTAMENT,
+        /** The life of the Son and the acts of his apostles. */
+        GOSPEL
     }
 
     public final String title;

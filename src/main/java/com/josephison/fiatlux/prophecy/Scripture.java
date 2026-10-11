@@ -433,6 +433,7 @@ public final class Scripture {
             case PROVERBS -> 4;
             case PROPHET -> 5;
             case TESTAMENT -> 6;
+            case GOSPEL -> 7;
         };
     }
 
